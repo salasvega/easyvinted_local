@@ -1,1 +1,1 @@
-# easyvinted_local
+EASYVINTED
