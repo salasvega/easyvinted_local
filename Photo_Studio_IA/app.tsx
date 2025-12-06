@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { analyzeProductImage, editProductImage } from './services/geminiService';
-import { saveToInventory } from './services/historyService';
-import ImageUploader from './components/ImageUploader';
-import ProductDetails from './components/ProductDetails';
-import EditorPanel from './components/EditorPanel';
-import InventoryDrawer from './components/InventoryDrawer';
+import { analyzeProductImage, editProductImage } from './services/geminiservice';
+import { saveToInventory } from './services/historyservice';
+import ImageUploader from './components/imageuploader';
+import ProductDetails from './components/productdetails';
+import EditorPanel from './components/editorpanel';
+import InventoryDrawer from './components/inventorydrawer';
 import { ProductData, AppState, InventoryItem } from './types';
 import { ArrowLeft, Image as ImageIcon, ShoppingBag, AlertCircle, FileText, Wand2, Download, PackageOpen, ZoomIn, ZoomOut, Maximize2, Move } from 'lucide-react';
 

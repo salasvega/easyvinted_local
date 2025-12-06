@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, Trash2, Calendar, PackageOpen, ChevronRight, Search, ArchiveX } from 'lucide-react';
 import { InventoryItem } from '../types';
-import { getInventory, deleteFromInventory, clearInventory } from '../services/historyService';
+import { getInventory, deleteFromInventory, clearInventory } from '../services/historyservice';
 
 interface InventoryDrawerProps {
   isOpen: boolean;
