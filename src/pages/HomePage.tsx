@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Sparkles, Calendar, Upload } from "lucide-react";
+import { Sparkles, Calendar, Upload, Camera } from "lucide-react";
 
 export function HomePage() {
   return (
@@ -60,6 +60,14 @@ export function HomePage() {
           className="inline-flex items-center justify-center px-8 py-3 rounded-full text-sm font-semibold border border-emerald-500 text-emerald-600 bg-white hover:bg-emerald-50 transition"
         >
           Mes articles
+        </Link>
+
+        <Link
+          to="/photo-studio"
+          className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full text-sm font-semibold border border-blue-500 text-blue-600 bg-white hover:bg-blue-50 transition"
+        >
+          <Camera className="w-4 h-4" />
+          Photo Studio IA
         </Link>
 
         <Link
