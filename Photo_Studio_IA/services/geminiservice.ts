@@ -1,7 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ProductData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (!ai) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("VITE_GEMINI_API_KEY is not configured");
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 /**
  * Analyzes the product image using gemini-3-pro-preview to generate e-commerce details.
@@ -27,7 +38,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: model,
       contents: {
         parts: [
@@ -98,7 +109,7 @@ export const editProductImage = async (
   const model = 'gemini-2.5-flash-image';
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: model,
       contents: {
         parts: [
