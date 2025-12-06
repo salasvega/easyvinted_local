@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { analyzeProductImage, editProductImage, ProductData } from '../lib/geminiService';
+import { analyzeProductImage, editProductImage, ProductData } from '../lib/openaiService';
 import { ImageUploader } from '../components/photostudio/ImageUploader';
 import { ProductDetails } from '../components/photostudio/ProductDetails';
 import { EditorPanel } from '../components/photostudio/EditorPanel';
@@ -75,7 +75,7 @@ export function PhotoStudioPage() {
       setAppState(AppState.READY);
     } catch (err) {
       console.error(err);
-      setError("Failed to edit image. Please try a different prompt.");
+      setError((err as Error).message || "Failed to edit image. Please try a different prompt.");
       setAppState(AppState.READY);
     }
   }, [currentImage, mimeType, historyIndex]);
