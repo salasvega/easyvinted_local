@@ -19,6 +19,7 @@ import { FamilyMembersPage } from './pages/FamilyMembersPage';
 import LotsPage from './pages/LotsPage';
 import LotPreviewPage from './pages/LotPreviewPage';
 import { LotStructureFormPage } from './pages/LotStructureFormPage';
+import { PhotoStudioPage } from './pages/PhotoStudioPage';
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/sales" element={<SalesPage />} />
                     <Route path="/planner" element={<PlannerPage />} />
+                    <Route path="/photo-studio" element={<PhotoStudioPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/family" element={<FamilyMembersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />

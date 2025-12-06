@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Package, Settings, BarChart3, ShoppingBag, Calendar, Menu, X, LogOut, Users, Boxes } from 'lucide-react';
+import { Package, Settings, BarChart3, ShoppingBag, Calendar, Menu, X, LogOut, Users, Boxes, Camera } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
@@ -110,6 +110,17 @@ export function AppLayout({ children }: AppLayoutProps) {
                 >
                   <Boxes className="w-4 h-4" />
                   Mes lots
+                </Link>
+                <Link
+                  to="/photo-studio"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/photo-studio')
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Camera className="w-4 h-4" />
+                  Photo Studio
                 </Link>
                 <Link
                   to="/sales"
@@ -252,6 +263,21 @@ export function AppLayout({ children }: AppLayoutProps) {
               Mes lots
             </Link>
             <Link
+              to="/photo-studio"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
+                mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+              } ${
+                isActive('/photo-studio')
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+              style={{ transitionDelay: mobileMenuOpen ? '100ms' : '0ms' }}
+            >
+              <Camera className="w-5 h-5" />
+              Photo Studio
+            </Link>
+            <Link
               to="/sales"
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
@@ -261,7 +287,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '100ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '125ms' : '0ms' }}
             >
               <ShoppingBag className="w-5 h-5" />
               Mes Ventes
@@ -276,7 +302,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '150ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '175ms' : '0ms' }}
             >
               <Calendar className="w-5 h-5" />
               Planificateur
@@ -291,7 +317,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '200ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '225ms' : '0ms' }}
             >
               <BarChart3 className="w-5 h-5" />
               Statistiques

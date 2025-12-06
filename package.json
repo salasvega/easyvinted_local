@@ -17,6 +17,7 @@
     "scheduled:publish": "tsx scripts/schedulePublisher.ts"
   },
   "dependencies": {
+    "@google/genai": "^1.31.0",
     "@supabase/supabase-js": "^2.57.4",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.344.0",
