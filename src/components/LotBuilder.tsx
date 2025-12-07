@@ -300,15 +300,18 @@ export default function LotBuilder({
       const { count } = await supabase
         .from('lots')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .not('reference_number', 'is', null);
 
       const dressingName = (profile?.dressing_name || 'MonDressing').replace(
         /\s+/g,
         '_'
       );
       const lotNumber = (count || 0) + 1;
+      const timestamp = Date.now().toString().slice(-6);
+      const randomSuffix = Math.random().toString(36).substring(2, 5).toUpperCase();
 
-      return `LOT_${dressingName}_${lotNumber}`;
+      return `LOT_${dressingName}_${lotNumber}_${timestamp}${randomSuffix}`;
     } catch (error) {
       console.error('Error generating lot reference number:', error);
       return `LOT_REF-${Date.now()}-${Math.random()
