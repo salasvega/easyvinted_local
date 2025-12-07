@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Sparkles, Wand2, X, Palette, Store, User, Shirt } from 'lucide-react';
-import { editProductImage as editWithGemini } from '../lib/geminiService';
-import { editProductImage as editWithOpenAI } from '../lib/openaiService';
+import { editProductImage } from '../lib/geminiService';
 
 interface ImageEditorProps {
   imageUrl: string;
@@ -68,28 +67,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
 
       const mimeType = blob.type;
 
-      let editedImageBase64: string;
-
-      const hasGeminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-      try {
-        if (hasGeminiKey) {
-          editedImageBase64 = await editWithGemini(base64, mimeType, promptToUse);
-        } else {
-          throw new Error('Gemini not configured');
-        }
-      } catch (geminiError: any) {
-        console.log('Gemini failed, trying OpenAI...', geminiError);
-
-        if (geminiError.message?.includes('not configured') ||
-            geminiError.message?.includes('not found') ||
-            geminiError.message?.includes('404') ||
-            geminiError.message?.includes('pas disponible')) {
-          throw new Error('L\'édition d\'images IA n\'est actuellement pas disponible. Gemini ne supporte pas encore cette fonctionnalité de manière stable. Utilisez des outils externes comme remove.bg ou Canva pour éditer vos images.');
-        }
-
-        throw geminiError;
-      }
+      const editedImageBase64 = await editProductImage(base64, mimeType, promptToUse);
 
       const editedImageDataUrl = `data:${mimeType};base64,${editedImageBase64}`;
       onImageEdited(editedImageDataUrl);

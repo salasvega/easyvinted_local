@@ -121,7 +121,7 @@ export const editProductImage = async (
   mimeType: string,
   instruction: string
 ): Promise<string> => {
-  const model = 'gemini-2.5-flash';
+  const model = 'gemini-2.5-flash-image';
 
   const enhancedInstruction = `You are an expert photo editor for e-commerce product images.
 
@@ -135,7 +135,7 @@ IMPORTANT GUIDELINES:
 - Enhance quality without making it look artificial
 - The output must be a professional product photo suitable for Vinted
 
-Generate ONLY the edited image, no text.`;
+Generate the edited image.`;
 
   try {
     const response = await getAI().models.generateContent({
@@ -150,28 +150,19 @@ Generate ONLY the edited image, no text.`;
           },
           { text: enhancedInstruction }
         ]
-      },
-      config: {
-        responseModalities: ['IMAGE']
       }
     });
 
-    console.log("Gemini response received");
-
-    if (response.candidates && response.candidates.length > 0) {
-      const candidate = response.candidates[0];
-      if (candidate.content && candidate.content.parts) {
-        for (const part of candidate.content.parts) {
-          if (part.inlineData && part.inlineData.data) {
-            console.log("Found image data in response");
-            return part.inlineData.data;
-          }
+    const parts = response.candidates?.[0]?.content?.parts;
+    if (parts) {
+      for (const part of parts) {
+        if (part.inlineData && part.inlineData.data) {
+          return part.inlineData.data;
         }
       }
     }
 
-    console.error("Full response structure:", JSON.stringify(response, null, 2));
-    throw new Error("No image data found in response. L'édition d'images nécessite Gemini 2.5 Flash avec la capacité de génération d'images activée.");
+    throw new Error("No image data found in response");
   } catch (error: any) {
     console.error("Editing failed:", error);
 
@@ -181,10 +172,6 @@ Generate ONLY the edited image, no text.`;
 
     if (error?.message?.includes('API key')) {
       throw new Error('Clé API Gemini invalide ou manquante. Vérifiez VITE_GEMINI_API_KEY dans votre fichier .env');
-    }
-
-    if (error?.message?.includes('not found') || error?.message?.includes('404') || error?.message?.includes('responseModalities')) {
-      throw new Error('La génération d\'images avec Gemini n\'est pas encore disponible ou nécessite un accès spécifique. Cette fonctionnalité est en preview. Utilisez des outils externes comme remove.bg pour éditer vos images.');
     }
 
     throw error;

@@ -107,5 +107,5 @@ export const editProductImage = async (
   mimeType: string,
   instruction: string
 ): Promise<string> => {
-  throw new Error("L'édition d'images n'est pas encore supportée. Les APIs IA actuelles (OpenAI, Gemini) ont des limitations pour l'édition directe d'images. Utilisez des outils externes comme remove.bg, Canva ou Photopea pour éditer vos photos.");
+  throw new Error("L'édition d'images n'est pas supportée avec OpenAI. Cette fonctionnalité nécessite Gemini ou un service d'édition d'images dédié.");
 };
