@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Calendar } from 'lucide-react';
+import { Search, Plus, Calendar, Edit2, Trash2 } from 'lucide-react';
 import { Article, ArticleStatus } from '../types/article';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { Toast } from '../components/ui/Toast';
 
 const STATUS_LABELS: Record<ArticleStatus, string> = {
   draft: 'Draft',
@@ -28,6 +30,11 @@ export function DashboardPageV2() {
   const [statusFilter, setStatusFilter] = useState<'all' | ArticleStatus>('all');
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; articleId: string | null }>({
+    isOpen: false,
+    articleId: null,
+  });
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     fetchArticles();
@@ -77,6 +84,58 @@ export function DashboardPageV2() {
       day: '2-digit',
       year: 'numeric',
     });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.articleId || !user) return;
+
+    try {
+      const { data: article, error: fetchError } = await supabase
+        .from('articles')
+        .select('photos')
+        .eq('id', deleteModal.articleId)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      if (article?.photos && article.photos.length > 0) {
+        const filePaths = article.photos
+          .map((photoUrl: string) => {
+            const urlParts = photoUrl.split('/article-photos/');
+            return urlParts.length === 2 ? urlParts[1] : null;
+          })
+          .filter((path: string | null): path is string => path !== null);
+
+        if (filePaths.length > 0) {
+          await supabase.storage.from('article-photos').remove(filePaths);
+        }
+      }
+
+      try {
+        const folderPath = `${user.id}/${deleteModal.articleId}`;
+        const { data: folderContents } = await supabase.storage
+          .from('article-photos')
+          .list(folderPath);
+
+        if (folderContents && folderContents.length > 0) {
+          const filesToDelete = folderContents.map((file: any) => `${folderPath}/${file.name}`);
+          await supabase.storage.from('article-photos').remove(filesToDelete);
+        }
+      } catch (folderError) {
+        console.log('No folder to clean up or error cleaning folder:', folderError);
+      }
+
+      const { error } = await supabase.from('articles').delete().eq('id', deleteModal.articleId);
+
+      if (error) throw error;
+
+      setToast({ type: 'success', text: 'Article deleted successfully' });
+      setDeleteModal({ isOpen: false, articleId: null });
+      fetchArticles();
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      setToast({ type: 'error', text: 'Error deleting article' });
+    }
   };
 
   return (
@@ -151,10 +210,9 @@ export function DashboardPageV2() {
             {filteredArticles.map((article) => (
               <div
                 key={article.id}
-                onClick={() => navigate(`/articles/${article.id}/preview`)}
                 className="group bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="relative aspect-[3/4] bg-slate-100 overflow-hidden">
+                <div className="relative aspect-[3/4] bg-slate-100 overflow-hidden" onClick={() => navigate(`/articles/${article.id}/preview`)}>
                   {article.photos && article.photos.length > 0 ? (
                     <img
                       src={article.photos[0]}
@@ -166,19 +224,41 @@ export function DashboardPageV2() {
                       <div className="w-20 h-20 border-4 border-slate-200 rounded-full"></div>
                     </div>
                   )}
-                  <div className="absolute top-3 left-3">
+
+                  <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/articles/${article.id}/edit`);
+                      }}
+                      className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+                      title="Edit"
+                    >
+                      <Edit2 className="w-4 h-4 text-slate-700" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteModal({ isOpen: true, articleId: article.id });
+                      }}
+                      className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-rose-50 transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4 text-slate-700 hover:text-rose-600" />
+                    </button>
+                  </div>
+
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                     <span className={`inline-block px-3 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[article.status]}`}>
                       {STATUS_LABELS[article.status]}
                     </span>
-                  </div>
-                  <div className="absolute top-3 right-3">
                     <span className="inline-block px-3 py-1.5 bg-white rounded-lg text-sm font-bold text-slate-900 shadow-sm">
                       {article.price.toFixed(2)}€
                     </span>
                   </div>
                 </div>
 
-                <div className="p-4">
+                <div className="p-4" onClick={() => navigate(`/articles/${article.id}/preview`)}>
                   <h3 className="text-base font-semibold text-slate-900 mb-1 truncate group-hover:text-emerald-600 transition-colors">
                     {article.title}
                   </h3>
@@ -195,6 +275,18 @@ export function DashboardPageV2() {
           </div>
         )}
       </div>
+
+      {toast && <Toast message={toast.text} type={toast.type} onClose={() => setToast(null)} />}
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, articleId: null })}
+        onConfirm={handleDelete}
+        title="Delete Article"
+        message="Are you sure you want to delete this article? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 }
