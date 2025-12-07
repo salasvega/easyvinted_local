@@ -1,9 +1,10 @@
 import { useState, useEffect, DragEvent as ReactDragEvent, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical, Image as ImageIcon } from 'lucide-react';
+import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical, Image as ImageIcon, Wand2 } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { ImageEditor } from '../components/ImageEditor';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { VINTED_CATEGORIES } from '../constants/categories';
@@ -46,6 +47,8 @@ export function ArticleFormPageV2() {
     writing_style: string | null;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showImageEditor, setShowImageEditor] = useState(false);
+  const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -427,6 +430,50 @@ export function ArticleFormPageV2() {
     setDragOverIndex(null);
   };
 
+  const handleEditImage = (index: number) => {
+    setEditingImageIndex(index);
+    setShowImageEditor(true);
+  };
+
+  const handleImageEdited = async (newImageDataUrl: string) => {
+    if (editingImageIndex === null || !user) return;
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(newImageDataUrl);
+      const blob = await response.blob();
+
+      const fileExt = 'jpg';
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('article-photos')
+        .upload(fileName, blob);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('article-photos')
+        .getPublicUrl(fileName);
+
+      const newPhotos = [...formData.photos];
+      newPhotos[editingImageIndex] = urlData.publicUrl;
+
+      setFormData((prev) => ({
+        ...prev,
+        photos: newPhotos,
+      }));
+
+      setToast({ type: 'success', text: 'Photo mise à jour avec succès' });
+    } catch (error) {
+      console.error('Error uploading edited image:', error);
+      setToast({ type: 'error', text: 'Erreur lors de la mise à jour de la photo' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const selectedCategory = VINTED_CATEGORIES.find((c) => c.name === formData.main_category);
   const selectedSubcategory = selectedCategory?.subcategories.find((s) => s.name === formData.subcategory);
 
@@ -452,6 +499,15 @@ export function ArticleFormPageV2() {
                     alt="Product"
                     className="w-full h-full object-cover"
                   />
+                  <button
+                    type="button"
+                    onClick={() => handleEditImage(selectedPhotoIndex)}
+                    className="absolute top-4 right-4 p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 flex items-center gap-2"
+                    title="Éditer avec IA"
+                  >
+                    <Wand2 className="w-5 h-5" />
+                    <span className="font-semibold text-sm">Éditer avec IA</span>
+                  </button>
                 </>
               ) : (
                 <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
@@ -866,6 +922,17 @@ export function ArticleFormPageV2() {
         confirmLabel="Supprimer"
         variant="danger"
       />
+
+      {showImageEditor && editingImageIndex !== null && (
+        <ImageEditor
+          imageUrl={formData.photos[editingImageIndex]}
+          onImageEdited={handleImageEdited}
+          onClose={() => {
+            setShowImageEditor(false);
+            setEditingImageIndex(null);
+          }}
+        />
+      )}
 
       {toast && <Toast message={toast.text} type={toast.type} onClose={() => setToast(null)} />}
     </div>
