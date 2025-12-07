@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, DragEvent as ReactDragEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit } from 'lucide-react';
+import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -40,6 +40,8 @@ export function ArticleFormPageV2() {
   const [familyMembers, setFamilyMembers] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [userProfile, setUserProfile] = useState<{
     writing_style: string | null;
   } | null>(null);
@@ -363,6 +365,62 @@ export function ArticleFormPageV2() {
     }
   };
 
+  const handlePhotoDragStart = (e: ReactDragEvent<HTMLDivElement>, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handlePhotoDragOver = (e: ReactDragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handlePhotoDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handlePhotoDrop = (e: ReactDragEvent<HTMLDivElement>, dropIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newPhotos = [...formData.photos];
+    const [draggedPhoto] = newPhotos.splice(draggedIndex, 1);
+    newPhotos.splice(dropIndex, 0, draggedPhoto);
+
+    setFormData({ ...formData, photos: newPhotos });
+
+    if (selectedPhotoIndex === draggedIndex) {
+      setSelectedPhotoIndex(dropIndex);
+    } else if (
+      selectedPhotoIndex > draggedIndex &&
+      selectedPhotoIndex <= dropIndex
+    ) {
+      setSelectedPhotoIndex(selectedPhotoIndex - 1);
+    } else if (
+      selectedPhotoIndex < draggedIndex &&
+      selectedPhotoIndex >= dropIndex
+    ) {
+      setSelectedPhotoIndex(selectedPhotoIndex + 1);
+    }
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handlePhotoDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   const selectedCategory = VINTED_CATEGORIES.find((c) => c.name === formData.main_category);
   const selectedSubcategory = selectedCategory?.subcategories.find((s) => s.name === formData.subcategory);
 
@@ -451,6 +509,55 @@ export function ArticleFormPageV2() {
                 </label>
               )}
             </div>
+
+            {/* Photo Reorganization Section */}
+            {formData.photos.length > 0 && (
+              <div className="bg-white rounded-3xl border border-slate-200 p-4">
+                <p className="text-xs font-medium text-slate-600 mb-3">
+                  Glissez-déposez les photos pour réorganiser leur ordre. La première photo sera la photo principale.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {formData.photos.map((photo, index) => (
+                    <div
+                      key={photo}
+                      draggable
+                      onDragStart={(e) => handlePhotoDragStart(e, index)}
+                      onDragOver={(e) => handlePhotoDragOver(e, index)}
+                      onDragLeave={handlePhotoDragLeave}
+                      onDrop={(e) => handlePhotoDrop(e, index)}
+                      onDragEnd={handlePhotoDragEnd}
+                      className={`relative group aspect-square cursor-move transition-all ${
+                        draggedIndex === index ? 'opacity-50 scale-95' : ''
+                      } ${
+                        dragOverIndex === index ? 'ring-2 ring-emerald-500' : ''
+                      }`}
+                    >
+                      <img
+                        src={photo}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover rounded-xl border border-slate-200"
+                      />
+                      <div className="absolute top-2 left-2 p-1 bg-slate-900/70 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        <GripVertical className="w-4 h-4" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(index)}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Supprimer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      {index === 0 && (
+                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500 text-white text-xs rounded-md font-medium">
+                          Photo principale
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Form */}
