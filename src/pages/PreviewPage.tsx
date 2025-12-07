@@ -635,76 +635,78 @@ export function PreviewPage() {
                   </div>
                 </div>
               )}
-
-              {/* 8. Action Buttons */}
-              <div className="grid grid-cols-3 gap-3 pt-4">
-                <button
-                  onClick={() => setDeleteModalOpen(true)}
-                  className="px-4 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Supprimer
-                </button>
-
-                <button
-                  onClick={() => navigate(`/articles/${id}/edit-v2`)}
-                  className="px-4 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Edit className="w-4 h-4" />
-                  Modifier
-                </button>
-
-                {article.status === 'draft' && (
-                  <button
-                    onClick={handleMarkAsReady}
-                    disabled={markingReady}
-                    className="px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    {markingReady ? 'Enregistrement…' : 'Prêt pour Vinted'}
-                  </button>
-                )}
-
-                {article.status === 'ready' && (
-                  <button
-                    onClick={() => navigate(`/articles/${article.id}/structure`)}
-                    className="px-4 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    Envoyer à Vinted
-                  </button>
-                )}
-
-                {(article.status === 'published' || article.status === 'scheduled') && (
-                  <>
-                    <button
-                      onClick={() => setScheduleModalOpen(true)}
-                      className="px-4 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Calendar className="w-4 h-4" />
-                      Programmer
-                    </button>
-                    <button
-                      onClick={handleOpenSoldModal}
-                      className="px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <DollarSign className="w-4 h-4" />
-                      Marquer vendu
-                    </button>
-                  </>
-                )}
-
-                {article.status === 'sold' && (
-                  <button
-                    onClick={() => setSaleDetailModalOpen(true)}
-                    className="px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2 col-span-1"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    Voir la vente
-                  </button>
-                )}
-              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-6">
+          <div className="flex flex-wrap justify-center gap-3">
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              className="px-6 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Supprimer
+            </button>
+
+            <button
+              onClick={() => navigate(`/articles/${id}/edit-v2`)}
+              className="px-6 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              Modifier
+            </button>
+
+            {article.status === 'draft' && (
+              <button
+                onClick={handleMarkAsReady}
+                disabled={markingReady}
+                className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {markingReady ? 'Enregistrement…' : 'Prêt pour Vinted'}
+              </button>
+            )}
+
+            {article.status === 'ready' && (
+              <button
+                onClick={() => navigate(`/articles/${article.id}/structure`)}
+                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Envoyer à Vinted
+              </button>
+            )}
+
+            {(article.status === 'published' || article.status === 'scheduled') && (
+              <>
+                <button
+                  onClick={() => setScheduleModalOpen(true)}
+                  className="px-6 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center gap-2"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Programmer
+                </button>
+                <button
+                  onClick={handleOpenSoldModal}
+                  className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center gap-2"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  Marquer vendu
+                </button>
+              </>
+            )}
+
+            {article.status === 'sold' && (
+              <button
+                onClick={() => setSaleDetailModalOpen(true)}
+                className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Voir la vente
+              </button>
+            )}
           </div>
         </div>
       </div>
