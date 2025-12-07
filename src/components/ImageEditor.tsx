@@ -63,7 +63,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   }, [currentImage]);
 
   const handleEdit = async (customPrompt?: string) => {
-    const promptToUse = customPrompt || instruction;
+    const promptToUse = typeof customPrompt === 'string' ? customPrompt : instruction;
 
     if (!promptToUse.trim()) {
       setError('Veuillez entrer une instruction');
@@ -99,7 +99,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
       });
       setHistoryIndex(prev => prev + 1);
 
-      if (!customPrompt) {
+      if (typeof customPrompt !== 'string') {
         setInstruction('');
       }
     } catch (err) {
