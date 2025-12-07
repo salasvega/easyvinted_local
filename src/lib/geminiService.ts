@@ -101,8 +101,17 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
       return parsed.products || [];
     }
     throw new Error("No text response from model");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Analysis failed:", error);
+
+    if (error?.message?.includes('quota') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
+      throw new Error('Quota Gemini dépassé pour l\'analyse. Veuillez réessayer plus tard ou activer la facturation sur Google Cloud.');
+    }
+
+    if (error?.message?.includes('API key')) {
+      throw new Error('Clé API Gemini invalide ou manquante. Vérifiez VITE_GEMINI_API_KEY dans votre fichier .env');
+    }
+
     throw error;
   }
 };
@@ -113,6 +122,20 @@ export const editProductImage = async (
   instruction: string
 ): Promise<string> => {
   const model = 'gemini-2.5-flash-image';
+
+  const enhancedInstruction = `You are an expert photo editor for e-commerce product images.
+
+${instruction}
+
+IMPORTANT GUIDELINES:
+- Maintain the product's original appearance, colors, textures, and details
+- Preserve any visible brand logos, tags, or labels
+- Keep the product as the focal point
+- If changing background, ensure clean edges and natural lighting
+- Enhance quality without making it look artificial
+- The output must be a professional product photo suitable for Vinted
+
+Generate the edited image.`;
 
   try {
     const response = await getAI().models.generateContent({
@@ -125,7 +148,7 @@ export const editProductImage = async (
               data: base64Image
             }
           },
-          { text: instruction }
+          { text: enhancedInstruction }
         ]
       }
     });
@@ -140,8 +163,17 @@ export const editProductImage = async (
     }
 
     throw new Error("No image data found in response");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Editing failed:", error);
+
+    if (error?.message?.includes('quota') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
+      throw new Error('Quota Gemini dépassé. L\'édition d\'images nécessite un compte avec facturation activée sur Google Cloud. Consultez GEMINI_SETUP.md pour plus d\'informations.');
+    }
+
+    if (error?.message?.includes('API key')) {
+      throw new Error('Clé API Gemini invalide ou manquante. Vérifiez VITE_GEMINI_API_KEY dans votre fichier .env');
+    }
+
     throw error;
   }
 };

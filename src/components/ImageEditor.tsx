@@ -46,18 +46,30 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
       onClose();
     } catch (err) {
       console.error('Error editing image:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'édition de l\'image');
+
+      let errorMessage = 'Erreur lors de l\'édition de l\'image';
+
+      if (err instanceof Error) {
+        if (err.message.includes('quota') || err.message.includes('RESOURCE_EXHAUSTED')) {
+          errorMessage = 'Quota Gemini dépassé. Le modèle de génération d\'images Gemini nécessite un compte avec facturation activée. Veuillez activer la facturation sur console.cloud.google.com ou utiliser une clé API avec crédit disponible.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setProcessing(false);
     }
   };
 
   const quickInstructions = [
-    'Améliore la luminosité et les couleurs',
-    'Supprime l\'arrière-plan',
-    'Rends le fond blanc',
-    'Améliore les détails du vêtement',
-    'Centre le produit dans l\'image',
+    'Remplace l\'arrière-plan par un fond blanc studio',
+    'Remplace l\'arrière-plan par un fond béton gris moderne',
+    'Remplace l\'arrière-plan par un fond bois clair naturel',
+    'Améliore la luminosité et rends les couleurs plus vives',
+    'Centre le produit et améliore la composition',
+    'Place le vêtement à plat sur une surface neutre',
   ];
 
   return (
@@ -163,11 +175,11 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
             <div className="flex items-start gap-3">
               <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-blue-900">
-                <p className="font-semibold mb-1">Édition par IA avec Gemini</p>
+                <p className="font-semibold mb-1">Studio Photo IA - Gemini 2.5 Flash Image</p>
                 <p className="text-blue-800 leading-relaxed">
-                  Décrivez les modifications que vous souhaitez apporter à l'image. L'IA Gemini
-                  comprend les instructions en français et peut effectuer des modifications comme
-                  supprimer l'arrière-plan, améliorer la luminosité, centrer le produit, etc.
+                  Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan
+                  (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit,
+                  ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
                 </p>
               </div>
             </div>
