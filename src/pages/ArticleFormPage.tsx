@@ -417,7 +417,7 @@ export function ArticleFormPage() {
         const product = products[0];
         setAiAnalysisResult(product);
 
-        let mainCategory = 'Femmes';
+        let mainCategory = product.gender || 'Femmes';
         let subcategory = 'Vêtements';
         let itemCategory = '';
 
@@ -466,13 +466,42 @@ export function ArticleFormPage() {
         const priceMatch = product.priceEstimate?.match(/\d+/);
         const estimatedPrice = priceMatch ? priceMatch[0] : '';
 
+        const conditionMapping: Record<string, Condition> = {
+          'new_with_tags': 'new_with_tags',
+          'new_with_tag': 'new_with_tag',
+          'new_without_tags': 'new_without_tags',
+          'new_without_tag': 'new_without_tag',
+          'very_good': 'very_good',
+          'good': 'good',
+          'satisfactory': 'satisfactory',
+        };
+
+        const seasonMapping: Record<string, Season> = {
+          'spring': 'spring',
+          'summer': 'summer',
+          'autumn': 'autumn',
+          'winter': 'winter',
+          'all-seasons': 'all-seasons',
+        };
+
         setFormData((prev) => ({
           ...prev,
           title: product.title || prev.title,
           description: product.description || prev.description,
+          brand: product.brand || prev.brand,
+          size: product.size || prev.size,
+          color: product.color || prev.color,
+          material: product.material || prev.material,
+          condition: product.condition && conditionMapping[product.condition]
+            ? conditionMapping[product.condition]
+            : prev.condition,
           main_category: mainCategory,
           subcategory: subcategory,
           item_category: itemCategory,
+          season: product.season && seasonMapping[product.season]
+            ? seasonMapping[product.season]
+            : prev.season,
+          suggested_period: product.suggestedPeriod || prev.suggested_period,
           price: estimatedPrice || prev.price,
         }));
 
@@ -1164,6 +1193,27 @@ export function ArticleFormPage() {
                         {aiAnalysisResult.title && (
                           <p><span className="font-semibold">Titre:</span> {aiAnalysisResult.title}</p>
                         )}
+                        {aiAnalysisResult.brand && (
+                          <p><span className="font-semibold">Marque:</span> {aiAnalysisResult.brand}</p>
+                        )}
+                        {aiAnalysisResult.size && (
+                          <p><span className="font-semibold">Taille:</span> {aiAnalysisResult.size}</p>
+                        )}
+                        {aiAnalysisResult.color && (
+                          <p><span className="font-semibold">Couleur:</span> {aiAnalysisResult.color}</p>
+                        )}
+                        {aiAnalysisResult.material && (
+                          <p><span className="font-semibold">Matière:</span> {aiAnalysisResult.material}</p>
+                        )}
+                        {aiAnalysisResult.condition && (
+                          <p><span className="font-semibold">État:</span> {aiAnalysisResult.condition}</p>
+                        )}
+                        {aiAnalysisResult.gender && (
+                          <p><span className="font-semibold">Public:</span> {aiAnalysisResult.gender}</p>
+                        )}
+                        {aiAnalysisResult.season && (
+                          <p><span className="font-semibold">Saison:</span> {aiAnalysisResult.season}</p>
+                        )}
                         {aiAnalysisResult.category && (
                           <p><span className="font-semibold">Catégorie détectée:</span> {aiAnalysisResult.category}</p>
                         )}
@@ -1171,7 +1221,7 @@ export function ArticleFormPage() {
                           <p><span className="font-semibold">Prix estimé:</span> {aiAnalysisResult.priceEstimate}</p>
                         )}
                         {aiAnalysisResult.description && (
-                          <p className="text-xs text-slate-600 mt-2">{aiAnalysisResult.description.substring(0, 150)}...</p>
+                          <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-blue-100">{aiAnalysisResult.description.substring(0, 200)}...</p>
                         )}
                       </div>
                     </div>

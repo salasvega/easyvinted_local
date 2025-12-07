@@ -22,6 +22,14 @@ export interface ProductData {
   features: string[];
   category?: string;
   priceEstimate?: string;
+  brand?: string;
+  size?: string;
+  color?: string;
+  material?: string;
+  condition?: string;
+  gender?: string;
+  season?: string;
+  suggestedPeriod?: string;
   marketing?: {
     instagramCaption: string;
     hashtags: string[];
@@ -32,29 +40,72 @@ export interface ProductData {
 
 export const analyzeProductImage = async (base64Image: string, mimeType: string): Promise<ProductData[]> => {
   const prompt = `
-    You are an expert e-commerce copywriter and social media strategist.
-    Analyze this product image.
+    You are an expert fashion analyst for a second-hand clothing marketplace (Vinted).
+    Analyze this product image in detail and extract ALL visible information.
 
-    Identify ALL distinct fashion or accessory products visible in the image (e.g., if there is a Shirt and a Hat, create separate entries for each).
+    IMPORTANT: Look carefully at any visible tags, labels, or etiquettes on the item to extract brand and size information.
+
+    Identify ALL distinct fashion or accessory products visible in the image.
     If there is only one product, return a single entry.
 
-    For EACH detected product, generate a high-converting listing kit:
-    1. Product Listing: Catchy title, persuasive description, 5 key features, category, and price estimate (USD).
-    2. Marketing Assets:
-       - An engaging Instagram caption with emojis.
-       - A list of 10 relevant, high-traffic hashtags.
-       - A short, punchy sales email draft.
-       - 5 SEO keywords.
+    For EACH detected product, extract the following information:
+
+    1. BASIC INFO:
+       - title: A catchy, descriptive title in French (e.g., "Robe d'été fleurie Zara")
+       - description: Detailed description in French highlighting condition, style, and key features (2-3 sentences)
+       - features: 5 key features or selling points in French
+
+    2. BRAND & SIZE:
+       - brand: The brand name if visible on tags/labels/logos (if not visible, return null)
+       - size: The size if visible on tags/labels (e.g., "M", "38", "42", "S", "XL", etc. - if not visible, return null)
+
+    3. PHYSICAL ATTRIBUTES:
+       - color: The main color in French (e.g., "Bleu", "Rouge", "Noir", "Beige", "Multicolore", etc.)
+       - material: The fabric/material if identifiable (e.g., "Coton", "Polyester", "Laine", "Jean", "Cuir", "Soie", etc. - if uncertain, return null)
+
+    4. CONDITION:
+       - condition: Assess the visible condition. Return ONE of these exact values:
+         * "new_with_tags" - if tags are still attached
+         * "new_without_tags" - if looks new but no tags
+         * "very_good" - excellent condition, minimal wear
+         * "good" - good condition, light wear
+         * "satisfactory" - acceptable condition, visible wear
+
+    5. TARGET AUDIENCE:
+       - gender: Return ONE of these exact values: "Femmes", "Hommes", "Enfants", or "Mixte"
+
+    6. SEASONALITY:
+       - season: Return ONE of these exact values based on the item type:
+         * "spring" - for spring items (light jackets, transitional pieces)
+         * "summer" - for summer items (shorts, t-shirts, dresses, sandals)
+         * "autumn" - for autumn items (sweaters, boots, transitional coats)
+         * "winter" - for winter items (heavy coats, boots, scarves)
+         * "all-seasons" - for items that can be worn year-round
+       - suggestedPeriod: The best months to sell this item in French (e.g., "Mars - Mai", "Juin - Août", "Toute l'année")
+
+    7. PRICING:
+       - priceEstimate: Estimated resale price in euros (format: "XX €" - consider condition and brand)
+
+    8. CATEGORY:
+       - category: The type of item in French (e.g., "Robe", "T-shirt", "Jean", "Basket", "Sac", "Manteau", etc.)
 
     Return the response as a JSON object with this exact structure:
     {
       "products": [
         {
-          "title": "Product Title",
-          "description": "Detailed description",
+          "title": "Product Title in French",
+          "description": "Detailed description in French",
           "features": ["feature1", "feature2", "feature3", "feature4", "feature5"],
-          "category": "Category",
-          "priceEstimate": "$XX.XX",
+          "category": "Category in French",
+          "priceEstimate": "XX €",
+          "brand": "Brand Name or null",
+          "size": "Size or null",
+          "color": "Color in French",
+          "material": "Material in French or null",
+          "condition": "new_with_tags|new_without_tags|very_good|good|satisfactory",
+          "gender": "Femmes|Hommes|Enfants|Mixte",
+          "season": "spring|summer|autumn|winter|all-seasons",
+          "suggestedPeriod": "Period in French",
           "marketing": {
             "instagramCaption": "Caption with emojis",
             "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5", "#tag6", "#tag7", "#tag8", "#tag9", "#tag10"],
@@ -64,6 +115,8 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         }
       ]
     }
+
+    CRITICAL: Pay special attention to any visible labels, tags, or etiquettes to extract brand and size information accurately.
   `;
 
   try {
@@ -87,7 +140,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 2000
+      max_tokens: 3000
     });
 
     const content = response.choices[0]?.message?.content;
