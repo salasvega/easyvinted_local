@@ -26,6 +26,7 @@ import { SaleDetailModal } from '../components/SaleDetailModal';
 import { LabelModal } from '../components/LabelModal';
 import { VINTED_CATEGORIES } from '../constants/categories';
 import { COLORS, MATERIALS } from '../constants/articleAttributes';
+import { PERSONAS } from '../constants/personas';
 import { migratePhotosFromTempFolder } from '../lib/photoMigration';
 import { analyzeProductImage, ProductData } from '../lib/openaiService';
 
@@ -109,6 +110,8 @@ export function ArticleFormPage() {
   const [userProfile, setUserProfile] = useState<{
     clothing_size: string;
     shoe_size: string;
+    writing_style: string | null;
+    persona_id: string | null;
   } | null>(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -159,6 +162,8 @@ export function ArticleFormPage() {
       is_default: boolean;
       clothing_size: string | null;
       shoe_size: string | null;
+      writing_style: string | null;
+      persona_id: string | null;
     }>
   >([]);
 
@@ -212,7 +217,7 @@ export function ArticleFormPage() {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('clothing_size, shoe_size, dressing_name')
+        .select('clothing_size, shoe_size, dressing_name, writing_style, persona_id')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -222,6 +227,8 @@ export function ArticleFormPage() {
         setUserProfile({
           clothing_size: data.clothing_size || '',
           shoe_size: data.shoe_size || '',
+          writing_style: data.writing_style || null,
+          persona_id: data.persona_id || null,
         });
       }
     } catch (error) {
@@ -302,7 +309,7 @@ export function ArticleFormPage() {
     try {
       const { data, error } = await supabase
         .from('family_members')
-        .select('id, name, is_default, clothing_size, shoe_size')
+        .select('id, name, is_default, clothing_size, shoe_size, writing_style, persona_id')
         .eq('user_id', user.id)
         .order('name');
 
@@ -395,6 +402,29 @@ export function ArticleFormPage() {
       setAnalyzingWithAI(true);
       setAiAnalysisResult(null);
 
+      let writingStyle: string | undefined = undefined;
+
+      if (formData.seller_id) {
+        const selectedSeller = familyMembers.find((m) => m.id === formData.seller_id);
+        if (selectedSeller?.writing_style) {
+          writingStyle = selectedSeller.writing_style;
+        } else if (selectedSeller?.persona_id) {
+          const persona = PERSONAS.find((p) => p.id === selectedSeller.persona_id);
+          if (persona) {
+            writingStyle = persona.writingStyle;
+          }
+        }
+      } else {
+        if (userProfile?.writing_style) {
+          writingStyle = userProfile.writing_style;
+        } else if (userProfile?.persona_id) {
+          const persona = PERSONAS.find((p) => p.id === userProfile.persona_id);
+          if (persona) {
+            writingStyle = persona.writingStyle;
+          }
+        }
+      }
+
       const photoUrl = formData.photos[0];
 
       const response = await fetch(photoUrl);
@@ -411,7 +441,7 @@ export function ArticleFormPage() {
 
       const mimeType = blob.type;
 
-      const products = await analyzeProductImage(base64, mimeType);
+      const products = await analyzeProductImage(base64, mimeType, writingStyle);
 
       if (products && products.length > 0) {
         const product = products[0];

@@ -38,13 +38,21 @@ export interface ProductData {
   };
 }
 
-export const analyzeProductImage = async (base64Image: string, mimeType: string): Promise<ProductData[]> => {
+export const analyzeProductImage = async (
+  base64Image: string,
+  mimeType: string,
+  writingStyle?: string
+): Promise<ProductData[]> => {
+  const writingStyleInstruction = writingStyle
+    ? `\n    WRITING STYLE: When generating the title and description, use this specific writing style:\n    ${writingStyle}\n    `
+    : '';
+
   const prompt = `
     You are an expert fashion analyst for a second-hand clothing marketplace (Vinted).
     Analyze this product image in detail and extract ALL visible information.
 
     IMPORTANT: Look carefully at any visible tags, labels, or etiquettes on the item to extract brand and size information.
-
+${writingStyleInstruction}
     Identify ALL distinct fashion or accessory products visible in the image.
     If there is only one product, return a single entry.
 
@@ -52,7 +60,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
 
     1. BASIC INFO:
        - title: A catchy, descriptive title in French (e.g., "Robe d'été fleurie Zara")
-       - description: Detailed description in French highlighting condition, style, and key features (2-3 sentences)
+       - description: Detailed description in French highlighting condition, style, and key features (2-3 sentences)${writingStyle ? ' - IMPORTANT: Use the writing style provided above for the description' : ''}
        - features: 5 key features or selling points in French
 
     2. BRAND & SIZE:
