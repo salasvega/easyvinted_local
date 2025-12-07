@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Sparkles, Wand2, X, Palette, Store, User, Shirt } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check } from 'lucide-react';
 import { editProductImage } from '../lib/geminiService';
 
 interface ImageEditorProps {
@@ -40,6 +40,18 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const [instruction, setInstruction] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editHistory, setEditHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+
+  useEffect(() => {
+    setEditHistory([imageUrl]);
+    setHistoryIndex(0);
+  }, [imageUrl]);
+
+  const currentImage = editHistory[historyIndex] || imageUrl;
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < editHistory.length - 1;
+  const hasEdited = historyIndex > 0;
 
   const handleEdit = async (customPrompt?: string) => {
     const promptToUse = customPrompt || instruction;
@@ -53,7 +65,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
       setProcessing(true);
       setError(null);
 
-      const response = await fetch(imageUrl);
+      const response = await fetch(currentImage);
       const blob = await response.blob();
 
       const base64 = await new Promise<string>((resolve) => {
@@ -70,10 +82,17 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
       const editedImageBase64 = await editProductImage(base64, mimeType, promptToUse);
 
       const editedImageDataUrl = `data:${mimeType};base64,${editedImageBase64}`;
-      onImageEdited(editedImageDataUrl);
 
-      setInstruction('');
-      onClose();
+      setEditHistory(prev => {
+        const newHistory = prev.slice(0, historyIndex + 1);
+        newHistory.push(editedImageDataUrl);
+        return newHistory;
+      });
+      setHistoryIndex(prev => prev + 1);
+
+      if (!customPrompt) {
+        setInstruction('');
+      }
     } catch (err) {
       console.error('Error editing image:', err);
 
@@ -93,6 +112,29 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
     }
   };
 
+  const handleUndo = () => {
+    if (canUndo) {
+      setHistoryIndex(prev => prev - 1);
+    }
+  };
+
+  const handleRedo = () => {
+    if (canRedo) {
+      setHistoryIndex(prev => prev + 1);
+    }
+  };
+
+  const handleReset = () => {
+    setEditHistory([imageUrl]);
+    setHistoryIndex(0);
+    setError(null);
+  };
+
+  const handleFinish = () => {
+    onImageEdited(currentImage);
+    onClose();
+  };
+
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -104,28 +146,63 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Édition d'image IA</h2>
-              <p className="text-sm text-slate-500">Propulsé par Gemini</p>
+              <p className="text-sm text-slate-500">Propulsé par Gemini 2.5 Flash</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-          >
-            <X className="w-5 h-5 text-slate-600" />
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-slate-100 rounded-lg border border-slate-200 p-1">
+              <button
+                onClick={handleUndo}
+                disabled={!canUndo}
+                className={`p-1.5 rounded-md transition-all ${canUndo ? 'text-slate-700 hover:bg-white' : 'text-slate-300 cursor-not-allowed'}`}
+                title="Annuler"
+              >
+                <Undo2 size={16} />
+              </button>
+              <div className="w-px h-4 bg-slate-300 mx-0.5"></div>
+              <button
+                onClick={handleRedo}
+                disabled={!canRedo}
+                className={`p-1.5 rounded-md transition-all ${canRedo ? 'text-slate-700 hover:bg-white' : 'text-slate-300 cursor-not-allowed'}`}
+                title="Refaire"
+              >
+                <Redo2 size={16} />
+              </button>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+            >
+              <X className="w-5 h-5 text-slate-600" />
+            </button>
+          </div>
         </div>
 
         <div className="p-6 space-y-6">
           <div className="aspect-video bg-slate-100 rounded-xl overflow-hidden relative">
             <img
-              src={imageUrl}
+              src={currentImage}
               alt="Image à éditer"
-              className="w-full h-full object-contain"
+              className={`w-full h-full object-contain transition-all duration-300 ${processing ? 'opacity-50 blur-sm' : ''}`}
             />
+            {hasEdited && !processing && (
+              <div className="absolute top-3 left-3 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5" />
+                <span>Éditée</span>
+              </div>
+            )}
             <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               <span>IA Gemini</span>
             </div>
+            {processing && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  <span className="font-semibold text-slate-900">Édition en cours...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {error && (
@@ -206,29 +283,40 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
           </div>
 
           <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              disabled={processing}
-              className="flex-1 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Annuler
-            </button>
+            {hasEdited && (
+              <button
+                onClick={handleReset}
+                disabled={processing}
+                className="px-4 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 hover:text-red-600 hover:border-red-300 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                title="Réinitialiser à l'image originale"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={handleEdit}
               disabled={processing || !instruction.trim()}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {processing ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Édition en cours...</span>
+                  <span>Édition...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-5 h-5" />
-                  <span>Éditer avec Gemini</span>
+                  <span>Éditer</span>
                 </>
               )}
+            </button>
+            <button
+              onClick={handleFinish}
+              disabled={processing}
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <Check className="w-5 h-5" />
+              <span>Terminer</span>
             </button>
           </div>
 
