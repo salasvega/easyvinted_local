@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, ZoomIn, ZoomOut, Maximize2, Move } from 'lucide-react';
+import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, ZoomIn, ZoomOut, Maximize2, Move, Download } from 'lucide-react';
 import { editProductImage } from '../lib/geminiService';
 
 interface ImageEditorProps {
@@ -187,6 +187,15 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const handleMouseUp = () => setIsDragging(false);
   const handleMouseLeave = () => setIsDragging(false);
 
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = currentImage;
+    link.download = `edited-image-${Date.now()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -221,6 +230,13 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
                 <Redo2 size={16} />
               </button>
             </div>
+            <button
+              onClick={handleDownload}
+              className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all transform hover:scale-105 active:scale-95"
+              title="Télécharger l'image"
+            >
+              <Download className="w-5 h-5" />
+            </button>
             <button
               onClick={onClose}
               className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
