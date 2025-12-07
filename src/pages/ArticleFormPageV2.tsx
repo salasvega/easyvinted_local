@@ -182,16 +182,21 @@ export function ArticleFormPageV2() {
         ...prev,
         photos: [...prev.photos, ...uploadedUrls],
       }));
-
-      if (uploadedUrls.length === 1 && !analyzingWithAI) {
-        analyzeWithAI(uploadedUrls[0]);
-      }
     } catch (error) {
       console.error('Error uploading photos:', error);
       setToast({ type: 'error', text: 'Error uploading photos' });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAnalyzeWithAI = async () => {
+    if (formData.photos.length === 0) {
+      setToast({ type: 'error', text: 'Veuillez ajouter au moins une photo pour utiliser l\'analyse IA' });
+      return;
+    }
+
+    analyzeWithAI(formData.photos[0]);
   };
 
   const analyzeWithAI = async (photoUrl: string) => {
@@ -447,16 +452,6 @@ export function ArticleFormPageV2() {
                     alt="Product"
                     className="w-full h-full object-cover"
                   />
-                  <button
-                    onClick={() => analyzeWithAI(formData.photos[selectedPhotoIndex])}
-                    disabled={analyzingWithAI}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-xl px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-slate-50 transition-colors disabled:opacity-50"
-                  >
-                    <Sparkles className={`w-4 h-4 ${analyzingWithAI ? 'animate-spin' : ''}`} />
-                    <span className="text-sm font-medium">
-                      {analyzingWithAI ? 'Analyzing...' : 'AI Studio'}
-                    </span>
-                  </button>
                 </>
               ) : (
                 <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
@@ -574,6 +569,24 @@ export function ArticleFormPageV2() {
                     </div>
                   )}
                 </div>
+                <button
+                  type="button"
+                  onClick={handleAnalyzeWithAI}
+                  disabled={analyzingWithAI}
+                  className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-medium rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {analyzingWithAI ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Analyse et Extraction des données en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Analyser l'article
+                    </>
+                  )}
+                </button>
               </div>
             )}
           </div>
