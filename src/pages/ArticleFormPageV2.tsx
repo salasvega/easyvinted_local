@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { VINTED_CATEGORIES } from '../constants/categories';
 import { COLORS, MATERIALS } from '../constants/articleAttributes';
-import { analyzeProductImage, ProductData } from '../lib/openaiService';
+import { analyzeProductImage } from '../lib/openaiService';
 
 const CONDITION_LABELS: Record<Condition, string> = {
   new_with_tag: 'New with tag',
@@ -38,6 +38,9 @@ export function ArticleFormPageV2() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [familyMembers, setFamilyMembers] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [userProfile, setUserProfile] = useState<{
+    writing_style: string | null;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -61,11 +64,31 @@ export function ArticleFormPageV2() {
   });
 
   useEffect(() => {
+    loadUserProfile();
     loadFamilyMembers();
     if (id) {
       fetchArticle();
     }
   }, [id, user]);
+
+  const loadUserProfile = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('writing_style')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) {
+        setUserProfile({
+          writing_style: data.writing_style || null,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
 
   const loadFamilyMembers = async () => {
     if (!user) return;
@@ -171,18 +194,43 @@ export function ArticleFormPageV2() {
 
     try {
       setAnalyzingWithAI(true);
-      const result = await analyzeProductImage(photoUrl);
 
-      setFormData((prev) => ({
-        ...prev,
-        title: result.title || prev.title,
-        description: result.description || prev.description,
-        brand: result.brand || prev.brand,
-        color: result.color || prev.color,
-        material: result.material || prev.material,
-      }));
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
 
-      setToast({ type: 'success', text: 'AI analysis completed!' });
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.readAsDataURL(blob);
+      });
+
+      const mimeType = blob.type;
+      const writingStyle = userProfile?.writing_style || undefined;
+
+      const products = await analyzeProductImage(base64, mimeType, writingStyle);
+
+      if (products && products.length > 0) {
+        const product = products[0];
+
+        const priceMatch = product.priceEstimate?.match(/\d+/);
+        const estimatedPrice = priceMatch ? priceMatch[0] : '';
+
+        setFormData((prev) => ({
+          ...prev,
+          title: product.title || prev.title,
+          description: product.description || prev.description,
+          brand: product.brand || prev.brand,
+          color: product.color || prev.color,
+          material: product.material || prev.material,
+          size: product.size || prev.size,
+          price: estimatedPrice || prev.price,
+        }));
+
+        setToast({ type: 'success', text: 'AI analysis completed!' });
+      }
     } catch (error) {
       console.error('Error analyzing with AI:', error);
       setToast({ type: 'error', text: 'AI analysis failed' });
