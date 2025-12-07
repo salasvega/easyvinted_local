@@ -187,13 +187,27 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const handleMouseUp = () => setIsDragging(false);
   const handleMouseLeave = () => setIsDragging(false);
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = currentImage;
-    link.download = `edited-image-${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const response = await fetch(currentImage);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `edited-image-${Date.now()}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      alert('Erreur lors du téléchargement de l\'image');
+    }
   };
 
 
@@ -213,6 +227,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 bg-slate-100 rounded-lg border border-slate-200 p-1">
               <button
+                type="button"
                 onClick={handleUndo}
                 disabled={!canUndo}
                 className={`p-1.5 rounded-md transition-all ${canUndo ? 'text-slate-700 hover:bg-white' : 'text-slate-300 cursor-not-allowed'}`}
@@ -222,6 +237,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
               <div className="w-px h-4 bg-slate-300 mx-0.5"></div>
               <button
+                type="button"
                 onClick={handleRedo}
                 disabled={!canRedo}
                 className={`p-1.5 rounded-md transition-all ${canRedo ? 'text-slate-700 hover:bg-white' : 'text-slate-300 cursor-not-allowed'}`}
@@ -231,6 +247,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
             </div>
             <button
+              type="button"
               onClick={handleDownload}
               className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all transform hover:scale-105 active:scale-95"
               title="Télécharger l'image"
@@ -238,6 +255,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               <Download className="w-5 h-5" />
             </button>
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
             >
@@ -291,6 +309,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
 
             <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
               <button
+                type="button"
                 onClick={handleZoomIn}
                 disabled={zoom >= 5}
                 className="p-2.5 bg-white/90 backdrop-blur-md text-slate-700 rounded-full hover:bg-white hover:text-blue-600 shadow-lg border border-slate-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -299,6 +318,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
                 <ZoomIn size={18} />
               </button>
               <button
+                type="button"
                 onClick={handleZoomOut}
                 disabled={zoom <= 1}
                 className="p-2.5 bg-white/90 backdrop-blur-md text-slate-700 rounded-full hover:bg-white hover:text-blue-600 shadow-lg border border-slate-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -308,6 +328,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
               {zoom > 1 && (
                 <button
+                  type="button"
                   onClick={handleResetZoom}
                   className="p-2.5 bg-blue-600/90 backdrop-blur-md text-white rounded-full hover:bg-blue-700 shadow-lg border border-blue-500/50 transition-all active:scale-95"
                   title="Réinitialiser la vue"
@@ -339,6 +360,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               <button
+                type="button"
                 onClick={() => handleEdit(SMART_BACKGROUND_PROMPT)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
@@ -350,6 +372,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
 
               <button
+                type="button"
                 onClick={() => handleEdit(ACTION_PROMPTS.PLACE)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
@@ -361,6 +384,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
 
               <button
+                type="button"
                 onClick={() => handleEdit(ACTION_PROMPTS.TRY_ON)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
@@ -372,6 +396,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
 
               <button
+                type="button"
                 onClick={() => handleEdit(ACTION_PROMPTS.FOLD)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
@@ -407,6 +432,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
           <div className="flex gap-3">
             {hasEdited && (
               <button
+                type="button"
                 onClick={handleReset}
                 disabled={processing}
                 className="px-4 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 hover:text-red-600 hover:border-red-300 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -416,6 +442,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
             )}
             <button
+              type="button"
               onClick={handleEdit}
               disabled={processing || !instruction.trim()}
               className="flex-1 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -433,6 +460,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               )}
             </button>
             <button
+              type="button"
               onClick={handleFinish}
               disabled={processing}
               className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
