@@ -670,7 +670,15 @@ export function ArticleFormPageV2() {
           {/* Right Column - Form */}
           <div className="bg-white rounded-3xl border border-slate-200 p-8">
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">Item Details</h1>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-bold text-slate-900">Item Details</h1>
+                <button
+                  onClick={() => navigate('/dashboard-v2')}
+                  className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               <p className="text-sm text-slate-500">Review the AI-generated information</p>
             </div>
 
@@ -947,13 +955,6 @@ export function ArticleFormPageV2() {
               >
                 <Save className="w-4 h-4" />
                 Sauvegarder
-              </button>
-
-              <button
-                onClick={() => navigate('/dashboard-v2')}
-                className="px-6 py-3 text-slate-600 hover:text-slate-900 font-medium transition-colors"
-              >
-                Cancel
               </button>
             </div>
           </div>
