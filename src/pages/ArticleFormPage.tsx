@@ -10,7 +10,6 @@ import {
   Edit,
   Eye,
   Tag,
-  Sparkles,
 } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
@@ -1215,56 +1214,6 @@ export function ArticleFormPage() {
                   articleId={id}
                 />
               </Card>
-
-              {aiAnalysisResult && (
-                <SoftCard>
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm flex-shrink-0">
-                      <Sparkles className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">
-                        Analyse IA terminée
-                      </h3>
-                      <div className="bg-white rounded-lg p-3 border border-blue-100 space-y-2 text-sm">
-                        {aiAnalysisResult.title && (
-                          <p><span className="font-semibold">Titre:</span> {aiAnalysisResult.title}</p>
-                        )}
-                        {aiAnalysisResult.brand && (
-                          <p><span className="font-semibold">Marque:</span> {aiAnalysisResult.brand}</p>
-                        )}
-                        {aiAnalysisResult.size && (
-                          <p><span className="font-semibold">Taille:</span> {aiAnalysisResult.size}</p>
-                        )}
-                        {aiAnalysisResult.color && (
-                          <p><span className="font-semibold">Couleur:</span> {aiAnalysisResult.color}</p>
-                        )}
-                        {aiAnalysisResult.material && (
-                          <p><span className="font-semibold">Matière:</span> {aiAnalysisResult.material}</p>
-                        )}
-                        {aiAnalysisResult.condition && (
-                          <p><span className="font-semibold">État:</span> {aiAnalysisResult.condition}</p>
-                        )}
-                        {aiAnalysisResult.gender && (
-                          <p><span className="font-semibold">Public:</span> {aiAnalysisResult.gender}</p>
-                        )}
-                        {aiAnalysisResult.season && (
-                          <p><span className="font-semibold">Saison:</span> {aiAnalysisResult.season}</p>
-                        )}
-                        {aiAnalysisResult.category && (
-                          <p><span className="font-semibold">Catégorie détectée:</span> {aiAnalysisResult.category}</p>
-                        )}
-                        {aiAnalysisResult.priceEstimate && (
-                          <p><span className="font-semibold">Prix estimé:</span> {aiAnalysisResult.priceEstimate}</p>
-                        )}
-                        {aiAnalysisResult.description && (
-                          <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-blue-100">{aiAnalysisResult.description.substring(0, 200)}...</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </SoftCard>
-              )}
 
               <Card>
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">
