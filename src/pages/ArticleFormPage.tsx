@@ -1139,29 +1139,7 @@ export function ArticleFormPage() {
               )}
 
               <Card>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-slate-900">Photos</h2>
-                  {formData.photos.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleAnalyzeWithAI}
-                      disabled={analyzingWithAI}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {analyzingWithAI ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span>Analyse en cours...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          <span>Analyser avec IA</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
+                <h2 className="text-sm font-semibold text-slate-900 mb-3">Photos</h2>
                 <PhotoUpload
                   photos={formData.photos}
                   onPhotosChange={(photos) => setFormData({ ...formData, photos })}
