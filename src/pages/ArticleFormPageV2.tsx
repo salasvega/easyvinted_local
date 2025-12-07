@@ -468,44 +468,6 @@ export function ArticleFormPageV2() {
               )}
             </div>
 
-            {/* Thumbnails */}
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {formData.photos.map((photo, index) => (
-                <div
-                  key={index}
-                  className={`relative flex-shrink-0 w-20 h-20 rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
-                    selectedPhotoIndex === index
-                      ? 'border-emerald-600 ring-2 ring-emerald-100'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                  onClick={() => setSelectedPhotoIndex(index)}
-                >
-                  <img src={photo} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removePhoto(index);
-                    }}
-                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                  >
-                    <X className="w-3 h-3 text-white" />
-                  </button>
-                </div>
-              ))}
-              {formData.photos.length > 0 && (
-                <label className="flex-shrink-0 w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-colors">
-                  <Plus className="w-6 h-6 text-slate-400" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-
             {/* Photo Reorganization Section */}
             {formData.photos.length > 0 && (
               <div className="bg-white rounded-3xl border border-slate-200 p-4">
