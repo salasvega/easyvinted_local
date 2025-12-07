@@ -529,7 +529,7 @@ export function PreviewPage() {
             </div>
 
             <div className="space-y-6">
-              {/* Status Section */}
+              {/* 1. Status Section */}
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                 <div className="flex items-center gap-3 mb-3">
                   <Package className="w-10 h-10 text-slate-900 bg-white rounded-full p-2 border border-slate-200" />
@@ -555,35 +555,7 @@ export function PreviewPage() {
                 </p>
               </div>
 
-              {/* Reference & Seller */}
-              {(article.reference_number || sellerName) && (
-                <div className="space-y-3">
-                  {article.reference_number && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                        Numéro de référence
-                      </label>
-                      <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                        <span className="text-sm font-mono font-medium text-slate-900">
-                          {article.reference_number}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {sellerName && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                        Vendeur
-                      </label>
-                      <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                        <span className="text-sm font-medium text-slate-900">{sellerName}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Title */}
+              {/* 2. Title */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   Titre
@@ -593,31 +565,7 @@ export function PreviewPage() {
                 </div>
               </div>
 
-              {/* Brand & Price */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Marque
-                  </label>
-                  <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                    <span className="text-sm font-medium text-slate-900">
-                      {article.brand || 'Non spécifiée'}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Prix (€)
-                  </label>
-                  <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                    <span className="text-sm font-bold text-emerald-600">
-                      {article.price.toFixed(2)} €
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
+              {/* 3. Description */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   Description
@@ -629,7 +577,31 @@ export function PreviewPage() {
                 </div>
               </div>
 
-              {/* Package Label */}
+              {/* 4. Marque */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                  Marque
+                </label>
+                <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-sm font-medium text-slate-900">
+                    {article.brand || 'Non spécifiée'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 5. Prix */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                  Prix (€)
+                </label>
+                <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                  <span className="text-sm font-bold text-emerald-600">
+                    {article.price.toFixed(2)} €
+                  </span>
+                </div>
+              </div>
+
+              {/* 6. Package Label */}
               {article.reference_number && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
@@ -652,7 +624,19 @@ export function PreviewPage() {
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* 7. Seller */}
+              {sellerName && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Vendeur
+                  </label>
+                  <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span className="text-sm font-medium text-slate-900">{sellerName}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 8. Action Buttons */}
               <div className="grid grid-cols-3 gap-3 pt-4">
                 <button
                   onClick={() => setDeleteModalOpen(true)}
