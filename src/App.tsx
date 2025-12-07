@@ -6,6 +6,7 @@ import { NotificationBanner } from './components/NotificationBanner';
 import { DashboardPage } from './pages/DashboardPage';
 import { DashboardPageV2 } from './pages/DashboardPageV2';
 import { ArticleFormPage } from './pages/ArticleFormPage';
+import { ArticleFormPageV2 } from './pages/ArticleFormPageV2';
 import { PreviewPage } from './pages/PreviewPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -45,6 +46,8 @@ function App() {
 
                     <Route path="/articles/new" element={<ArticleFormPage />} />
                     <Route path="/articles/:id/edit" element={<ArticleFormPage />} />
+                    <Route path="/articles/new-v2" element={<ArticleFormPageV2 />} />
+                    <Route path="/articles/:id/edit-v2" element={<ArticleFormPageV2 />} />
                     <Route path="/articles/:id/preview" element={<PreviewPage />} />
                     <Route path="/articles/:id/structure" element={<StructureFormPage />} />
                     <Route path="/lots" element={<LotsPage />} />

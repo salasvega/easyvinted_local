@@ -145,7 +145,7 @@ export function DashboardPageV2() {
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold text-slate-900">My Stock</h1>
             <button
-              onClick={() => navigate('/articles/new')}
+              onClick={() => navigate('/articles/new-v2')}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-all shadow-sm hover:shadow-md"
             >
               <Plus className="w-5 h-5" />
@@ -229,7 +229,7 @@ export function DashboardPageV2() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/articles/${article.id}/edit`);
+                        navigate(`/articles/${article.id}/edit-v2`);
                       }}
                       className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
                       title="Edit"
