@@ -1,6 +1,6 @@
-import { useState, useEffect, DragEvent as ReactDragEvent } from 'react';
+import { useState, useEffect, DragEvent as ReactDragEvent, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical } from 'lucide-react';
+import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical, Image as ImageIcon } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -45,6 +45,7 @@ export function ArticleFormPageV2() {
   const [userProfile, setUserProfile] = useState<{
     writing_style: string | null;
   } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -555,6 +556,23 @@ export function ArticleFormPageV2() {
                       )}
                     </div>
                   ))}
+                  {formData.photos.length < 8 && (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="aspect-square border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-colors"
+                    >
+                      <ImageIcon className="w-8 h-8 text-slate-400 mb-2" />
+                      <p className="text-xs text-slate-500 font-medium">Ajouter</p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
