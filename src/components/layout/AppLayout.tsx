@@ -112,17 +112,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                   Stock V2
                 </Link>
                 <Link
-                  to="/articles/new-v2"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/articles/new-v2') || location.pathname.includes('/edit-v2')
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Package className="w-4 h-4" />
-                  Form V2
-                </Link>
-                <Link
                   to="/lots"
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/lots')
@@ -274,21 +263,6 @@ export function AppLayout({ children }: AppLayoutProps) {
               Stock V2
             </Link>
             <Link
-              to="/articles/new-v2"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
-                mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
-              } ${
-                isActive('/articles/new-v2') || location.pathname.includes('/edit-v2')
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-              style={{ transitionDelay: mobileMenuOpen ? '70ms' : '0ms' }}
-            >
-              <Package className="w-5 h-5" />
-              Form V2
-            </Link>
-            <Link
               to="/lots"
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
@@ -298,7 +272,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '75ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '70ms' : '0ms' }}
             >
               <Boxes className="w-5 h-5" />
               Mes lots
@@ -313,7 +287,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '100ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '80ms' : '0ms' }}
             >
               <ShoppingBag className="w-5 h-5" />
               Mes Ventes
@@ -328,7 +302,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '125ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '100ms' : '0ms' }}
             >
               <Calendar className="w-5 h-5" />
               Planificateur
@@ -343,7 +317,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '150ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '125ms' : '0ms' }}
             >
               <BarChart3 className="w-5 h-5" />
               Statistiques
