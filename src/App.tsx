@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 import { NotificationBanner } from './components/NotificationBanner';
 import { DashboardPage } from './pages/DashboardPage';
+import { DashboardPageV2 } from './pages/DashboardPageV2';
 import { ArticleFormPage } from './pages/ArticleFormPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -40,6 +41,7 @@ function App() {
 
                     {/* Mon stock déplacé sur /stock */}
                     <Route path="/stock" element={<DashboardPage />} />
+                    <Route path="/dashboard-v2" element={<DashboardPageV2 />} />
 
                     <Route path="/articles/new" element={<ArticleFormPage />} />
                     <Route path="/articles/:id/edit" element={<ArticleFormPage />} />

@@ -101,6 +101,17 @@ export function AppLayout({ children }: AppLayoutProps) {
                   Mes articles
                 </Link>
                 <Link
+                  to="/dashboard-v2"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/dashboard-v2')
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Package className="w-4 h-4" />
+                  Stock V2
+                </Link>
+                <Link
                   to="/lots"
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/lots')
@@ -235,6 +246,21 @@ export function AppLayout({ children }: AppLayoutProps) {
             >
               <Package className="w-5 h-5" />
               Mes articles
+            </Link>
+            <Link
+              to="/dashboard-v2"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
+                mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+              } ${
+                isActive('/dashboard-v2')
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+              style={{ transitionDelay: mobileMenuOpen ? '60ms' : '0ms' }}
+            >
+              <Package className="w-5 h-5" />
+              Stock V2
             </Link>
             <Link
               to="/lots"
