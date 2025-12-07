@@ -1,7 +1,8 @@
 import { useState, useRef, ChangeEvent, DragEvent as ReactDragEvent } from 'react';
-import { Upload, X, Image as ImageIcon, GripVertical, Sparkles } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, GripVertical, Sparkles, Wand2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Modal } from './ui/Modal';
+import { ImageEditor } from './ImageEditor';
 
 interface PhotoUploadProps {
   photos: string[];
@@ -21,6 +22,7 @@ export function PhotoUpload({ photos, onPhotosChange, maxPhotos = 8, onAnalyzeCl
   const [modalState, setModalState] = useState<{ isOpen: boolean; title: string; message: string; type: 'info' | 'error' | 'warning' }>(
     { isOpen: false, title: '', message: '', type: 'info' }
   );
+  const [editingPhotoIndex, setEditingPhotoIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const compressImage = async (file: File): Promise<File> => {
@@ -258,6 +260,56 @@ export function PhotoUpload({ photos, onPhotosChange, maxPhotos = 8, onAnalyzeCl
     onPhotosChange(newPhotos);
   };
 
+  const handleImageEdited = async (newImageDataUrl: string) => {
+    if (editingPhotoIndex === null) return;
+
+    try {
+      setUploading(true);
+
+      const response = await fetch(newImageDataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'edited-image.jpg', { type: 'image/jpeg' });
+
+      const uploadedUrl = await uploadPhoto(file);
+
+      if (uploadedUrl) {
+        const oldPhotoUrl = photos[editingPhotoIndex];
+
+        try {
+          const urlParts = oldPhotoUrl.split('/article-photos/');
+          if (urlParts.length === 2) {
+            const filePath = urlParts[1];
+            await supabase.storage.from('article-photos').remove([filePath]);
+          }
+        } catch (error) {
+          console.error('Error removing old photo:', error);
+        }
+
+        const newPhotos = [...photos];
+        newPhotos[editingPhotoIndex] = uploadedUrl;
+        onPhotosChange(newPhotos);
+
+        setModalState({
+          isOpen: true,
+          title: 'Image éditée',
+          message: 'L\'image a été éditée avec succès',
+          type: 'info'
+        });
+      }
+    } catch (error) {
+      console.error('Error replacing edited photo:', error);
+      setModalState({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors de l\'enregistrement de l\'image éditée',
+        type: 'error'
+      });
+    } finally {
+      setUploading(false);
+      setEditingPhotoIndex(null);
+    }
+  };
+
   return (
     <>
       <Modal
@@ -267,6 +319,15 @@ export function PhotoUpload({ photos, onPhotosChange, maxPhotos = 8, onAnalyzeCl
         message={modalState.message}
         type={modalState.type}
       />
+
+      {editingPhotoIndex !== null && (
+        <ImageEditor
+          imageUrl={photos[editingPhotoIndex]}
+          onImageEdited={handleImageEdited}
+          onClose={() => setEditingPhotoIndex(null)}
+        />
+      )}
+
       <div className="space-y-4">
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
@@ -329,14 +390,27 @@ export function PhotoUpload({ photos, onPhotosChange, maxPhotos = 8, onAnalyzeCl
                 <div className="absolute top-2 left-2 p-1 bg-gray-900/70 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
                   <GripVertical className="w-4 h-4" />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removePhoto(index)}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                  title="Supprimer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingPhotoIndex(index);
+                    }}
+                    className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                    title="Éditer avec IA"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(index)}
+                    className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    title="Supprimer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
                 {index === 0 && (
                   <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500 text-white text-xs rounded-md font-medium">
                     Photo principale
