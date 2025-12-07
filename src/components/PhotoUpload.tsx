@@ -288,13 +288,6 @@ export function PhotoUpload({ photos, onPhotosChange, maxPhotos = 8, onAnalyzeCl
         const newPhotos = [...photos];
         newPhotos[editingPhotoIndex] = uploadedUrl;
         onPhotosChange(newPhotos);
-
-        setModalState({
-          isOpen: true,
-          title: 'Image éditée',
-          message: 'L\'image a été éditée avec succès',
-          type: 'info'
-        });
       }
     } catch (error) {
       console.error('Error replacing edited photo:', error);
