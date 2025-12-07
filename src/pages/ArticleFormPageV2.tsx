@@ -670,25 +670,7 @@ export function ArticleFormPageV2() {
           {/* Right Column - Form */}
           <div className="bg-white rounded-3xl border border-slate-200 p-8">
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-2xl font-bold text-slate-900">Item Details</h1>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => navigate('/dashboard-v2')}
-                    className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    Save
-                  </button>
-                </div>
-              </div>
+              <h1 className="text-2xl font-bold text-slate-900 mb-2">Item Details</h1>
               <p className="text-sm text-slate-500">Review the AI-generated information</p>
             </div>
 
@@ -965,6 +947,13 @@ export function ArticleFormPageV2() {
               >
                 <Save className="w-4 h-4" />
                 Sauvegarder
+              </button>
+
+              <button
+                onClick={() => navigate('/dashboard-v2')}
+                className="px-6 py-3 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+              >
+                Cancel
               </button>
             </div>
           </div>
