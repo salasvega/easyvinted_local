@@ -406,24 +406,31 @@ export function ArticleFormPage() {
 
       if (formData.seller_id) {
         const selectedSeller = familyMembers.find((m) => m.id === formData.seller_id);
+        console.log('Selected seller:', selectedSeller);
         if (selectedSeller?.writing_style) {
           writingStyle = selectedSeller.writing_style;
+          console.log('Using seller writing_style:', writingStyle);
         } else if (selectedSeller?.persona_id) {
           const persona = PERSONAS.find((p) => p.id === selectedSeller.persona_id);
           if (persona) {
             writingStyle = persona.writingStyle;
+            console.log('Using seller persona writing style:', writingStyle);
           }
         }
       } else {
         if (userProfile?.writing_style) {
           writingStyle = userProfile.writing_style;
+          console.log('Using user profile writing_style:', writingStyle);
         } else if (userProfile?.persona_id) {
           const persona = PERSONAS.find((p) => p.id === userProfile.persona_id);
           if (persona) {
             writingStyle = persona.writingStyle;
+            console.log('Using user profile persona writing style:', writingStyle);
           }
         }
       }
+
+      console.log('Final writing style to be used:', writingStyle);
 
       const photoUrl = formData.photos[0];
 

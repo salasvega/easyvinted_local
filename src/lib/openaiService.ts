@@ -43,13 +43,22 @@ export const analyzeProductImage = async (
   mimeType: string,
   writingStyle?: string
 ): Promise<ProductData[]> => {
+  console.log('=== OpenAI Analysis ===');
+  console.log('Writing style received:', writingStyle);
+
   const writingStyleInstruction = writingStyle
     ? `\n    ===== CRITICAL WRITING STYLE REQUIREMENT =====
-    You MUST write the description in the following specific style. This is MANDATORY:
+    You MUST write the description in the following specific style. This is MANDATORY and NON-NEGOTIABLE:
     "${writingStyle}"
 
-    Apply this style EXACTLY to the description. Match the tone, vocabulary, and personality of this writing style.
-    DO NOT mention or refer to the writing style in your response - just write naturally in that style.
+    IMPORTANT INSTRUCTIONS:
+    - If this style asks for a "liste à points" (bullet point list), you MUST format the description as a bullet point list using the bullet character (•)
+    - If this style specifies "5 à 7 éléments", create exactly that number of bullet points
+    - If the style says "Pas de bla bla" (no fluff), be concise and factual
+    - If the style uses a specific tone (décontracté, professionnel, etc.), match it EXACTLY
+    - Apply the EXACT format, tone, vocabulary, and personality requested in this writing style
+    - DO NOT mention or refer to the writing style itself in your response - just apply it naturally
+    - The description field must reflect this writing style in both format AND content
     ================================================\n    `
     : '';
 
@@ -66,7 +75,7 @@ ${writingStyleInstruction}
 
     1. BASIC INFO:
        - title: A catchy, descriptive title in French (e.g., "Robe d'été fleurie Zara")
-       - description: Detailed description in French (2-3 sentences) highlighting condition, style, and key features${writingStyle ? '. CRITICAL: You MUST write this description using the writing style specified above. Apply the exact tone, vocabulary and personality from that style.' : ''}
+       - description: ${writingStyle ? 'CRITICAL: Write the description using the EXACT writing style specified above. If the style requires bullet points, use bullet points (•). If it requires a specific format or tone, follow it EXACTLY. The format and tone are dictated by the writing style above.' : 'Detailed description in French (2-3 sentences) highlighting condition, style, and key features'}
        - features: 5 key features or selling points in French
 
     2. BRAND & SIZE:
