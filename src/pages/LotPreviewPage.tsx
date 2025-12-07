@@ -520,6 +520,50 @@ export default function LotPreviewPage() {
                 </p>
               </div>
 
+              {/* Articles List */}
+              <div className="border-t border-slate-100 pt-6">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                  Articles inclus dans ce lot
+                </h3>
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {articles.map((article) => (
+                    <button
+                      key={article.id}
+                      onClick={() => navigate(`/articles/${article.id}/preview`)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80 hover:border-emerald-300 hover:bg-emerald-50/40 transition-colors text-left"
+                    >
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                        {article.photos?.[0] ? (
+                          <img
+                            src={article.photos[0]}
+                            alt={article.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="w-6 h-6 text-slate-300" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {article.title}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {article.brand || 'Sans marque'}
+                          {article.size && ` • ${article.size}`}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {article.price.toFixed(0)} €
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Package Label */}
               {lot.reference_number && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
@@ -614,50 +658,6 @@ export default function LotPreviewPage() {
                     </button>
                   </>
                 )}
-              </div>
-
-              {/* Articles List */}
-              <div className="border-t border-slate-100 pt-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                  Articles inclus dans ce lot
-                </h3>
-                <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {articles.map((article) => (
-                    <button
-                      key={article.id}
-                      onClick={() => navigate(`/articles/${article.id}/preview`)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80 hover:border-emerald-300 hover:bg-emerald-50/40 transition-colors text-left"
-                    >
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                        {article.photos?.[0] ? (
-                          <img
-                            src={article.photos[0]}
-                            alt={article.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-6 h-6 text-slate-300" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">
-                          {article.title}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {article.brand || 'Sans marque'}
-                          {article.size && ` • ${article.size}`}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {article.price.toFixed(0)} €
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
