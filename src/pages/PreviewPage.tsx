@@ -663,7 +663,7 @@ export function PreviewPage() {
                 </button>
 
                 <button
-                  onClick={() => navigate(`/articles/${id}/edit`)}
+                  onClick={() => navigate(`/articles/${id}/edit-v2`)}
                   className="px-4 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
                 >
                   <Edit className="w-4 h-4" />
