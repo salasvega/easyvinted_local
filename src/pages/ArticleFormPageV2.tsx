@@ -1,6 +1,6 @@
 import { useState, useEffect, DragEvent as ReactDragEvent, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical, Image as ImageIcon, Wand2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -474,6 +474,22 @@ export function ArticleFormPageV2() {
     }
   };
 
+  const handlePreviousPhoto = () => {
+    setSelectedPhotoIndex((prev) =>
+      prev === 0 ? formData.photos.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextPhoto = () => {
+    setSelectedPhotoIndex((prev) =>
+      prev === formData.photos.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const handleThumbnailClick = (index: number) => {
+    setSelectedPhotoIndex(index);
+  };
+
   const selectedCategory = VINTED_CATEGORIES.find((c) => c.name === formData.main_category);
   const selectedSubcategory = selectedCategory?.subcategories.find((s) => s.name === formData.subcategory);
 
@@ -508,6 +524,27 @@ export function ArticleFormPageV2() {
                     <Wand2 className="w-5 h-5" />
                     <span className="font-semibold text-sm">Éditer avec IA</span>
                   </button>
+                  {formData.photos.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handlePreviousPhoto}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-slate-900" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNextPhoto}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+                      >
+                        <ChevronRight className="w-5 h-5 text-slate-900" />
+                      </button>
+                      <div className="absolute bottom-4 right-4 bg-slate-900/80 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
+                        {selectedPhotoIndex + 1} / {formData.photos.length}
+                      </div>
+                    </>
+                  )}
                 </>
               ) : (
                 <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
@@ -540,8 +577,9 @@ export function ArticleFormPageV2() {
                       onDragLeave={handlePhotoDragLeave}
                       onDrop={(e) => handlePhotoDrop(e, index)}
                       onDragEnd={handlePhotoDragEnd}
-                      className={`relative group aspect-square cursor-move transition-all ${
-                        draggedIndex === index ? 'opacity-50 scale-95' : ''
+                      onClick={() => handleThumbnailClick(index)}
+                      className={`relative group aspect-square transition-all ${
+                        draggedIndex === index ? 'opacity-50 scale-95 cursor-grabbing' : 'cursor-grab hover:cursor-pointer'
                       } ${
                         dragOverIndex === index ? 'ring-2 ring-emerald-500' : ''
                       }`}
@@ -549,7 +587,11 @@ export function ArticleFormPageV2() {
                       <img
                         src={photo}
                         alt={`Photo ${index + 1}`}
-                        className="w-full h-full object-cover rounded-xl border border-slate-200"
+                        className={`w-full h-full object-cover rounded-xl border-2 transition-all ${
+                          selectedPhotoIndex === index
+                            ? 'border-emerald-600 ring-2 ring-emerald-100'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
                       />
                       <div className="absolute top-2 left-2 flex gap-1">
                         <div className="p-1 bg-slate-900/70 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
