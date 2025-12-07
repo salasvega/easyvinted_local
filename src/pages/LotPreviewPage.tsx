@@ -572,80 +572,82 @@ export default function LotPreviewPage() {
                   </div>
                 </div>
               )}
-
-              {/* 8. Action Buttons */}
-              <div className="grid grid-cols-3 gap-3 pt-4">
-                <button
-                  onClick={() => setDeleteModalOpen(true)}
-                  className="px-4 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Supprimer
-                </button>
-
-                {lot.status !== 'sold' && lot.status !== 'published' && (
-                  <button
-                    onClick={() => navigate(`/lots?edit=${id}`)}
-                    className="px-4 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Modifier
-                  </button>
-                )}
-
-                {lot.status === 'draft' && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        const { error } = await supabase
-                          .from('lots')
-                          .update({ status: 'ready' })
-                          .eq('id', id);
-                        if (error) throw error;
-                        setToast({ type: 'success', text: 'Lot marqué comme prêt' });
-                        fetchLot();
-                      } catch (error) {
-                        console.error('Error:', error);
-                        setToast({ type: 'error', text: 'Erreur lors de la mise à jour' });
-                      }
-                    }}
-                    className="px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    Prêt
-                  </button>
-                )}
-
-                {lot.status === 'ready' && (
-                  <button
-                    onClick={() => navigate(`/lots/${id}/structure`)}
-                    className="px-4 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    Envoyer à Vinted
-                  </button>
-                )}
-
-                {(lot.status === 'published' || lot.status === 'scheduled') && (
-                  <>
-                    <button
-                      onClick={() => setScheduleModalOpen(true)}
-                      className="px-4 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Calendar className="w-4 h-4" />
-                      Programmer
-                    </button>
-                    <button
-                      onClick={() => setSoldModalOpen(true)}
-                      className="px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <DollarSign className="w-4 h-4" />
-                      Vendu
-                    </button>
-                  </>
-                )}
-              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-6">
+          <div className="flex flex-wrap justify-center gap-3">
+            <button
+              onClick={() => setDeleteModalOpen(true)}
+              className="px-6 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Supprimer
+            </button>
+
+            {lot.status !== 'sold' && lot.status !== 'published' && (
+              <button
+                onClick={() => navigate(`/lots?edit=${id}`)}
+                className="px-6 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center gap-2"
+              >
+                <Edit className="w-4 h-4" />
+                Modifier
+              </button>
+            )}
+
+            {lot.status === 'draft' && (
+              <button
+                onClick={async () => {
+                  try {
+                    const { error } = await supabase
+                      .from('lots')
+                      .update({ status: 'ready' })
+                      .eq('id', id);
+                    if (error) throw error;
+                    setToast({ type: 'success', text: 'Lot marqué comme prêt' });
+                    fetchLot();
+                  } catch (error) {
+                    console.error('Error:', error);
+                    setToast({ type: 'error', text: 'Erreur lors de la mise à jour' });
+                  }
+                }}
+                className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Prêt
+              </button>
+            )}
+
+            {lot.status === 'ready' && (
+              <button
+                onClick={() => navigate(`/lots/${id}/structure`)}
+                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Envoyer à Vinted
+              </button>
+            )}
+
+            {(lot.status === 'published' || lot.status === 'scheduled') && (
+              <>
+                <button
+                  onClick={() => setScheduleModalOpen(true)}
+                  className="px-6 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center gap-2"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Programmer
+                </button>
+                <button
+                  onClick={() => setSoldModalOpen(true)}
+                  className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors flex items-center gap-2"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  Vendu
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
