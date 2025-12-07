@@ -551,12 +551,28 @@ export function ArticleFormPageV2() {
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover rounded-xl border border-slate-200"
                       />
-                      <div className="absolute top-2 left-2 p-1 bg-slate-900/70 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                        <GripVertical className="w-4 h-4" />
+                      <div className="absolute top-2 left-2 flex gap-1">
+                        <div className="p-1 bg-slate-900/70 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                          <GripVertical className="w-4 h-4" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditImage(index);
+                          }}
+                          className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Éditer avec IA"
+                        >
+                          <Wand2 className="w-4 h-4" />
+                        </button>
                       </div>
                       <button
                         type="button"
-                        onClick={() => removePhoto(index)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removePhoto(index);
+                        }}
                         className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Supprimer"
                       >
