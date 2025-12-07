@@ -44,7 +44,13 @@ export const analyzeProductImage = async (
   writingStyle?: string
 ): Promise<ProductData[]> => {
   const writingStyleInstruction = writingStyle
-    ? `\n    WRITING STYLE: When generating the title and description, use this specific writing style:\n    ${writingStyle}\n    `
+    ? `\n    ===== CRITICAL WRITING STYLE REQUIREMENT =====
+    You MUST write the description in the following specific style. This is MANDATORY:
+    "${writingStyle}"
+
+    Apply this style EXACTLY to the description. Match the tone, vocabulary, and personality of this writing style.
+    DO NOT mention or refer to the writing style in your response - just write naturally in that style.
+    ================================================\n    `
     : '';
 
   const prompt = `
@@ -60,7 +66,7 @@ ${writingStyleInstruction}
 
     1. BASIC INFO:
        - title: A catchy, descriptive title in French (e.g., "Robe d'été fleurie Zara")
-       - description: Detailed description in French highlighting condition, style, and key features (2-3 sentences)${writingStyle ? ' - IMPORTANT: Use the writing style provided above for the description' : ''}
+       - description: Detailed description in French (2-3 sentences) highlighting condition, style, and key features${writingStyle ? '. CRITICAL: You MUST write this description using the writing style specified above. Apply the exact tone, vocabulary and personality from that style.' : ''}
        - features: 5 key features or selling points in French
 
     2. BRAND & SIZE:
