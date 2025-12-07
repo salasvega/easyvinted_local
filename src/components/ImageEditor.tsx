@@ -319,7 +319,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               <span>IA Gemini</span>
             </div>
 
-            <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
+            <div className="hidden absolute bottom-3 right-3 z-20 flex flex-col gap-2">
               <button
                 type="button"
                 onClick={handleZoomIn}
