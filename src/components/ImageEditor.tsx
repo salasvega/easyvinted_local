@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check } from 'lucide-react';
+import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, ZoomIn, ZoomOut, Maximize2, Move } from 'lucide-react';
 import { editProductImage } from '../lib/geminiService';
 
 interface ImageEditorProps {
@@ -42,6 +42,10 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const [error, setError] = useState<string | null>(null);
   const [editHistory, setEditHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     setEditHistory([imageUrl]);
@@ -52,6 +56,11 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < editHistory.length - 1;
   const hasEdited = historyIndex > 0;
+
+  useEffect(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, [currentImage]);
 
   const handleEdit = async (customPrompt?: string) => {
     const promptToUse = customPrompt || instruction;
@@ -135,6 +144,49 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
     onClose();
   };
 
+  const handleZoomIn = () => setZoom(z => Math.min(z + 0.5, 5));
+  const handleZoomOut = () => {
+    setZoom(z => {
+      const newZoom = Math.max(z - 0.5, 1);
+      if (newZoom === 1) setPan({ x: 0, y: 0 });
+      return newZoom;
+    });
+  };
+  const handleResetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (zoom === 1 && e.deltaY > 0) return;
+
+    e.preventDefault();
+    const delta = -Math.sign(e.deltaY) * 0.25;
+
+    setZoom(prev => {
+      const newZoom = Math.min(Math.max(prev + delta, 1), 5);
+      if (newZoom === 1) setPan({ x: 0, y: 0 });
+      return newZoom;
+    });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoom > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoom > 1) {
+      e.preventDefault();
+      setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+    }
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseLeave = () => setIsDragging(false);
+
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -179,24 +231,78 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="aspect-video bg-slate-100 rounded-xl overflow-hidden relative">
-            <img
-              src={currentImage}
-              alt="Image à éditer"
-              className={`w-full h-full object-contain transition-all duration-300 ${processing ? 'opacity-50 blur-sm' : ''}`}
-            />
+          <div
+            className="aspect-video bg-slate-100 rounded-xl overflow-hidden relative select-none"
+            onWheel={handleWheel}
+          >
+            <div
+              className="absolute inset-0 flex items-center justify-center overflow-hidden"
+              style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+            >
+              <img
+                src={currentImage}
+                alt="Image à éditer"
+                draggable={false}
+                style={{
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }}
+                className={`w-full h-full object-contain origin-center ${processing ? 'opacity-50 blur-sm' : ''}`}
+              />
+            </div>
+
+            {zoom > 1 && (
+              <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full backdrop-blur-md shadow-sm border border-white/20 flex items-center gap-2 pointer-events-none transition-all duration-300 ${isDragging ? 'bg-blue-600/90 text-white shadow-blue-500/20 scale-105' : 'bg-white/80 text-slate-600 hover:bg-white'}`}>
+                <Move size={14} className={isDragging ? 'animate-pulse' : ''} />
+                <span className="text-xs font-semibold tracking-wide">{isDragging ? 'Déplacement' : 'Glisser pour déplacer'}</span>
+              </div>
+            )}
+
             {hasEdited && !processing && (
-              <div className="absolute top-3 left-3 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+              <div className="absolute top-3 left-3 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-10">
                 <Check className="w-3.5 h-3.5" />
                 <span>Éditée</span>
               </div>
             )}
-            <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+            <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-10">
               <Sparkles className="w-3.5 h-3.5" />
               <span>IA Gemini</span>
             </div>
+
+            <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
+              <button
+                onClick={handleZoomIn}
+                disabled={zoom >= 5}
+                className="p-2.5 bg-white/90 backdrop-blur-md text-slate-700 rounded-full hover:bg-white hover:text-blue-600 shadow-lg border border-slate-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Zoom avant"
+              >
+                <ZoomIn size={18} />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                disabled={zoom <= 1}
+                className="p-2.5 bg-white/90 backdrop-blur-md text-slate-700 rounded-full hover:bg-white hover:text-blue-600 shadow-lg border border-slate-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Zoom arrière"
+              >
+                <ZoomOut size={18} />
+              </button>
+              {zoom > 1 && (
+                <button
+                  onClick={handleResetZoom}
+                  className="p-2.5 bg-blue-600/90 backdrop-blur-md text-white rounded-full hover:bg-blue-700 shadow-lg border border-blue-500/50 transition-all active:scale-95"
+                  title="Réinitialiser la vue"
+                >
+                  <Maximize2 size={18} />
+                </button>
+              )}
+            </div>
+
             {processing && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center z-30">
                 <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3">
                   <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                   <span className="font-semibold text-slate-900">Édition en cours...</span>
