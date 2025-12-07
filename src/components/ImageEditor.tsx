@@ -41,8 +41,10 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleEdit = async () => {
-    if (!instruction.trim()) {
+  const handleEdit = async (customPrompt?: string) => {
+    const promptToUse = customPrompt || instruction;
+
+    if (!promptToUse.trim()) {
       setError('Veuillez entrer une instruction');
       return;
     }
@@ -65,7 +67,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
 
       const mimeType = blob.type;
 
-      const editedImageBase64 = await editProductImage(base64, mimeType, instruction);
+      const editedImageBase64 = await editProductImage(base64, mimeType, promptToUse);
 
       const editedImageDataUrl = `data:${mimeType};base64,${editedImageBase64}`;
       onImageEdited(editedImageDataUrl);
@@ -138,7 +140,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               <button
-                onClick={() => setInstruction(SMART_BACKGROUND_PROMPT)}
+                onClick={() => handleEdit(SMART_BACKGROUND_PROMPT)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
               >
@@ -149,7 +151,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
 
               <button
-                onClick={() => setInstruction(ACTION_PROMPTS.PLACE)}
+                onClick={() => handleEdit(ACTION_PROMPTS.PLACE)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
               >
@@ -160,7 +162,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
 
               <button
-                onClick={() => setInstruction(ACTION_PROMPTS.TRY_ON)}
+                onClick={() => handleEdit(ACTION_PROMPTS.TRY_ON)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
               >
@@ -171,7 +173,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
               </button>
 
               <button
-                onClick={() => setInstruction(ACTION_PROMPTS.FOLD)}
+                onClick={() => handleEdit(ACTION_PROMPTS.FOLD)}
                 disabled={processing}
                 className="flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
               >
@@ -183,9 +185,15 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
             </div>
           </div>
 
+          <div className="relative flex items-center gap-2 mb-4">
+            <div className="h-px bg-slate-200 flex-1"></div>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ou personnalisé</span>
+            <div className="h-px bg-slate-200 flex-1"></div>
+          </div>
+
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Instruction personnalisée (optionnel)
+              Instruction personnalisée
             </label>
             <textarea
               value={instruction}
