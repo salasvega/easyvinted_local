@@ -683,6 +683,29 @@ export function ArticleFormPageV2() {
             </div>
 
             <div className="space-y-6">
+              {/* Seller */}
+              {familyMembers.length > 0 && (
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Seller
+                  </label>
+                  <select
+                    value={formData.seller_id || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, seller_id: e.target.value || null })
+                    }
+                    className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
+                  >
+                    <option value="">Me</option>
+                    {familyMembers.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {/* Title */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
@@ -901,29 +924,6 @@ export function ArticleFormPageV2() {
                   ))}
                 </select>
               </div>
-
-              {/* Seller */}
-              {familyMembers.length > 0 && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Seller
-                  </label>
-                  <select
-                    value={formData.seller_id || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, seller_id: e.target.value || null })
-                    }
-                    className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
-                  >
-                    <option value="">Me</option>
-                    {familyMembers.map((member) => (
-                      <option key={member.id} value={member.id}>
-                        {member.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </div>
           </div>
         </div>

@@ -45,6 +45,7 @@ interface LotData {
   cover_photo?: string;
   photos: string[];
   status: LotStatus;
+  seller_id?: string | null;
 }
 
 export default function LotBuilder({
@@ -67,6 +68,7 @@ export default function LotBuilder({
     price: 0,
     photos: [],
     status: 'draft',
+    seller_id: null,
   });
 
   const [filters, setFilters] = useState({
@@ -76,10 +78,13 @@ export default function LotBuilder({
     size: 'all',
   });
 
+  const [familyMembers, setFamilyMembers] = useState<Array<{ id: string; name: string }>>([]);
+
   useEffect(() => {
     if (isOpen) {
       fetchArticles();
       fetchArticlesInLots();
+      fetchFamilyMembers();
       if (existingLotId) {
         loadExistingLot();
       } else {
@@ -100,9 +105,30 @@ export default function LotBuilder({
       price: 0,
       photos: [],
       status: 'draft',
+      seller_id: null,
     });
     setCurrentStep(1);
     setError('');
+  };
+
+  const fetchFamilyMembers = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('family_members')
+      .select('id, name')
+      .eq('user_id', user.id)
+      .order('name');
+
+    if (error) {
+      console.error('Error loading family members:', error);
+      return;
+    }
+
+    setFamilyMembers(data || []);
   };
 
   const loadExistingLot = async () => {
@@ -136,6 +162,7 @@ export default function LotBuilder({
         cover_photo: lotData.cover_photo,
         photos: lotData.photos || [],
         status: lotData.status || 'draft',
+        seller_id: lotData.seller_id || null,
       });
     } catch (error) {
       console.error('Error loading existing lot:', error);
@@ -355,6 +382,7 @@ export default function LotBuilder({
         photos:
           lotData.photos.length > 0 ? lotData.photos : allPhotos.slice(0, 5),
         status: lotData.status,
+        seller_id: lotData.seller_id,
       };
 
       if (referenceNumber) {
@@ -510,6 +538,32 @@ export default function LotBuilder({
             <div className="grid grid-cols-1 gap-4 sm:gap-5">
               <Card>
                 <div className="space-y-4">
+                  {/* Seller */}
+                  {familyMembers.length > 0 && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                        Vendeur
+                      </label>
+                      <select
+                        value={lotData.seller_id || ''}
+                        onChange={(e) =>
+                          setLotData({
+                            ...lotData,
+                            seller_id: e.target.value || null,
+                          })
+                        }
+                        className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        <option value="">Me</option>
+                        {familyMembers.map((member) => (
+                          <option key={member.id} value={member.id}>
+                            {member.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
                       Nom du lot <span className="text-rose-500">*</span>

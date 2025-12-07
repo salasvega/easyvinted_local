@@ -48,6 +48,7 @@ export default function LotPreviewPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [soldModalOpen, setSoldModalOpen] = useState(false);
+  const [sellerName, setSellerName] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -79,7 +80,10 @@ export default function LotPreviewPage() {
     try {
       const { data: lotData, error: lotError } = await supabase
         .from('lots')
-        .select('*')
+        .select(`
+          *,
+          family_members!lots_seller_id_fkey(name)
+        `)
         .eq('id', id)
         .single();
 
@@ -108,6 +112,11 @@ export default function LotPreviewPage() {
 
       setLot(lotData);
       setArticles(articlesList as Article[]);
+
+      if (lotData.family_members) {
+        setSellerName(lotData.family_members.name);
+      }
+
       setSelectedPhoto(
         lotData.cover_photo ||
           lotData.photos?.[0] ||
@@ -442,7 +451,17 @@ export default function LotPreviewPage() {
                 </p>
               </div>
 
-              {/* 2. Nom du lot */}
+              {/* 2. Seller */}
+              {sellerName && (
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Vendeur
+                  </label>
+                  <div className="text-sm font-medium text-slate-900">{sellerName}</div>
+                </div>
+              )}
+
+              {/* 3. Nom du lot */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   Nom du lot
@@ -452,7 +471,7 @@ export default function LotPreviewPage() {
                 </div>
               </div>
 
-              {/* 3. Description */}
+              {/* 4. Description */}
               {lot.description && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
@@ -466,7 +485,7 @@ export default function LotPreviewPage() {
                 </div>
               )}
 
-              {/* 4. Articles List */}
+              {/* 5. Articles List */}
               <div className="border-t border-slate-100 pt-6">
                 <h3 className="text-sm font-semibold text-slate-900 mb-3">
                   Articles inclus dans ce lot
@@ -510,7 +529,7 @@ export default function LotPreviewPage() {
                 </div>
               </div>
 
-              {/* 5. Articles Statistics */}
+              {/* 6. Articles Statistics */}
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -526,7 +545,7 @@ export default function LotPreviewPage() {
                 </p>
               </div>
 
-              {/* 6. Prix et Remise */}
+              {/* 7. Prix et Remise */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
@@ -550,7 +569,7 @@ export default function LotPreviewPage() {
                 </div>
               </div>
 
-              {/* 7. Package Label */}
+              {/* 8. Package Label */}
               {lot.reference_number && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex items-center justify-between mb-2">

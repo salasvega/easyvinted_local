@@ -555,7 +555,17 @@ export function PreviewPage() {
                 </p>
               </div>
 
-              {/* 2. Title */}
+              {/* 2. Seller */}
+              {sellerName && (
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Vendeur
+                  </label>
+                  <div className="text-sm font-medium text-slate-900">{sellerName}</div>
+                </div>
+              )}
+
+              {/* 3. Title */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   Titre
@@ -565,7 +575,7 @@ export function PreviewPage() {
                 </div>
               </div>
 
-              {/* 3. Description */}
+              {/* 4. Description */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   Description
@@ -577,7 +587,7 @@ export function PreviewPage() {
                 </div>
               </div>
 
-              {/* 4. Marque */}
+              {/* 5. Marque */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   Marque
@@ -589,7 +599,7 @@ export function PreviewPage() {
                 </div>
               </div>
 
-              {/* 5. Prix */}
+              {/* 6. Prix */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   Prix (€)
@@ -601,7 +611,7 @@ export function PreviewPage() {
                 </div>
               </div>
 
-              {/* 6. Package Label */}
+              {/* 7. Package Label */}
               {article.reference_number && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
@@ -620,18 +630,6 @@ export function PreviewPage() {
                       <Tag className="w-3.5 h-3.5" />
                       Générer l&apos;étiquette
                     </button>
-                  </div>
-                </div>
-              )}
-
-              {/* 7. Seller */}
-              {sellerName && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Vendeur
-                  </label>
-                  <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                    <span className="text-sm font-medium text-slate-900">{sellerName}</span>
                   </div>
                 </div>
               )}
