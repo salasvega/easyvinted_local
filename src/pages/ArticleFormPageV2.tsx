@@ -907,22 +907,36 @@ export function ArticleFormPageV2() {
                 </div>
               )}
 
-              {/* Season */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Season
-                </label>
-                <select
-                  value={formData.season}
-                  onChange={(e) => setFormData({ ...formData, season: e.target.value as Season })}
-                  className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
-                >
-                  {Object.entries(SEASON_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+              {/* Season & Suggested Period */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Season
+                  </label>
+                  <select
+                    value={formData.season}
+                    onChange={(e) => setFormData({ ...formData, season: e.target.value as Season })}
+                    className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
+                  >
+                    {Object.entries(SEASON_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Période conseillée
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.suggested_period}
+                    onChange={(e) => setFormData({ ...formData, suggested_period: e.target.value })}
+                    className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
+                    placeholder="Ex: Sept-Oct"
+                  />
+                </div>
               </div>
             </div>
           </div>

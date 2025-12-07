@@ -611,7 +611,37 @@ export function PreviewPage() {
                 </div>
               </div>
 
-              {/* 7. Package Label */}
+              {/* 7. Season & Suggested Period */}
+              {(article.season || article.suggested_period) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {article.season && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                        Season
+                      </label>
+                      <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                        <span className="text-sm font-medium text-slate-900">
+                          {article.season === 'all_seasons' ? 'All seasons' : article.season}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {article.suggested_period && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                        Période conseillée
+                      </label>
+                      <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                        <span className="text-sm font-medium text-slate-900">
+                          {article.suggested_period}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 8. Package Label */}
               {article.reference_number && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
