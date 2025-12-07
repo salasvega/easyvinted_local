@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X, Plus, Sparkles } from 'lucide-react';
+import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { VINTED_CATEGORIES } from '../constants/categories';
@@ -38,6 +39,7 @@ export function ArticleFormPageV2() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [familyMembers, setFamilyMembers] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     writing_style: string | null;
   } | null>(null);
@@ -297,6 +299,67 @@ export function ArticleFormPageV2() {
     }));
     if (selectedPhotoIndex >= formData.photos.length - 1) {
       setSelectedPhotoIndex(Math.max(0, formData.photos.length - 2));
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id || !user) return;
+
+    try {
+      if (formData.photos && formData.photos.length > 0) {
+        const filePaths = formData.photos
+          .map((photoUrl: string) => {
+            const urlParts = photoUrl.split('/article-photos/');
+            return urlParts.length === 2 ? urlParts[1] : null;
+          })
+          .filter((path: string | null): path is string => path !== null);
+
+        if (filePaths.length > 0) {
+          const { error: storageError } = await supabase.storage
+            .from('article-photos')
+            .remove(filePaths);
+
+          if (storageError) {
+            console.error('Error deleting photos from storage:', storageError);
+          }
+        }
+      }
+
+      try {
+        const folderPath = `${user.id}/${id}`;
+        const { data: folderContents } = await supabase.storage
+          .from('article-photos')
+          .list(folderPath);
+
+        if (folderContents && folderContents.length > 0) {
+          const filesToDelete = folderContents.map(
+            (file) => `${folderPath}/${file.name}`
+          );
+          await supabase.storage.from('article-photos').remove(filesToDelete);
+        }
+      } catch (folderError) {
+        console.log('No folder to clean up or error cleaning folder:', folderError);
+      }
+
+      const { error } = await supabase.from('articles').delete().eq('id', id);
+
+      if (error) throw error;
+
+      setToast({
+        type: 'success',
+        text: 'Article deleted successfully',
+      });
+
+      setDeleteModalOpen(false);
+      setTimeout(() => {
+        navigate('/dashboard-v2');
+      }, 1000);
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      setToast({
+        type: 'error',
+        text: 'Error deleting article',
+      });
     }
   };
 
@@ -660,7 +723,49 @@ export function ArticleFormPageV2() {
             </div>
           </div>
         </div>
+
+        {/* Action Buttons */}
+        {id && (
+          <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-6">
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => setDeleteModalOpen(true)}
+                className="px-6 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Supprimer
+              </button>
+
+              <button
+                onClick={() => navigate(`/articles/${id}/preview`)}
+                className="px-6 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center gap-2"
+              >
+                <Edit className="w-4 h-4" />
+                Prévisualiser
+              </button>
+
+              <button
+                onClick={handleSave}
+                disabled={loading}
+                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Sauvegarder
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Supprimer l'article"
+        message="Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible."
+        confirmLabel="Supprimer"
+        variant="danger"
+      />
 
       {toast && <Toast message={toast.text} type={toast.type} onClose={() => setToast(null)} />}
     </div>
