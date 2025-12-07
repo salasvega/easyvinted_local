@@ -929,36 +929,38 @@ export function ArticleFormPageV2() {
         </div>
 
         {/* Action Buttons */}
-        {id && (
-          <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-6">
-            <div className="flex flex-wrap justify-center gap-3">
-              <button
-                onClick={() => setDeleteModalOpen(true)}
-                className="px-6 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                Supprimer
-              </button>
+        <div className="mt-8 bg-white rounded-3xl border border-slate-200 p-6">
+          <div className="flex flex-wrap justify-center gap-3">
+            {id && (
+              <>
+                <button
+                  onClick={() => setDeleteModalOpen(true)}
+                  className="px-6 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Supprimer
+                </button>
 
-              <button
-                onClick={() => navigate(`/articles/${id}/preview`)}
-                className="px-6 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Prévisualiser
-              </button>
+                <button
+                  onClick={() => navigate(`/articles/${id}/preview`)}
+                  className="px-6 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-100 transition-colors flex items-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Prévisualiser
+                </button>
+              </>
+            )}
 
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                Sauvegarder
-              </button>
-            </div>
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Sauvegarder
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       <ConfirmModal
