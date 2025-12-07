@@ -10,6 +10,7 @@ import {
   Edit,
   Eye,
   Tag,
+  Sparkles,
 } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
@@ -26,8 +27,8 @@ import { LabelModal } from '../components/LabelModal';
 import { VINTED_CATEGORIES } from '../constants/categories';
 import { COLORS, MATERIALS } from '../constants/articleAttributes';
 import { migratePhotosFromTempFolder } from '../lib/photoMigration';
+import { analyzeProductImage, ProductData } from '../lib/openaiService';
 
-// UI Kit Apple-style
 import {
   PageContainer,
   PageSection,
@@ -89,6 +90,7 @@ export function ArticleFormPage() {
 
   const [loading, setLoading] = useState(false);
   const [analyzingWithAI, setAnalyzingWithAI] = useState(false);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<ProductData | null>(null);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     title: string;
@@ -391,166 +393,97 @@ export function ArticleFormPage() {
 
     try {
       setAnalyzingWithAI(true);
+      setAiAnalysisResult(null);
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const photoUrl = formData.photos[0];
 
-      if (!session) {
-        throw new Error('Vous devez être connecté pour utiliser cette fonctionnalité');
-      }
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-article-image`;
-      const headers = {
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-      };
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          imageUrls: formData.photos,
-          sellerId: formData.seller_id,
-        }),
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.readAsDataURL(blob);
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
-        console.error('API Error:', errorData);
-        throw new Error(errorData.error || "Erreur lors de l'analyse de l'image");
-      }
+      const mimeType = blob.type;
 
-      const analysisResult = await response.json();
+      const products = await analyzeProductImage(base64, mimeType);
 
-      if (analysisResult.season === 'all_seasons') {
-        analysisResult.season = 'all-seasons';
-      }
+      if (products && products.length > 0) {
+        const product = products[0];
+        setAiAnalysisResult(product);
 
-      let mainCategory = 'Femmes';
-      let subcategory = 'Vêtements';
-      let itemCategory = '';
-      let defaultSize = formData.size;
+        let mainCategory = 'Femmes';
+        let subcategory = 'Vêtements';
+        let itemCategory = '';
 
-      const aiSubcategory = analysisResult.subcategory?.toLowerCase() || '';
-      const isShoeCategory =
-        aiSubcategory.includes('basket') ||
-        aiSubcategory.includes('sneaker') ||
-        aiSubcategory.includes('botte') ||
-        aiSubcategory.includes('bottine') ||
-        aiSubcategory.includes('sandale') ||
-        aiSubcategory.includes('talon');
+        const aiCategory = product.category?.toLowerCase() || '';
 
-      if (aiSubcategory.includes('robe')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Robes';
-      } else if (aiSubcategory.includes('t-shirt') || aiSubcategory.includes('tee-shirt')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'T-shirts';
-      } else if (
-        aiSubcategory.includes('top') ||
-        aiSubcategory.includes('débardeur') ||
-        aiSubcategory.includes('tank')
-      ) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Tops & débardeurs';
-      } else if (aiSubcategory.includes('chemis') || aiSubcategory.includes('blouse')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Chemises & blouses';
-      } else if (
-        aiSubcategory.includes('pull') ||
-        aiSubcategory.includes('sweat') ||
-        aiSubcategory.includes('hoodie') ||
-        aiSubcategory.includes('gilet')
-      ) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Pulls, sweats & hoodies';
-      } else if (
-        aiSubcategory.includes('manteau') ||
-        aiSubcategory.includes('veste') ||
-        aiSubcategory.includes('blouson') ||
-        aiSubcategory.includes('jacket')
-      ) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Manteaux & vestes';
-      } else if (aiSubcategory.includes('jean')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Jeans';
-      } else if (aiSubcategory.includes('pantalon')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Pantalons';
-      } else if (aiSubcategory.includes('short')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Shorts';
-      } else if (aiSubcategory.includes('jupe')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Jupes';
-      } else if (aiSubcategory.includes('maillot')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Maillots de bain';
-      } else if (aiSubcategory.includes('sport')) {
-        subcategory = 'Vêtements';
-        itemCategory = 'Sportswear';
-      } else if (aiSubcategory.includes('basket') || aiSubcategory.includes('sneaker')) {
-        subcategory = 'Chaussures';
-        itemCategory = 'Baskets';
-      } else if (aiSubcategory.includes('botte')) {
-        subcategory = 'Chaussures';
-        itemCategory = 'Bottes';
-      } else if (aiSubcategory.includes('bottine')) {
-        subcategory = 'Chaussures';
-        itemCategory = 'Bottines';
-      } else if (aiSubcategory.includes('sandale')) {
-        subcategory = 'Chaussures';
-        itemCategory = 'Sandales';
-      } else if (aiSubcategory.includes('talon')) {
-        subcategory = 'Chaussures';
-        itemCategory = 'Talons';
-      } else if (aiSubcategory.includes('sac')) {
-        subcategory = 'Sacs';
-        if (aiSubcategory.includes('dos')) {
-          itemCategory = 'Sacs à dos';
-        } else if (aiSubcategory.includes('bandoulière')) {
-          itemCategory = 'Sacs bandoulière';
-        } else {
+        if (aiCategory.includes('robe')) {
+          subcategory = 'Vêtements';
+          itemCategory = 'Robes';
+        } else if (aiCategory.includes('t-shirt') || aiCategory.includes('tee-shirt')) {
+          subcategory = 'Vêtements';
+          itemCategory = 'T-shirts';
+        } else if (aiCategory.includes('top') || aiCategory.includes('débardeur')) {
+          subcategory = 'Vêtements';
+          itemCategory = 'Tops & débardeurs';
+        } else if (aiCategory.includes('chemis') || aiCategory.includes('blouse')) {
+          subcategory = 'Vêtements';
+          itemCategory = 'Chemises & blouses';
+        } else if (
+          aiCategory.includes('pull') ||
+          aiCategory.includes('sweat') ||
+          aiCategory.includes('hoodie')
+        ) {
+          subcategory = 'Vêtements';
+          itemCategory = 'Pulls, sweats & hoodies';
+        } else if (
+          aiCategory.includes('manteau') ||
+          aiCategory.includes('veste') ||
+          aiCategory.includes('jacket')
+        ) {
+          subcategory = 'Vêtements';
+          itemCategory = 'Manteaux & vestes';
+        } else if (aiCategory.includes('jean')) {
+          subcategory = 'Vêtements';
+          itemCategory = 'Jeans';
+        } else if (aiCategory.includes('pantalon')) {
+          subcategory = 'Vêtements';
+          itemCategory = 'Pantalons';
+        } else if (aiCategory.includes('basket') || aiCategory.includes('sneaker')) {
+          subcategory = 'Chaussures';
+          itemCategory = 'Baskets';
+        } else if (aiCategory.includes('sac')) {
+          subcategory = 'Sacs';
           itemCategory = 'Sacs à main';
         }
+
+        const priceMatch = product.priceEstimate?.match(/\d+/);
+        const estimatedPrice = priceMatch ? priceMatch[0] : '';
+
+        setFormData((prev) => ({
+          ...prev,
+          title: product.title || prev.title,
+          description: product.description || prev.description,
+          main_category: mainCategory,
+          subcategory: subcategory,
+          item_category: itemCategory,
+          price: estimatedPrice || prev.price,
+        }));
+
+        setModalState({
+          isOpen: true,
+          title: 'Analyse terminée',
+          message:
+            "Les informations de l'article ont été pré-remplies. Vous pouvez les modifier et compléter les champs manquants.",
+          type: 'success',
+        });
       }
-
-      if (!analysisResult.size && userProfile) {
-        if (isShoeCategory && userProfile.shoe_size) {
-          defaultSize = userProfile.shoe_size;
-        } else if (!isShoeCategory && userProfile.clothing_size) {
-          defaultSize = userProfile.clothing_size;
-        }
-      }
-
-      setFormData({
-        ...formData,
-        title: analysisResult.title || formData.title,
-        description: analysisResult.description || formData.description,
-        brand: analysisResult.brand || formData.brand,
-        size: analysisResult.size || defaultSize,
-        condition: analysisResult.condition || formData.condition,
-        main_category: mainCategory,
-        subcategory: subcategory,
-        item_category: itemCategory,
-        price: analysisResult.estimatedPrice
-          ? analysisResult.estimatedPrice.toString()
-          : formData.price,
-        season: analysisResult.season || formData.season,
-        suggested_period: analysisResult.suggestedPeriod || formData.suggested_period,
-        color: analysisResult.color || formData.color,
-        material: analysisResult.material || formData.material,
-      });
-
-      setModalState({
-        isOpen: true,
-        title: 'Analyse terminée',
-        message:
-          "Les informations de l'article ont été remplies automatiquement. Vous pouvez les modifier si nécessaire.",
-        type: 'success',
-      });
     } catch (error) {
       console.error('Error analyzing image:', error);
       setModalState({
@@ -646,7 +579,6 @@ export function ArticleFormPage() {
         const { error } = await supabase.from('articles').update(articleData).eq('id', id);
         if (error) throw error;
 
-        // Gestion des selling_suggestions selon le statut
         if (status === 'draft') {
           await supabase
             .from('selling_suggestions')
@@ -1125,7 +1057,6 @@ export function ArticleFormPage() {
 
       <PageContainer>
         <PageSection>
-          {/* Header Apple-like */}
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex items-start gap-3 min-w-0">
               <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-md">
@@ -1158,7 +1089,6 @@ export function ArticleFormPage() {
               </div>
             </div>
 
-            {/* Boutons rapides */}
             {id && (
               <div className="hidden sm:flex flex-col gap-2 items-end">
                 {articleStatus === 'published' && (
@@ -1182,7 +1112,6 @@ export function ArticleFormPage() {
 
           <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
             <div className="space-y-6">
-              {/* Vendeur */}
               {familyMembers.length > 0 && (
                 <Card>
                   <h2 className="text-sm font-semibold text-slate-900 mb-3">Vendeur</h2>
@@ -1209,9 +1138,30 @@ export function ArticleFormPage() {
                 </Card>
               )}
 
-              {/* Photos */}
               <Card>
-                <h2 className="text-sm font-semibold text-slate-900 mb-3">Photos</h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-slate-900">Photos</h2>
+                  {formData.photos.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleAnalyzeWithAI}
+                      disabled={analyzingWithAI}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {analyzingWithAI ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Analyse en cours...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>Analyser avec IA</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
                 <PhotoUpload
                   photos={formData.photos}
                   onPhotosChange={(photos) => setFormData({ ...formData, photos })}
@@ -1222,7 +1172,35 @@ export function ArticleFormPage() {
                 />
               </Card>
 
-              {/* Informations principales */}
+              {aiAnalysisResult && (
+                <SoftCard>
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm flex-shrink-0">
+                      <Sparkles className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">
+                        Analyse IA terminée
+                      </h3>
+                      <div className="bg-white rounded-lg p-3 border border-blue-100 space-y-2 text-sm">
+                        {aiAnalysisResult.title && (
+                          <p><span className="font-semibold">Titre:</span> {aiAnalysisResult.title}</p>
+                        )}
+                        {aiAnalysisResult.category && (
+                          <p><span className="font-semibold">Catégorie détectée:</span> {aiAnalysisResult.category}</p>
+                        )}
+                        {aiAnalysisResult.priceEstimate && (
+                          <p><span className="font-semibold">Prix estimé:</span> {aiAnalysisResult.priceEstimate}</p>
+                        )}
+                        {aiAnalysisResult.description && (
+                          <p className="text-xs text-slate-600 mt-2">{aiAnalysisResult.description.substring(0, 150)}...</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </SoftCard>
+              )}
+
               <Card>
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">
                   Informations principales
@@ -1293,15 +1271,6 @@ export function ArticleFormPage() {
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
                         Taille
-                        {!id && userProfile && (
-                          <span className="ml-1 text-[11px] text-slate-500 font-normal normal-case">
-                            {formData.subcategory === 'Chaussures' && userProfile.shoe_size
-                              ? `(Défaut: ${userProfile.shoe_size})`
-                              : userProfile.clothing_size
-                              ? `(Défaut: ${userProfile.clothing_size})`
-                              : ''}
-                          </span>
-                        )}
                       </label>
                       <input
                         type="text"
@@ -1310,14 +1279,7 @@ export function ArticleFormPage() {
                           setFormData({ ...formData, size: e.target.value })
                         }
                         className="w-full px-4 py-3 text-sm rounded-2xl border border-slate-200 bg-slate-50/60 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                        placeholder={
-                          !id && userProfile
-                            ? formData.subcategory === 'Chaussures' &&
-                              userProfile.shoe_size
-                              ? userProfile.shoe_size
-                              : userProfile.clothing_size || 'Ex: M, 38, 42'
-                            : 'Ex: M, 38, 42'
-                        }
+                        placeholder="Ex: M, 38, 42"
                       />
                     </div>
                   </div>
@@ -1436,23 +1398,10 @@ export function ArticleFormPage() {
                         required
                         value={formData.subcategory}
                         onChange={(e) => {
-                          const newSubcategory = e.target.value;
-                          const isShoeCategory = newSubcategory === 'Chaussures';
-                          let newSize = formData.size;
-
-                          if (!id && userProfile && !formData.size) {
-                            if (isShoeCategory && userProfile.shoe_size) {
-                              newSize = userProfile.shoe_size;
-                            } else if (!isShoeCategory && userProfile.clothing_size) {
-                              newSize = userProfile.clothing_size;
-                            }
-                          }
-
                           setFormData({
                             ...formData,
-                            subcategory: newSubcategory,
+                            subcategory: e.target.value,
                             item_category: '',
-                            size: newSize,
                           });
                           if (validationErrors.includes('subcategory')) {
                             setValidationErrors(
@@ -1510,7 +1459,6 @@ export function ArticleFormPage() {
                 </div>
               </Card>
 
-              {/* Prix */}
               <Card>
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">Prix de vente</h2>
 
@@ -1559,7 +1507,6 @@ export function ArticleFormPage() {
                 </div>
               </Card>
 
-              {/* Saison */}
               <Card>
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">
                   Saison & période conseillée
@@ -1609,7 +1556,6 @@ export function ArticleFormPage() {
               </Card>
             </div>
 
-            {/* Bannières de statut */}
             {id && articleStatus === 'ready' && (
               <SoftCard>
                 <div className="flex items-start gap-3">
@@ -1762,7 +1708,6 @@ export function ArticleFormPage() {
               </SoftCard>
             )}
 
-            {/* Actions principales */}
             <Card>
               <div className="space-y-4">
                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide hidden md:block">
@@ -1770,7 +1715,6 @@ export function ArticleFormPage() {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-3">
-                  {/* Article vendu */}
                   {articleStatus === 'sold' && (
                     <>
                       <GhostButton
@@ -1791,7 +1735,6 @@ export function ArticleFormPage() {
                     </>
                   )}
 
-                  {/* Supprimer (si pas sold) */}
                   {id && articleStatus !== 'sold' && (
                     <GhostButton
                       onClick={() => setDeleteModal(true)}
@@ -1802,7 +1745,6 @@ export function ArticleFormPage() {
                     </GhostButton>
                   )}
 
-                  {/* Enregistrer (tous sauf sold -> utilise status actuel) */}
                   {articleStatus !== 'sold' && (
                     <GhostButton
                       onClick={(e) => handleSubmit(e as any, articleStatus)}
@@ -1813,7 +1755,6 @@ export function ArticleFormPage() {
                     </GhostButton>
                   )}
 
-                  {/* Passer à prêt pour Vinted */}
                   {articleStatus === 'draft' && (
                     <GhostButton
                       onClick={(e) => handleSubmit(e as any, 'ready')}
@@ -1824,7 +1765,6 @@ export function ArticleFormPage() {
                     </GhostButton>
                   )}
 
-                  {/* Programmer */}
                   {(articleStatus === 'ready' ||
                     articleStatus === 'scheduled' ||
                     articleStatus === 'published') && (
@@ -1837,7 +1777,6 @@ export function ArticleFormPage() {
                     </GhostButton>
                   )}
 
-                  {/* Marquer vendu – pas affiché en brouillon, comme tu voulais */}
                   {(articleStatus === 'ready' ||
                     articleStatus === 'scheduled' ||
                     articleStatus === 'published') && (
@@ -1850,7 +1789,6 @@ export function ArticleFormPage() {
                     </GhostButton>
                   )}
 
-                  {/* Envoyer à Vinted */}
                   {(articleStatus === 'ready' || articleStatus === 'scheduled') && id && (
                     <PrimaryButton
                       onClick={() => navigate(`/articles/${id}/structure`)}
@@ -1867,7 +1805,6 @@ export function ArticleFormPage() {
         </PageSection>
       </PageContainer>
 
-      {/* Modales secondaires */}
       <ConfirmModal
         isOpen={deleteModal}
         onClose={() => setDeleteModal(false)}
