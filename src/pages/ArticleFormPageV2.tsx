@@ -249,8 +249,13 @@ export function ArticleFormPageV2() {
 
     try {
       setLoading(true);
+      const { hashtags, caption, ...articleFormData } = formData;
+
+      const referenceNumber = articleFormData.reference_number || `REF-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
       const articleData = {
-        ...formData,
+        ...articleFormData,
+        reference_number: referenceNumber,
         price: parseFloat(formData.price),
         season: formData.season === 'all-seasons' ? 'all_seasons' : formData.season,
         user_id: user.id,
