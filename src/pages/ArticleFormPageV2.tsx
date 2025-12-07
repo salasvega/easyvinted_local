@@ -749,39 +749,6 @@ export function ArticleFormPageV2() {
                 </div>
               </div>
 
-              {/* Condition & Price */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Condition
-                  </label>
-                  <select
-                    value={formData.condition}
-                    onChange={(e) => setFormData({ ...formData, condition: e.target.value as Condition })}
-                    className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
-                  >
-                    {Object.entries(CONDITION_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Price (€)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full text-sm font-bold text-emerald-600 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
-                    placeholder="35.00"
-                  />
-                </div>
-              </div>
-
               {/* Color & Material */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -817,6 +784,39 @@ export function ArticleFormPageV2() {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* Condition & Price */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Condition
+                  </label>
+                  <select
+                    value={formData.condition}
+                    onChange={(e) => setFormData({ ...formData, condition: e.target.value as Condition })}
+                    className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
+                  >
+                    {Object.entries(CONDITION_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Price (€)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="w-full text-sm font-bold text-emerald-600 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
+                    placeholder="35.00"
+                  />
                 </div>
               </div>
 
