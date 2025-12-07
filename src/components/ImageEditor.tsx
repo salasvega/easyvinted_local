@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, ZoomIn, ZoomOut, Maximize2, Move, Download } from 'lucide-react';
 import { editProductImage } from '../lib/geminiService';
 
@@ -46,6 +46,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setEditHistory([imageUrl]);
@@ -61,6 +62,30 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
     setZoom(1);
     setPan({ x: 0, y: 0 });
   }, [currentImage]);
+
+  useEffect(() => {
+    const container = imageContainerRef.current;
+    if (!container) return;
+
+    const handleWheelEvent = (e: WheelEvent) => {
+      if (zoom === 1 && e.deltaY > 0) return;
+
+      e.preventDefault();
+      const delta = -Math.sign(e.deltaY) * 0.25;
+
+      setZoom(prev => {
+        const newZoom = Math.min(Math.max(prev + delta, 1), 5);
+        if (newZoom === 1) setPan({ x: 0, y: 0 });
+        return newZoom;
+      });
+    };
+
+    container.addEventListener('wheel', handleWheelEvent, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheelEvent);
+    };
+  }, [zoom]);
 
   const handleEdit = async (customPrompt?: string) => {
     const promptToUse = typeof customPrompt === 'string' ? customPrompt : instruction;
@@ -155,19 +180,6 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
   const handleResetZoom = () => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
-  };
-
-  const handleWheel = (e: React.WheelEvent) => {
-    if (zoom === 1 && e.deltaY > 0) return;
-
-    e.preventDefault();
-    const delta = -Math.sign(e.deltaY) * 0.25;
-
-    setZoom(prev => {
-      const newZoom = Math.min(Math.max(prev + delta, 1), 5);
-      if (newZoom === 1) setPan({ x: 0, y: 0 });
-      return newZoom;
-    });
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -266,8 +278,8 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
 
         <div className="p-6 space-y-6">
           <div
+            ref={imageContainerRef}
             className="aspect-video bg-slate-100 rounded-xl overflow-hidden relative select-none"
-            onWheel={handleWheel}
           >
             <div
               className="absolute inset-0 flex items-center justify-center overflow-hidden"
