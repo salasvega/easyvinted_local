@@ -417,55 +417,7 @@ export default function LotPreviewPage() {
             </div>
 
             <div className="space-y-6">
-              {/* Nom du lot */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Nom du lot
-                </label>
-                <div className="text-xl font-semibold text-slate-900 py-2">
-                  {lot.name}
-                </div>
-              </div>
-
-              {/* Description */}
-              {lot.description && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Description
-                  </label>
-                  <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
-                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                      {lot.description}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Prix et Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Prix du lot
-                  </label>
-                  <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                    <span className="text-sm font-bold text-emerald-600">
-                      {lot.price.toFixed(2)} €
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Remise
-                  </label>
-                  <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                    <span className="text-sm font-semibold text-slate-900">
-                      {lot.discount_percentage}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Section */}
+              {/* 1. Status Section */}
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                 <div className="flex items-center gap-3 mb-3">
                   <Package className="w-10 h-10 text-slate-900 bg-white rounded-full p-2 border border-slate-200" />
@@ -490,21 +442,115 @@ export default function LotPreviewPage() {
                 </p>
               </div>
 
-              {/* Reference Number */}
-              {lot.reference_number && (
+              {/* 2. Nom du lot */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                  Nom du lot
+                </label>
+                <div className="text-xl font-semibold text-slate-900 py-2">
+                  {lot.name}
+                </div>
+              </div>
+
+              {/* 3. Description */}
+              {lot.description && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Numéro de référence
+                    Description
                   </label>
-                  <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                    <span className="text-sm font-mono font-medium text-slate-900">
-                      {lot.reference_number}
-                    </span>
+                  <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                      {lot.description}
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Package Label */}
+              {/* 4. Articles List */}
+              <div className="border-t border-slate-100 pt-6">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                  Articles inclus dans ce lot
+                </h3>
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {articles.map((article) => (
+                    <button
+                      key={article.id}
+                      onClick={() => navigate(`/articles/${article.id}/preview`)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80 hover:border-emerald-300 hover:bg-emerald-50/40 transition-colors text-left"
+                    >
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                        {article.photos?.[0] ? (
+                          <img
+                            src={article.photos[0]}
+                            alt={article.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="w-6 h-6 text-slate-300" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {article.title}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {article.brand || 'Sans marque'}
+                          {article.size && ` • ${article.size}`}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {article.price.toFixed(0)} €
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 5. Articles Statistics */}
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-slate-600" />
+                    <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                      Articles inclus
+                    </p>
+                  </div>
+                  <span className="text-2xl font-bold text-slate-900">{articles.length}</span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Valeur totale : <span className="font-semibold text-slate-700">{lot.original_total_price.toFixed(2)} €</span>
+                </p>
+              </div>
+
+              {/* 6. Prix et Remise */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Prix du lot
+                  </label>
+                  <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <span className="text-sm font-bold text-emerald-600">
+                      {lot.price.toFixed(2)} €
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Remise
+                  </label>
+                  <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span className="text-sm font-semibold text-slate-900">
+                      {lot.discount_percentage}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 7. Package Label */}
               {lot.reference_number && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex items-center justify-between mb-2">
@@ -527,7 +573,7 @@ export default function LotPreviewPage() {
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* 8. Action Buttons */}
               <div className="grid grid-cols-3 gap-3 pt-4">
                 <button
                   onClick={() => setDeleteModalOpen(true)}
@@ -598,66 +644,6 @@ export default function LotPreviewPage() {
                     </button>
                   </>
                 )}
-              </div>
-
-              {/* Articles Statistics */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-slate-600" />
-                    <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                      Articles inclus
-                    </p>
-                  </div>
-                  <span className="text-2xl font-bold text-slate-900">{articles.length}</span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Valeur totale : <span className="font-semibold text-slate-700">{lot.original_total_price.toFixed(2)} €</span>
-                </p>
-              </div>
-
-              {/* Articles List */}
-              <div className="border-t border-slate-100 pt-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                  Articles inclus dans ce lot
-                </h3>
-                <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {articles.map((article) => (
-                    <button
-                      key={article.id}
-                      onClick={() => navigate(`/articles/${article.id}/preview`)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80 hover:border-emerald-300 hover:bg-emerald-50/40 transition-colors text-left"
-                    >
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                        {article.photos?.[0] ? (
-                          <img
-                            src={article.photos[0]}
-                            alt={article.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-6 h-6 text-slate-300" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">
-                          {article.title}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {article.brand || 'Sans marque'}
-                          {article.size && ` • ${article.size}`}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {article.price.toFixed(0)} €
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
