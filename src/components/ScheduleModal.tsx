@@ -7,12 +7,16 @@ interface ScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
   article?: Article;
+  lot?: {
+    id: string;
+    name: string;
+  };
   onScheduled?: () => void;
   onSchedule?: (date: Date) => void;
   currentDate?: Date;
 }
 
-export function ScheduleModal({ isOpen, onClose, article, onScheduled, onSchedule, currentDate }: ScheduleModalProps) {
+export function ScheduleModal({ isOpen, onClose, article, lot, onScheduled, onSchedule, currentDate }: ScheduleModalProps) {
   const [selectedDate, setSelectedDate] = useState(() => {
     if (currentDate) {
       return currentDate.toISOString().split('T')[0];
@@ -47,6 +51,21 @@ export function ScheduleModal({ isOpen, onClose, article, onScheduled, onSchedul
             updated_at: new Date().toISOString(),
           })
           .eq('id', article.id);
+
+        if (error) throw error;
+
+        if (onScheduled) {
+          onScheduled();
+        }
+      } else if (lot) {
+        const { error } = await supabase
+          .from('lots')
+          .update({
+            status: 'scheduled',
+            scheduled_for: dateTime.toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', lot.id);
 
         if (error) throw error;
 
@@ -88,6 +107,7 @@ export function ScheduleModal({ isOpen, onClose, article, onScheduled, onSchedul
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Programmer la publication</h3>
                 {article && <p className="text-sm text-gray-600">{article.title}</p>}
+                {lot && <p className="text-sm text-gray-600">{lot.name}</p>}
               </div>
             </div>
             <button

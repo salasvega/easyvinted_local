@@ -92,10 +92,10 @@ export function AdminPage() {
 
   const [scheduleModal, setScheduleModal] = useState<{
     isOpen: boolean;
-    article: Article | null;
+    item: AdminItem | null;
   }>({
     isOpen: false,
-    article: null,
+    item: null,
   });
 
   const [statusModal, setStatusModal] = useState<{
@@ -814,22 +814,37 @@ export function AdminPage() {
                                 )}
                                 <div className="h-px bg-gray-200 my-1.5 mx-2"></div>
                                 {item.status !== 'sold' && (
-                                  <button
-                                    className="w-full text-left px-4 py-2.5 text-sm text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 flex items-center gap-3 rounded-lg transition-all mx-1"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSoldModal({ isOpen: true, item });
-                                    }}
-                                  >
-                                    <DollarSign className="w-4 h-4" />
-                                    <span className="font-medium">Marquer vendu</span>
-                                  </button>
+                                  <>
+                                    <button
+                                      className="w-full text-left px-4 py-2.5 text-sm text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 flex items-center gap-3 rounded-lg transition-all mx-1"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setScheduleModal({ isOpen: true, item });
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
+                                      <Calendar className="w-4 h-4" />
+                                      <span className="font-medium">Programmer</span>
+                                    </button>
+                                    <button
+                                      className="w-full text-left px-4 py-2.5 text-sm text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 flex items-center gap-3 rounded-lg transition-all mx-1"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSoldModal({ isOpen: true, item });
+                                        setOpenMenuId(null);
+                                      }}
+                                    >
+                                      <DollarSign className="w-4 h-4" />
+                                      <span className="font-medium">Marquer vendu</span>
+                                    </button>
+                                  </>
                                 )}
                                 <button
                                   className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 flex items-center gap-3 rounded-lg transition-all mx-1"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setDeleteModal({ isOpen: true, item });
+                                    setOpenMenuId(null);
                                   }}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -1003,6 +1018,20 @@ export function AdminPage() {
               ))}
             </div>
           </Modal>
+        )}
+
+        {scheduleModal.item && (
+          <ScheduleModal
+            isOpen={scheduleModal.isOpen}
+            onClose={() => setScheduleModal({ isOpen: false, item: null })}
+            article={scheduleModal.item.type === 'article' ? { id: scheduleModal.item.id, title: scheduleModal.item.title } as any : undefined}
+            lot={scheduleModal.item.type === 'lot' ? { id: scheduleModal.item.id, name: scheduleModal.item.title } : undefined}
+            onScheduled={() => {
+              setToast({ type: 'success', text: `${scheduleModal.item?.type === 'lot' ? 'Lot' : 'Article'} programmé avec succès` });
+              setScheduleModal({ isOpen: false, item: null });
+              fetchAllData();
+            }}
+          />
         )}
       </div>
     </>
