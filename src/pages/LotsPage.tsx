@@ -292,18 +292,6 @@ export default function LotsPage() {
                         >
                           <ChevronRight className="w-4 h-4" />
                         </button>
-                        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1">
-                          {photos.map((_, index) => (
-                            <div
-                              key={index}
-                              className={`h-1.5 rounded-full transition-all ${
-                                index === currentPhotoIndex
-                                  ? 'w-4 bg-white'
-                                  : 'w-1.5 bg-white/50'
-                              }`}
-                            />
-                          ))}
-                        </div>
                       </>
                     )}
 
