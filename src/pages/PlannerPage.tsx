@@ -581,7 +581,7 @@ export function PlannerPage() {
                                     </span>
                                   </div>
                                 </div>
-                                <Pill variant="primary" className="hidden sm:inline-flex">
+                                <Pill variant="warning" className="hidden sm:inline-flex">
                                   Planifié
                                 </Pill>
                               </button>
@@ -640,7 +640,7 @@ export function PlannerPage() {
                                     </span>
                                   </div>
                                 </div>
-                                <Pill variant="primary" className="hidden sm:inline-flex">
+                                <Pill variant="warning" className="hidden sm:inline-flex">
                                   Planifié
                                 </Pill>
                               </button>
