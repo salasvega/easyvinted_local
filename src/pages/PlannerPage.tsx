@@ -18,7 +18,6 @@ import { Lot } from '../types/lot';
 
 // UI Kit Apple-style
 import {
-  PageContainer,
   PageSection,
   Card,
   SoftCard,
@@ -340,9 +339,8 @@ export function PlannerPage() {
         />
       )}
 
-      <PageContainer>
-        <PageSection>
-          <div className="mb-6">
+      <PageSection>
+        <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Planificateur intelligent</h1>
             <p className="text-sm text-gray-600 mt-1">
               Optimisez vos ventes en publiant vos articles et lots au meilleur moment. ({pendingSuggestions.length} {pendingSuggestions.length === 1 ? 'suggestion' : 'suggestions'})
@@ -642,8 +640,7 @@ export function PlannerPage() {
               </Card>
             </div>
           )}
-        </PageSection>
-      </PageContainer>
+      </PageSection>
     </>
   );
 }
