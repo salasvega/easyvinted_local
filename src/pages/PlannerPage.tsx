@@ -360,16 +360,6 @@ export function PlannerPage() {
                 </p>
               </div>
             </div>
-
-            <div className="hidden sm:flex items-center gap-3">
-              <GhostButton
-                onClick={generateSuggestions}
-                className="text-xs px-3 py-2"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Régénérer les suggestions
-              </GhostButton>
-            </div>
           </div>
 
           {loading ? (
