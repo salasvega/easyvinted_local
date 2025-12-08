@@ -3,7 +3,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 import { NotificationBanner } from './components/NotificationBanner';
-import { DashboardPage } from './pages/DashboardPage';
 import { DashboardPageV2 } from './pages/DashboardPageV2';
 import { ArticleFormPage } from './pages/ArticleFormPage';
 import { ArticleFormPageV2 } from './pages/ArticleFormPageV2';
@@ -11,7 +10,6 @@ import { PreviewPage } from './pages/PreviewPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
-import { SalesPage } from './pages/SalesPage';
 import { PlannerPage } from './pages/PlannerPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
@@ -38,11 +36,9 @@ function App() {
                 <NotificationBanner />
                 <AppLayout>
                   <Routes>
-                    {/* Nouvelle page d’accueil */}
+                    {/* Nouvelle page d'accueil */}
                     <Route path="/" element={<HomePage />} />
 
-                    {/* Mon stock déplacé sur /stock */}
-                    <Route path="/stock" element={<DashboardPage />} />
                     <Route path="/dashboard-v2" element={<DashboardPageV2 />} />
 
                     <Route path="/articles/new" element={<ArticleFormPage />} />
@@ -55,7 +51,6 @@ function App() {
                     <Route path="/lots/:id/preview" element={<LotPreviewPage />} />
                     <Route path="/lots/:id/structure" element={<LotStructureFormPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
-                    <Route path="/sales" element={<SalesPage />} />
                     <Route path="/planner" element={<PlannerPage />} />
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/photo-studio" element={<PhotoStudioPage />} />

@@ -56,13 +56,6 @@ export function HomePage() {
       {/* CTA */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
-          to="/stock"
-          className="inline-flex items-center justify-center px-8 py-3 rounded-full text-sm font-semibold border border-emerald-500 text-emerald-600 bg-white hover:bg-emerald-50 transition"
-        >
-          Mes articles
-        </Link>
-
-        <Link
           to="/photo-studio"
           className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full text-sm font-semibold border border-blue-500 text-blue-600 bg-white hover:bg-blue-50 transition"
         >
