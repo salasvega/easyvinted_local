@@ -137,16 +137,31 @@ export default function LotsPage() {
     }
   };
 
-  const handleMarkAsSold = async (salePrice: number, saleDate: string) => {
+  const handleMarkAsSold = async (saleData: {
+    soldPrice: number;
+    soldAt: string;
+    fees: number;
+    shippingCost: number;
+    buyerName: string;
+    notes: string;
+  }) => {
     if (!soldModal.lotId) return;
 
     try {
+      const netProfit = saleData.soldPrice - saleData.fees - saleData.shippingCost;
+
       const { error } = await supabase
         .from('lots')
         .update({
           status: 'sold',
-          sale_price: salePrice,
-          sold_at: saleDate,
+          price: saleData.soldPrice,
+          published_at: saleData.soldAt,
+          shipping_cost: saleData.shippingCost,
+          fees: saleData.fees,
+          net_profit: netProfit,
+          buyer_name: saleData.buyerName || null,
+          sale_notes: saleData.notes || null,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', soldModal.lotId);
 
@@ -154,6 +169,7 @@ export default function LotsPage() {
 
       setToast({ type: 'success', text: 'Lot marqué comme vendu' });
       fetchLots();
+      setSoldModal({ isOpen: false, lotId: null, lotName: '', lotPrice: 0 });
     } catch (error) {
       console.error('Error marking lot as sold:', error);
       setToast({ type: 'error', text: 'Erreur lors du marquage comme vendu' });
@@ -475,8 +491,11 @@ export default function LotsPage() {
           isOpen={soldModal.isOpen}
           onClose={() => setSoldModal({ isOpen: false, lotId: null, lotName: '', lotPrice: 0 })}
           onConfirm={handleMarkAsSold}
-          lotName={soldModal.lotName}
-          lotPrice={soldModal.lotPrice}
+          lot={{
+            id: soldModal.lotId,
+            name: soldModal.lotName,
+            price: soldModal.lotPrice,
+          }}
         />
       )}
 

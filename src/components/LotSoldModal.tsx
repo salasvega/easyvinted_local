@@ -1,88 +1,246 @@
-import { useState, FormEvent } from 'react';
-import { Modal } from './ui/Modal';
+import { useState, useEffect } from 'react';
+import { X, DollarSign } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+
+interface SaleData {
+  soldPrice: number;
+  soldAt: string;
+  fees: number;
+  shippingCost: number;
+  buyerName: string;
+  notes: string;
+}
 
 interface LotSoldModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (salePrice: number, saleDate: string) => void;
-  lotName: string;
-  lotPrice: number;
+  onConfirm: (saleData: SaleData) => void;
+  lot: {
+    id: string;
+    name: string;
+    price: number;
+  };
+  initialData?: {
+    soldPrice: number;
+    soldAt: string;
+    fees: number;
+    shippingCost: number;
+    buyerName?: string;
+    notes?: string;
+  };
 }
 
-export function LotSoldModal({ isOpen, onClose, onConfirm, lotName, lotPrice }: LotSoldModalProps) {
-  const [salePrice, setSalePrice] = useState(lotPrice);
-  const [saleDate, setSaleDate] = useState(new Date().toISOString().split('T')[0]);
+export function LotSoldModal({ isOpen, onClose, onConfirm, lot, initialData }: LotSoldModalProps) {
+  const { user } = useAuth();
+  const today = new Date().toISOString().split('T')[0];
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onConfirm(salePrice, saleDate);
-    onClose();
+  const [soldPrice, setSoldPrice] = useState(
+    initialData?.soldPrice?.toString() || lot.price.toString()
+  );
+  const [soldAt, setSoldAt] = useState(
+    initialData?.soldAt ? new Date(initialData.soldAt).toISOString().split('T')[0] : today
+  );
+  const [fees, setFees] = useState(initialData?.fees?.toString() || '0');
+  const [shippingCost, setShippingCost] = useState(initialData?.shippingCost?.toString() || '0');
+  const [buyerName, setBuyerName] = useState(initialData?.buyerName || '');
+  const [notes, setNotes] = useState(initialData?.notes || '');
+
+  if (!isOpen) return null;
+
+  const handleConfirm = () => {
+    const price = parseFloat(soldPrice);
+    const platformFees = parseFloat(fees);
+    const shipping = parseFloat(shippingCost);
+
+    if (price > 0) {
+      onConfirm({
+        soldPrice: price,
+        soldAt: new Date(soldAt).toISOString(),
+        fees: platformFees,
+        shippingCost: shipping,
+        buyerName,
+        notes,
+      });
+      onClose();
+    }
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Marquer comme vendu">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <p className="text-sm text-gray-600 mb-4">
-            Lot: <span className="font-medium text-gray-900">{lotName}</span>
-          </p>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Prix de vente final (€)
-            </label>
-            <input
-              type="number"
-              required
-              step="0.01"
-              min="0"
-              value={salePrice}
-              onChange={(e) => setSalePrice(parseFloat(e.target.value))}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date de vente
-            </label>
-            <input
-              type="date"
-              required
-              value={saleDate}
-              onChange={(e) => setSaleDate(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            />
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  {initialData ? 'Modifier la vente' : 'Enregistrer une vente'}
+                </h3>
+                <p className="text-sm text-gray-600">{lot.name}</p>
+                <p className="text-xs text-gray-500 mt-1">Prix initial : {lot.price.toFixed(2)} €</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Prix initial:</span>
-            <span className="font-medium">{lotPrice.toFixed(2)}€</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Prix de vente:</span>
-            <span className="font-medium">{salePrice.toFixed(2)}€</span>
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  Prix de vente final (€) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={soldPrice}
+                  onChange={(e) => setSoldPrice(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="25.00"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  Date de vente *
+                </label>
+                <input
+                  type="date"
+                  value={soldAt}
+                  onChange={(e) => setSoldAt(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Frais et coûts</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                    Frais de plateforme (€)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={fees}
+                    onChange={(e) => setFees(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Commission prélevée par la plateforme</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                    Frais de livraison (€)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={shippingCost}
+                    onChange={(e) => setShippingCost(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Coût d'envoi du colis</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Informations complémentaires</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                    Nom de l'acheteur (optionnel)
+                  </label>
+                  <input
+                    type="text"
+                    value={buyerName}
+                    onChange={(e) => setBuyerName(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Jean Dupont"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                    Notes (optionnel)
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                    placeholder="Ajoutez des notes sur cette vente..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+              <DollarSign className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-700">
+                <p className="font-medium mb-1">Bénéfice net estimé</p>
+                <p>
+                  {soldPrice && !isNaN(parseFloat(soldPrice)) ? (
+                    <>
+                      {(parseFloat(soldPrice) - parseFloat(fees || '0') - parseFloat(shippingCost || '0')).toFixed(2)} €
+                      <span className="text-emerald-600 ml-1">
+                        (Prix de vente - Frais)
+                      </span>
+                    </>
+                  ) : (
+                    'Entrez le prix de vente pour voir le calcul'
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all font-medium shadow-sm"
-          >
-            Confirmer
-          </button>
+        <div className="flex-shrink-0 p-6 pt-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleConfirm}
+              disabled={!soldPrice || parseFloat(soldPrice) <= 0 || !soldAt}
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {initialData ? 'Enregistrer les modifications' : 'Enregistrer la vente'}
+            </button>
+          </div>
         </div>
-      </form>
-    </Modal>
+      </div>
+    </div>
   );
 }
