@@ -342,24 +342,11 @@ export function PlannerPage() {
 
       <PageContainer>
         <PageSection>
-          {/* Header Apple-like */}
-          <div className="mb-6 flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-md">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 truncate">
-                    Planificateur intelligent
-                  </h1>
-                </div>
-                <p className="mt-0.5 text-xs sm:text-sm text-slate-500">
-                  Optimisez vos ventes en publiant vos articles et lots au meilleur
-                  moment.
-                </p>
-              </div>
-            </div>
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Planificateur intelligent</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Optimisez vos ventes en publiant vos articles et lots au meilleur moment. ({pendingSuggestions.length} {pendingSuggestions.length === 1 ? 'suggestion' : 'suggestions'})
+            </p>
           </div>
 
           {loading ? (
