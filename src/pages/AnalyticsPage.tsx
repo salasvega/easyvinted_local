@@ -451,9 +451,14 @@ export function AnalyticsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="text-lg font-bold text-gray-900 truncate">{seller.name}</h3>
-                          <span className="text-2xl font-bold text-emerald-600">
-                            {seller.totalRevenue.toFixed(0)} €
-                          </span>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-emerald-600">
+                              {seller.totalProfit.toFixed(0)} €
+                            </div>
+                            <div className="text-[10px] text-gray-600">
+                              {seller.totalRevenue.toFixed(0)} € revenus
+                            </div>
+                          </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div>
