@@ -98,7 +98,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   }`}
                 >
                   <Package className="w-4 h-4" />
-                  Stock V2
+                  Mon stock
                 </Link>
                 <Link
                   to="/lots"
@@ -234,7 +234,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               style={{ transitionDelay: mobileMenuOpen ? '50ms' : '0ms' }}
             >
               <Package className="w-5 h-5" />
-              Stock V2
+              Mon stock
             </Link>
             <Link
               to="/lots"
