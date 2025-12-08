@@ -412,7 +412,7 @@ export function AdminPage() {
     } else if (item.type === 'article') {
       navigate(`/articles/${item.id}/edit-v2`);
     } else {
-      navigate(`/lots/${item.id}/preview`);
+      navigate(`/lots?edit=${item.id}`);
     }
   };
 
