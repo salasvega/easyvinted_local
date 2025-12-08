@@ -248,13 +248,13 @@ export default function LotsPage() {
                         <Package className="w-16 h-16 text-gray-300" />
                       </div>
                     )}
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
+                      <span className="text-white text-xs font-medium">{articleCount} articles</span>
+                    </div>
+                    <div className="absolute bottom-3 left-3">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[lot.status]}`}>
                         {STATUS_LABELS[lot.status]}
                       </span>
-                    </div>
-                    <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
-                      <span className="text-white text-xs font-medium">{articleCount} articles</span>
                     </div>
                   </div>
 
