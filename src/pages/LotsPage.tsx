@@ -9,6 +9,8 @@ import { Toast } from '../components/ui/Toast';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import LotBuilder from '../components/LotBuilder';
 import { useAuth } from '../contexts/AuthContext';
+import { LotStatusModal } from '../components/LotStatusModal';
+import { LotSoldModal } from '../components/LotSoldModal';
 
 const STATUS_LABELS: Record<LotStatus, string> = {
   draft: 'Brouillon',
@@ -43,6 +45,26 @@ export default function LotsPage() {
   }>({
     isOpen: false,
     lotId: null,
+  });
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    lotId: string | null;
+    currentStatus: LotStatus | null;
+  }>({
+    isOpen: false,
+    lotId: null,
+    currentStatus: null,
+  });
+  const [soldModal, setSoldModal] = useState<{
+    isOpen: boolean;
+    lotId: string | null;
+    lotName: string;
+    lotPrice: number;
+  }>({
+    isOpen: false,
+    lotId: null,
+    lotName: '',
+    lotPrice: 0,
   });
   const [photoIndexes, setPhotoIndexes] = useState<Record<string, number>>({});
 
@@ -93,6 +115,48 @@ export default function LotsPage() {
       setToast({ type: 'error', text: 'Erreur lors du chargement des lots' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (status: LotStatus) => {
+    if (!statusModal.lotId) return;
+
+    try {
+      const { error } = await supabase
+        .from('lots')
+        .update({ status })
+        .eq('id', statusModal.lotId);
+
+      if (error) throw error;
+
+      setToast({ type: 'success', text: `Statut changé en "${STATUS_LABELS[status]}"` });
+      fetchLots();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setToast({ type: 'error', text: 'Erreur lors du changement de statut' });
+    }
+  };
+
+  const handleMarkAsSold = async (salePrice: number, saleDate: string) => {
+    if (!soldModal.lotId) return;
+
+    try {
+      const { error } = await supabase
+        .from('lots')
+        .update({
+          status: 'sold',
+          sale_price: salePrice,
+          sold_at: saleDate,
+        })
+        .eq('id', soldModal.lotId);
+
+      if (error) throw error;
+
+      setToast({ type: 'success', text: 'Lot marqué comme vendu' });
+      fetchLots();
+    } catch (error) {
+      console.error('Error marking lot as sold:', error);
+      setToast({ type: 'error', text: 'Erreur lors du marquage comme vendu' });
     }
   };
 
@@ -291,9 +355,15 @@ export default function LotsPage() {
                       <span className="text-white text-xs font-medium">{articleCount} articles</span>
                     </div>
                     <div className="absolute bottom-3 left-3">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[lot.status]}`}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setStatusModal({ isOpen: true, lotId: lot.id, currentStatus: lot.status });
+                        }}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all hover:shadow-md active:scale-95 ${STATUS_COLORS[lot.status]}`}
+                      >
                         {STATUS_LABELS[lot.status]}
-                      </span>
+                      </button>
                     </div>
                   </div>
 
@@ -363,9 +433,41 @@ export default function LotsPage() {
         onConfirm={handleDelete}
         title="Supprimer le lot"
         message="Êtes-vous sûr de vouloir supprimer ce lot ? Les articles ne seront pas supprimés."
-        confirmText="Supprimer"
-        type="danger"
+        confirmLabel="Supprimer"
+        variant="danger"
       />
+
+      {statusModal.currentStatus && (
+        <LotStatusModal
+          isOpen={statusModal.isOpen}
+          onClose={() => setStatusModal({ isOpen: false, lotId: null, currentStatus: null })}
+          currentStatus={statusModal.currentStatus}
+          onStatusChange={handleStatusChange}
+          onOpenSoldModal={() => {
+            if (statusModal.lotId) {
+              const lot = lots.find(l => l.id === statusModal.lotId);
+              if (lot) {
+                setSoldModal({
+                  isOpen: true,
+                  lotId: lot.id,
+                  lotName: lot.name,
+                  lotPrice: lot.price
+                });
+              }
+            }
+          }}
+        />
+      )}
+
+      {soldModal.lotId && (
+        <LotSoldModal
+          isOpen={soldModal.isOpen}
+          onClose={() => setSoldModal({ isOpen: false, lotId: null, lotName: '', lotPrice: 0 })}
+          onConfirm={handleMarkAsSold}
+          lotName={soldModal.lotName}
+          lotPrice={soldModal.lotPrice}
+        />
+      )}
 
       {toast && (
         <Toast

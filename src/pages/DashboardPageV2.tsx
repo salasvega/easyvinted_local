@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { Toast } from '../components/ui/Toast';
+import { ArticleStatusModal } from '../components/ArticleStatusModal';
+import { ArticleSoldModal } from '../components/ArticleSoldModal';
 
 const STATUS_LABELS: Record<ArticleStatus, string> = {
   draft: 'Draft',
@@ -33,6 +35,14 @@ export function DashboardPageV2() {
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; articleId: string | null }>({
     isOpen: false,
     articleId: null,
+  });
+  const [statusModal, setStatusModal] = useState<{ isOpen: boolean; article: Article | null }>({
+    isOpen: false,
+    article: null,
+  });
+  const [soldModal, setSoldModal] = useState<{ isOpen: boolean; article: Article | null }>({
+    isOpen: false,
+    article: null,
   });
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -84,6 +94,55 @@ export function DashboardPageV2() {
       day: '2-digit',
       year: 'numeric',
     });
+  };
+
+  const handleStatusChange = async (status: ArticleStatus) => {
+    if (!statusModal.article) return;
+
+    try {
+      const updateData: any = { status };
+
+      if (status === 'published' && !statusModal.article.published_at) {
+        updateData.published_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('articles')
+        .update(updateData)
+        .eq('id', statusModal.article.id);
+
+      if (error) throw error;
+
+      setToast({ type: 'success', text: `Status changed to "${STATUS_LABELS[status]}"` });
+      fetchArticles();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setToast({ type: 'error', text: 'Error updating status' });
+    }
+  };
+
+  const handleMarkAsSold = async (salePrice: number, saleDate: string, sellerName: string) => {
+    if (!soldModal.article) return;
+
+    try {
+      const { error } = await supabase
+        .from('articles')
+        .update({
+          status: 'sold',
+          sale_price: salePrice,
+          sold_at: saleDate,
+          sold_by: sellerName,
+        })
+        .eq('id', soldModal.article.id);
+
+      if (error) throw error;
+
+      setToast({ type: 'success', text: 'Article marked as sold' });
+      fetchArticles();
+    } catch (error) {
+      console.error('Error marking article as sold:', error);
+      setToast({ type: 'error', text: 'Error marking article as sold' });
+    }
   };
 
   const handleDelete = async () => {
@@ -249,9 +308,15 @@ export function DashboardPageV2() {
                   </div>
 
                   <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                    <span className={`inline-block px-3 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[article.status]}`}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStatusModal({ isOpen: true, article });
+                      }}
+                      className={`inline-block px-3 py-1 rounded-lg text-xs font-medium transition-all hover:shadow-md active:scale-95 ${STATUS_COLORS[article.status]}`}
+                    >
                       {STATUS_LABELS[article.status]}
-                    </span>
+                    </button>
                     <span className="inline-block px-3 py-1.5 bg-white rounded-lg text-sm font-bold text-slate-900 shadow-sm">
                       {article.price.toFixed(2)}€
                     </span>
@@ -287,6 +352,27 @@ export function DashboardPageV2() {
         confirmLabel="Delete"
         variant="danger"
       />
+
+      <ArticleStatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal({ isOpen: false, article: null })}
+        article={statusModal.article}
+        onStatusChange={handleStatusChange}
+        onOpenSoldModal={() => {
+          if (statusModal.article) {
+            setSoldModal({ isOpen: true, article: statusModal.article });
+          }
+        }}
+      />
+
+      {soldModal.article && (
+        <ArticleSoldModal
+          isOpen={soldModal.isOpen}
+          onClose={() => setSoldModal({ isOpen: false, article: null })}
+          onConfirm={handleMarkAsSold}
+          article={soldModal.article}
+        />
+      )}
     </div>
   );
 }
