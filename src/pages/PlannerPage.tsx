@@ -400,17 +400,17 @@ export function PlannerPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Suggestions de planification optimisées */}
-                  <SoftCard className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100">
+                  <SoftCard className="bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100">
                     <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="w-5 h-5 text-emerald-600" />
+                      <Sparkles className="w-5 h-5 text-blue-600" />
                       <h3 className="text-sm font-semibold text-slate-900">
                         Suggestions de planification
                       </h3>
                     </div>
-                    <div className="text-3xl font-semibold text-emerald-700 mb-1">
+                    <div className="text-3xl font-semibold text-blue-700 mb-1">
                       {pendingSuggestions.length}
                     </div>
-                    <p className="text-xs text-emerald-700 mb-4">
+                    <p className="text-xs text-blue-700 mb-4">
                       {pendingSuggestions.length > 0
                         ? 'Suggestions IA basées sur la saisonnalité et la demande.'
                         : 'Aucune suggestion pour le moment.'}
@@ -419,21 +419,21 @@ export function PlannerPage() {
                     {pendingSuggestions.length === 0 ? (
                       <div className="text-center py-6">
                         <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-white flex items-center justify-center">
-                          <Clock className="w-7 h-7 text-emerald-400" />
+                          <Clock className="w-7 h-7 text-blue-400" />
                         </div>
-                        <p className="text-xs text-emerald-700 mb-3">
+                        <p className="text-xs text-blue-700 mb-3">
                           Cliquez pour analyser votre stock
                         </p>
                         <GhostButton
                           onClick={generateSuggestions}
-                          className="text-xs px-3 py-2 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                          className="text-xs px-3 py-2 border-blue-200 text-blue-700 hover:bg-blue-100"
                         >
                           <Sparkles className="w-3.5 h-3.5" />
                           Générer
                         </GhostButton>
                       </div>
                     ) : (
-                      <div className="space-y-2 max-h-80 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-emerald-200 scrollbar-track-emerald-50">
+                      <div className="space-y-2 max-h-80 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-blue-50">
                         {pendingSuggestions.map((suggestion) => {
                           const isLot = !!suggestion.lot_id;
                           const item = suggestion.lot || suggestion.article;
@@ -449,7 +449,7 @@ export function PlannerPage() {
                                   handleOpenPreviewModal(item, isLot);
                                 }
                               }}
-                              className="group bg-white rounded-xl p-2 hover:shadow-sm transition-all border border-emerald-100 cursor-pointer"
+                              className="group bg-white rounded-xl p-2 hover:shadow-sm transition-all border border-blue-100 cursor-pointer"
                             >
                               <div className="flex items-start gap-2 mb-2">
                                 {itemPhoto ? (
@@ -509,7 +509,7 @@ export function PlannerPage() {
                                       );
                                     }
                                   }}
-                                  className="flex-[2] py-1 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 text-[10px] font-semibold transition-colors"
+                                  className="flex-[2] py-1 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-[10px] font-semibold transition-colors"
                                   title="Accepter"
                                 >
                                   <CheckCircle className="w-3 h-3 inline mr-1" />
@@ -524,17 +524,17 @@ export function PlannerPage() {
                   </SoftCard>
 
                   {/* Articles & lots programmés */}
-                  <SoftCard className="bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100">
+                  <SoftCard className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100">
                     <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-5 h-5 text-blue-600" />
+                      <Calendar className="w-5 h-5 text-emerald-600" />
                       <h3 className="text-sm font-semibold text-slate-900">
                         Annonces programmées
                       </h3>
                     </div>
-                    <div className="text-3xl font-semibold text-blue-700 mb-1">
+                    <div className="text-3xl font-semibold text-emerald-700 mb-1">
                       {totalScheduled}
                     </div>
-                    <p className="text-xs text-blue-700 mb-4">
+                    <p className="text-xs text-emerald-700 mb-4">
                       {totalScheduled > 0
                         ? 'Vos prochaines publications sont déjà calées dans le temps.'
                         : 'Aucune publication planifiée.'}
@@ -552,7 +552,7 @@ export function PlannerPage() {
                                 onClick={() =>
                                   navigate(`/articles/${article.id}/preview`)
                                 }
-                                className="w-full flex items-center gap-3 bg-white rounded-2xl p-2 hover:shadow-sm transition-shadow border border-blue-100 text-left"
+                                className="w-full flex items-center gap-3 bg-white rounded-2xl p-2 hover:shadow-sm transition-shadow border border-emerald-100 text-left"
                               >
                                 {article.photos?.[0] ? (
                                   <img
@@ -568,8 +568,8 @@ export function PlannerPage() {
                                     {article.title}
                                   </p>
                                   <div className="flex items-center gap-2 mt-0.5">
-                                    <Clock className="w-3 h-3 text-blue-600" />
-                                    <span className="text-xs text-blue-700">
+                                    <Clock className="w-3 h-3 text-emerald-600" />
+                                    <span className="text-xs text-emerald-700">
                                       {article.scheduled_for
                                         ? new Date(
                                             article.scheduled_for
@@ -603,7 +603,7 @@ export function PlannerPage() {
                                 onClick={() =>
                                   navigate(`/lots/${lot.id}/preview`)
                                 }
-                                className="w-full flex items-center gap-3 bg-white rounded-2xl p-2 hover:shadow-sm transition-shadow border border-blue-100 text-left"
+                                className="w-full flex items-center gap-3 bg-white rounded-2xl p-2 hover:shadow-sm transition-shadow border border-emerald-100 text-left"
                               >
                                 {lot.cover_photo ? (
                                   <img
@@ -627,8 +627,8 @@ export function PlannerPage() {
                                     </p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Clock className="w-3 h-3 text-blue-600" />
-                                    <span className="text-xs text-blue-700">
+                                    <Clock className="w-3 h-3 text-emerald-600" />
+                                    <span className="text-xs text-emerald-700">
                                       {lot.scheduled_for
                                         ? new Date(
                                             lot.scheduled_for
