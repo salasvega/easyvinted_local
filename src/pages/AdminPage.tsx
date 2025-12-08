@@ -658,14 +658,14 @@ export function AdminPage() {
                   <th className="px-4 py-3.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
                     Détails
                   </th>
-                  <th className="px-4 py-3.5 text-center text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
-                    Saison
-                  </th>
                   <th className="px-4 py-3.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
                     Statut
                   </th>
                   <th className="px-4 py-3.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
                     Vendeur
+                  </th>
+                  <th className="px-4 py-3.5 text-center text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
+                    Saison
                   </th>
                   <th className="px-6 py-3.5 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
                     Actions
@@ -750,17 +750,6 @@ export function AdminPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        {item.type === 'article' ? (
-                          <div className="flex items-center justify-center">
-                            <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200/50 flex items-center justify-center group-hover:border-emerald-300 transition-all">
-                              {renderSeasonIcon(item.season)}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -779,6 +768,17 @@ export function AdminPage() {
                           </span>
                         ) : (
                           <span className="text-xs text-gray-400">Non défini</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {item.type === 'article' ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200/50 flex items-center justify-center group-hover:border-emerald-300 transition-all">
+                              {renderSeasonIcon(item.season)}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap relative">
