@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, Package, ShoppingBag, Euro, BarChart3, TrendingDown, Trophy, Medal, Award, Target } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { PageSection } from '../components/ui/UiKit';
 
 interface SalesMetrics {
   totalArticles: number;
@@ -169,16 +168,16 @@ export function AnalyticsPage() {
 
   if (loading) {
     return (
-      <PageSection>
+      <div>
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-600"></div>
         </div>
-      </PageSection>
+      </div>
     );
   }
 
   return (
-    <PageSection>
+    <div>
         <div className="mb-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Statistiques & Analyses</h1>
@@ -459,6 +458,6 @@ export function AnalyticsPage() {
         </div>
         </>
       )}
-    </PageSection>
+    </div>
   );
 }
