@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, Package, ShoppingBag, Euro, BarChart3, TrendingDown, Trophy, Medal, Award, Target } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { PageContainer, PageSection } from '../components/ui/UiKit';
 
 interface SalesMetrics {
   totalArticles: number;
@@ -168,16 +169,20 @@ export function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-600"></div>
-      </div>
+      <PageContainer>
+        <PageSection>
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-600"></div>
+          </div>
+        </PageSection>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="mb-6 space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+    <PageContainer>
+      <PageSection>
+        <div className="mb-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Statistiques & Analyses</h1>
             <p className="text-sm text-gray-600 mt-1">
@@ -206,7 +211,7 @@ export function AnalyticsPage() {
               >
                 30 jours
               </button>
-             
+
               <button
                 onClick={() => setTimeRange('all')}
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
@@ -220,7 +225,6 @@ export function AnalyticsPage() {
             </div>
           </div>
         </div>
-      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
         <div className="bg-gradient-to-br from-white to-orange-50 rounded-xl shadow-md border-2 border-orange-200 p-5 hover:shadow-lg transition-all">
@@ -333,14 +337,9 @@ export function AnalyticsPage() {
           </div>
 
           <div className="mb-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Trophy className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Classement des Vendeurs</h2>
-                <p className="text-sm text-gray-600">Qui génère le plus de ventes ?</p>
-              </div>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Classement des Vendeurs</h2>
+              <p className="text-sm text-gray-600 mt-1">Qui génère le plus de ventes ?</p>
             </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -463,6 +462,7 @@ export function AnalyticsPage() {
         </div>
         </>
       )}
-    </div>
+      </PageSection>
+    </PageContainer>
   );
 }
