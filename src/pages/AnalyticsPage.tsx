@@ -5,10 +5,13 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface SalesMetrics {
   totalArticles: number;
+  totalLots: number;
+  totalItems: number;
   draftArticles: number;
   readyArticles: number;
   publishedArticles: number;
   soldArticles: number;
+  soldLots: number;
   totalRevenue: number;
   totalFees: number;
   totalShipping: number;
@@ -34,10 +37,13 @@ export function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<SalesMetrics>({
     totalArticles: 0,
+    totalLots: 0,
+    totalItems: 0,
     draftArticles: 0,
     readyArticles: 0,
     publishedArticles: 0,
     soldArticles: 0,
+    soldLots: 0,
     totalRevenue: 0,
     totalFees: 0,
     totalShipping: 0,
@@ -60,9 +66,14 @@ export function AnalyticsPage() {
     try {
       setLoading(true);
 
-      const [articlesResult, membersResult] = await Promise.all([
+      const [articlesResult, lotsResult, membersResult] = await Promise.all([
         supabase
           .from('articles')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('lots')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false }),
@@ -73,12 +84,14 @@ export function AnalyticsPage() {
       ]);
 
       if (articlesResult.error) throw articlesResult.error;
+      if (lotsResult.error) throw lotsResult.error;
       if (membersResult.error) throw membersResult.error;
 
       const articles = articlesResult.data;
+      const lots = lotsResult.data;
       const members = membersResult.data || [];
 
-      if (articles) {
+      if (articles && lots) {
         const now = new Date();
         const filteredArticles = articles.filter(article => {
           if (timeRange === 'all') return true;
@@ -88,25 +101,53 @@ export function AnalyticsPage() {
           return createdDate >= cutoffDate;
         });
 
+        const filteredLots = lots.filter(lot => {
+          if (timeRange === 'all') return true;
+          const createdDate = new Date(lot.created_at);
+          const daysAgo = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+          const cutoffDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+          return createdDate >= cutoffDate;
+        });
+
         const soldArticles = filteredArticles.filter(a => a.status === 'sold' && a.sold_at);
-        const totalRevenue = soldArticles.reduce((sum, a) => sum + (parseFloat(a.sold_price) || 0), 0);
-        const totalFees = soldArticles.reduce((sum, a) => sum + (parseFloat(a.fees) || 0), 0);
-        const totalShipping = soldArticles.reduce((sum, a) => sum + (parseFloat(a.shipping_cost) || 0), 0);
-        const totalNetProfit = soldArticles.reduce((sum, a) => sum + (parseFloat(a.net_profit) || 0), 0);
-        const publishedCount = filteredArticles.filter(a => a.status === 'published' || a.status === 'scheduled' || a.status === 'sold').length;
-        const conversionRate = publishedCount > 0 ? (soldArticles.length / publishedCount) * 100 : 0;
+        const soldLots = filteredLots.filter(l => l.status === 'sold' && l.sold_at);
+
+        const totalRevenue =
+          soldArticles.reduce((sum, a) => sum + (parseFloat(a.sold_price) || 0), 0) +
+          soldLots.reduce((sum, l) => sum + (parseFloat(l.sold_price) || 0), 0);
+
+        const totalFees =
+          soldArticles.reduce((sum, a) => sum + (parseFloat(a.fees) || 0), 0) +
+          soldLots.reduce((sum, l) => sum + (parseFloat(l.fees) || 0), 0);
+
+        const totalShipping =
+          soldArticles.reduce((sum, a) => sum + (parseFloat(a.shipping_cost) || 0), 0) +
+          soldLots.reduce((sum, l) => sum + (parseFloat(l.shipping_cost) || 0), 0);
+
+        const totalNetProfit =
+          soldArticles.reduce((sum, a) => sum + (parseFloat(a.net_profit) || 0), 0) +
+          soldLots.reduce((sum, l) => sum + (parseFloat(l.net_profit) || 0), 0);
+
+        const publishedArticlesCount = filteredArticles.filter(a => a.status === 'published' || a.status === 'scheduled' || a.status === 'sold').length;
+        const publishedLotsCount = filteredLots.filter(l => l.status === 'published' || l.status === 'scheduled' || l.status === 'sold').length;
+        const totalPublished = publishedArticlesCount + publishedLotsCount;
+        const totalSold = soldArticles.length + soldLots.length;
+        const conversionRate = totalPublished > 0 ? (totalSold / totalPublished) * 100 : 0;
 
         setMetrics({
           totalArticles: filteredArticles.length,
+          totalLots: filteredLots.length,
+          totalItems: filteredArticles.length + filteredLots.length,
           draftArticles: filteredArticles.filter(a => a.status === 'draft').length,
           readyArticles: filteredArticles.filter(a => a.status === 'ready').length,
-          publishedArticles: publishedCount,
+          publishedArticles: totalPublished,
           soldArticles: soldArticles.length,
+          soldLots: soldLots.length,
           totalRevenue,
           totalFees,
           totalShipping,
           totalNetProfit,
-          averageSalePrice: soldArticles.length > 0 ? totalRevenue / soldArticles.length : 0,
+          averageSalePrice: totalSold > 0 ? totalRevenue / totalSold : 0,
           conversionRate,
         });
 
@@ -114,43 +155,73 @@ export function AnalyticsPage() {
 
         members.forEach(member => {
           const memberArticles = filteredArticles.filter(a => a.seller_id === member.id);
-          const memberSold = memberArticles.filter(a => a.status === 'sold' && a.sold_at);
-          const memberPublished = memberArticles.filter(a => a.status === 'published' || a.status === 'scheduled' || a.status === 'sold');
-          const memberRevenue = memberSold.reduce((sum, a) => sum + (parseFloat(a.sold_price) || 0), 0);
-          const memberProfit = memberSold.reduce((sum, a) => sum + (parseFloat(a.net_profit) || 0), 0);
-          const memberConversion = memberPublished.length > 0 ? (memberSold.length / memberPublished.length) * 100 : 0;
+          const memberLots = filteredLots.filter(l => l.seller_id === member.id);
+
+          const memberSoldArticles = memberArticles.filter(a => a.status === 'sold' && a.sold_at);
+          const memberSoldLots = memberLots.filter(l => l.status === 'sold' && l.sold_at);
+
+          const memberPublishedArticles = memberArticles.filter(a => a.status === 'published' || a.status === 'scheduled' || a.status === 'sold');
+          const memberPublishedLots = memberLots.filter(l => l.status === 'published' || l.status === 'scheduled' || l.status === 'sold');
+
+          const memberTotalPublished = memberPublishedArticles.length + memberPublishedLots.length;
+          const memberTotalSold = memberSoldArticles.length + memberSoldLots.length;
+
+          const memberRevenue =
+            memberSoldArticles.reduce((sum, a) => sum + (parseFloat(a.sold_price) || 0), 0) +
+            memberSoldLots.reduce((sum, l) => sum + (parseFloat(l.sold_price) || 0), 0);
+
+          const memberProfit =
+            memberSoldArticles.reduce((sum, a) => sum + (parseFloat(a.net_profit) || 0), 0) +
+            memberSoldLots.reduce((sum, l) => sum + (parseFloat(l.net_profit) || 0), 0);
+
+          const memberConversion = memberTotalPublished > 0 ? (memberTotalSold / memberTotalPublished) * 100 : 0;
 
           sellerStatsMap.set(member.id, {
             id: member.id,
             name: member.name,
-            totalSales: memberSold.length,
+            totalSales: memberTotalSold,
             totalRevenue: memberRevenue,
             totalProfit: memberProfit,
-            averagePrice: memberSold.length > 0 ? memberRevenue / memberSold.length : 0,
+            averagePrice: memberTotalSold > 0 ? memberRevenue / memberTotalSold : 0,
             conversionRate: memberConversion,
-            articlesPublished: memberPublished.length,
-            articlesSold: memberSold.length,
+            articlesPublished: memberTotalPublished,
+            articlesSold: memberTotalSold,
           });
         });
 
         const articlesWithoutSeller = filteredArticles.filter(a => !a.seller_id);
-        if (articlesWithoutSeller.length > 0) {
-          const soldWithoutSeller = articlesWithoutSeller.filter(a => a.status === 'sold' && a.sold_at);
-          const publishedWithoutSeller = articlesWithoutSeller.filter(a => a.status === 'published' || a.status === 'scheduled' || a.status === 'sold');
-          const revenueWithoutSeller = soldWithoutSeller.reduce((sum, a) => sum + (parseFloat(a.sold_price) || 0), 0);
-          const profitWithoutSeller = soldWithoutSeller.reduce((sum, a) => sum + (parseFloat(a.net_profit) || 0), 0);
-          const conversionWithoutSeller = publishedWithoutSeller.length > 0 ? (soldWithoutSeller.length / publishedWithoutSeller.length) * 100 : 0;
+        const lotsWithoutSeller = filteredLots.filter(l => !l.seller_id);
+
+        if (articlesWithoutSeller.length > 0 || lotsWithoutSeller.length > 0) {
+          const soldArticlesWithoutSeller = articlesWithoutSeller.filter(a => a.status === 'sold' && a.sold_at);
+          const soldLotsWithoutSeller = lotsWithoutSeller.filter(l => l.status === 'sold' && l.sold_at);
+
+          const publishedArticlesWithoutSeller = articlesWithoutSeller.filter(a => a.status === 'published' || a.status === 'scheduled' || a.status === 'sold');
+          const publishedLotsWithoutSeller = lotsWithoutSeller.filter(l => l.status === 'published' || l.status === 'scheduled' || l.status === 'sold');
+
+          const totalPublishedWithoutSeller = publishedArticlesWithoutSeller.length + publishedLotsWithoutSeller.length;
+          const totalSoldWithoutSeller = soldArticlesWithoutSeller.length + soldLotsWithoutSeller.length;
+
+          const revenueWithoutSeller =
+            soldArticlesWithoutSeller.reduce((sum, a) => sum + (parseFloat(a.sold_price) || 0), 0) +
+            soldLotsWithoutSeller.reduce((sum, l) => sum + (parseFloat(l.sold_price) || 0), 0);
+
+          const profitWithoutSeller =
+            soldArticlesWithoutSeller.reduce((sum, a) => sum + (parseFloat(a.net_profit) || 0), 0) +
+            soldLotsWithoutSeller.reduce((sum, l) => sum + (parseFloat(l.net_profit) || 0), 0);
+
+          const conversionWithoutSeller = totalPublishedWithoutSeller > 0 ? (totalSoldWithoutSeller / totalPublishedWithoutSeller) * 100 : 0;
 
           sellerStatsMap.set('no-seller', {
             id: 'no-seller',
             name: 'Sans vendeur',
-            totalSales: soldWithoutSeller.length,
+            totalSales: totalSoldWithoutSeller,
             totalRevenue: revenueWithoutSeller,
             totalProfit: profitWithoutSeller,
-            averagePrice: soldWithoutSeller.length > 0 ? revenueWithoutSeller / soldWithoutSeller.length : 0,
+            averagePrice: totalSoldWithoutSeller > 0 ? revenueWithoutSeller / totalSoldWithoutSeller : 0,
             conversionRate: conversionWithoutSeller,
-            articlesPublished: publishedWithoutSeller.length,
-            articlesSold: soldWithoutSeller.length,
+            articlesPublished: totalPublishedWithoutSeller,
+            articlesSold: totalSoldWithoutSeller,
           });
         }
 
@@ -227,9 +298,12 @@ export function AnalyticsPage() {
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-orange-700 uppercase tracking-wide mb-2">
-                Articles totaux
+                Total
               </p>
-              <p className="text-2xl font-bold text-gray-900">{metrics.totalArticles}</p>
+              <p className="text-2xl font-bold text-gray-900">{metrics.totalItems}</p>
+              <p className="text-[10px] text-orange-600 mt-1">
+                {metrics.totalArticles} articles · {metrics.totalLots} lots
+              </p>
             </div>
             <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
               <Package className="w-7 h-7 text-white" />
@@ -241,9 +315,12 @@ export function AnalyticsPage() {
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-2">
-                Articles vendus
+                Vendus
               </p>
-              <p className="text-2xl font-bold text-gray-900">{metrics.soldArticles}</p>
+              <p className="text-2xl font-bold text-gray-900">{metrics.soldArticles + metrics.soldLots}</p>
+              <p className="text-[10px] text-emerald-600 mt-1">
+                {metrics.soldArticles} articles · {metrics.soldLots} lots
+              </p>
             </div>
             <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
               <ShoppingBag className="w-7 h-7 text-white" />
@@ -313,7 +390,7 @@ export function AnalyticsPage() {
           </div>
           <p className="text-2xl font-bold text-gray-900">{metrics.conversionRate.toFixed(1)} %</p>
           <p className="text-xs text-gray-500 mt-1">
-            {metrics.soldArticles} vendus sur {metrics.publishedArticles} publiés
+            {metrics.soldArticles + metrics.soldLots} vendus sur {metrics.publishedArticles} publiés
           </p>
         </div>
       </div>
@@ -418,7 +495,7 @@ export function AnalyticsPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-gray-900">{seller.name}</span>
                         <span className="text-xs text-gray-600">
-                          {seller.articlesSold}/{seller.articlesPublished} articles
+                          {seller.articlesSold}/{seller.articlesPublished} vendus
                         </span>
                       </div>
                       <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
