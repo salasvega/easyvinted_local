@@ -218,7 +218,7 @@ export function AdminPage() {
         seller_id: lot.seller_id,
         seller_name: lot.family_members?.name || null,
         published_at: lot.published_at,
-        sold_at: lot.published_at,
+        sold_at: lot.sold_at,
         sold_price: lot.price ? parseFloat(lot.price) : undefined,
         net_profit: lot.net_profit ? parseFloat(lot.net_profit) : undefined,
         reference_number: lot.reference_number,
@@ -269,6 +269,26 @@ export function AdminPage() {
       month: '2-digit',
       year: 'numeric',
     });
+  };
+
+  const getItemDate = (item: AdminItem): string => {
+    if (item.status === 'sold' && item.sold_at) {
+      return item.sold_at;
+    }
+    if (item.status === 'scheduled' && item.scheduled_for) {
+      return item.scheduled_for;
+    }
+    return item.created_at;
+  };
+
+  const getDateLabel = (item: AdminItem): string => {
+    if (item.status === 'sold') {
+      return 'Vendu le';
+    }
+    if (item.status === 'scheduled') {
+      return 'Planifié le';
+    }
+    return 'Créé le';
   };
 
   const renderStatusIcon = (status: ArticleStatus) => {
@@ -708,12 +728,16 @@ export function AdminPage() {
                               #{item.reference_number}
                             </div>
                           )}
-                          <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                             <span className="text-base font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
                               {item.price.toFixed(0)}€
                             </span>
-                            <span className="text-[10px] text-gray-400">
-                              • {formatDate(item.created_at)}
+                            <span className={`text-[10px] ${
+                              item.status === 'sold' ? 'text-emerald-600 font-medium' :
+                              item.status === 'scheduled' ? 'text-blue-600 font-medium' :
+                              'text-gray-400'
+                            }`}>
+                              • {getDateLabel(item)} {formatDate(getItemDate(item))}
                             </span>
                             {item.status === 'sold' && item.net_profit !== undefined && (
                               <span className={`text-xs font-semibold ${
@@ -887,7 +911,7 @@ export function AdminPage() {
                     .update({
                       status: 'sold',
                       price: saleData.soldPrice,
-                      published_at: saleData.soldAt,
+                      sold_at: saleData.soldAt,
                       shipping_cost: saleData.shippingCost,
                       fees: saleData.fees,
                       net_profit: netProfit,

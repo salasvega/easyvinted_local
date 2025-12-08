@@ -68,8 +68,8 @@ export function SalesPage() {
         `)
         .eq('user_id', user.id)
         .eq('status', 'sold')
-        .not('published_at', 'is', null)
-        .order('published_at', { ascending: false });
+        .not('sold_at', 'is', null)
+        .order('sold_at', { ascending: false });
 
       if (lotsError) throw lotsError;
 
@@ -98,7 +98,7 @@ export function SalesPage() {
         brand: `Lot (${lot.lot_items?.length || 0} articles)`,
         price: parseFloat(lot.original_total_price),
         sold_price: parseFloat(lot.price) || 0,
-        sold_at: lot.published_at,
+        sold_at: lot.sold_at,
         platform: 'Vinted',
         shipping_cost: parseFloat(lot.shipping_cost) || 0,
         fees: parseFloat(lot.fees) || 0,
@@ -387,7 +387,7 @@ export function SalesPage() {
                   .from('lots')
                   .update({
                     price: saleData.soldPrice,
-                    published_at: saleData.soldAt,
+                    sold_at: saleData.soldAt,
                     shipping_cost: saleData.shippingCost,
                     fees: saleData.fees,
                     net_profit: netProfit,
