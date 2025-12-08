@@ -36,6 +36,8 @@ export default function LotsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | LotStatus>('all');
+  const [sellerFilter, setSellerFilter] = useState<string>('all');
+  const [familyMembers, setFamilyMembers] = useState<{ id: string; name: string }[]>([]);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingLotId, setEditingLotId] = useState<string | undefined>(undefined);
@@ -70,6 +72,7 @@ export default function LotsPage() {
 
   useEffect(() => {
     fetchLots();
+    fetchFamilyMembers();
   }, []);
 
   useEffect(() => {
@@ -81,6 +84,24 @@ export default function LotsPage() {
       setSearchParams(searchParams);
     }
   }, [searchParams]);
+
+  const fetchFamilyMembers = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .order('name');
+
+      if (error) throw error;
+
+      setFamilyMembers(data || []);
+    } catch (error) {
+      console.error('Error fetching family members:', error);
+    }
+  };
 
   const fetchLots = async () => {
     if (!user) return;
@@ -201,8 +222,9 @@ export default function LotsPage() {
     const matchesSearch = lot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          lot.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || lot.status === statusFilter;
+    const matchesSeller = sellerFilter === 'all' ? true : lot.seller_id === sellerFilter;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesSeller;
   });
 
   const getArticleCount = (lot: any) => {
@@ -319,6 +341,40 @@ export default function LotsPage() {
             ))}
           </div>
         </div>
+
+        {familyMembers.length > 0 && (
+          <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-0.5 h-3 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
+              <h3 className="text-xs font-semibold text-gray-900">Vendeur</h3>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide -mx-0.5 px-0.5">
+              <button
+                onClick={() => setSellerFilter('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 transition-all ${
+                  sellerFilter === 'all'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm scale-[1.02]'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                }`}
+              >
+                Tous
+              </button>
+              {familyMembers.map((member) => (
+                <button
+                  key={member.id}
+                  onClick={() => setSellerFilter(member.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 transition-all ${
+                    sellerFilter === member.id
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm scale-[1.02]'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                  }`}
+                >
+                  {member.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {loading ? (

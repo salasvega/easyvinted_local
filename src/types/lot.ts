@@ -19,6 +19,7 @@ export interface Lot {
   published_at?: string;
   vinted_url?: string;
   reference_number?: string;
+  seller_id?: string | null;
   created_at: string;
   updated_at: string;
 }
