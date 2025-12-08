@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Package, Settings, BarChart3, ShoppingBag, Calendar, Menu, X, LogOut, Users, Boxes } from 'lucide-react';
+import { Package, Settings, BarChart3, ShoppingBag, Calendar, Menu, X, LogOut, Users, Boxes, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
@@ -154,6 +154,17 @@ export function AppLayout({ children }: AppLayoutProps) {
                 >
                   <BarChart3 className="w-4 h-4" />
                   Statistiques
+                </Link>
+                <Link
+                  to="/admin"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/admin')
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin
                 </Link>
               </nav>
             </div>
@@ -321,6 +332,21 @@ export function AppLayout({ children }: AppLayoutProps) {
             >
               <BarChart3 className="w-5 h-5" />
               Statistiques
+            </Link>
+            <Link
+              to="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
+                mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+              } ${
+                isActive('/admin')
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+              style={{ transitionDelay: mobileMenuOpen ? '150ms' : '0ms' }}
+            >
+              <Shield className="w-5 h-5" />
+              Administration
             </Link>
 
             <div className="border-t border-gray-200 my-2 pt-2">
