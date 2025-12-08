@@ -645,9 +645,6 @@ export function AdminPage() {
                   <th className="px-4 py-3.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
                     Vendeur
                   </th>
-                  <th className="px-4 py-3.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">
-                    Création
-                  </th>
                   <th className="px-6 py-3.5 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
                     Actions
                   </th>
@@ -656,7 +653,7 @@ export function AdminPage() {
               <tbody className="bg-white divide-y divide-gray-100">
                 {filteredItems.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-16 text-center">
+                    <td colSpan={7} className="px-6 py-16 text-center">
                       <div className="max-w-sm mx-auto">
                         <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
                         <p className="text-lg font-medium text-gray-900 mb-2">Aucun élément trouvé</p>
@@ -713,6 +710,9 @@ export function AdminPage() {
                             <span className="text-base font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
                               {item.price.toFixed(0)}€
                             </span>
+                            <span className="text-[10px] text-gray-400">
+                              • {formatDate(item.created_at)}
+                            </span>
                             {item.status === 'sold' && item.net_profit !== undefined && (
                               <span className={`text-xs font-semibold ${
                                 item.net_profit >= 0 ? 'text-emerald-600' : 'text-red-600'
@@ -754,11 +754,6 @@ export function AdminPage() {
                         ) : (
                           <span className="text-xs text-gray-400">Non défini</span>
                         )}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="text-[11px] text-gray-500 font-medium">
-                          {formatDate(item.created_at)}
-                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap relative">
                         <div className="flex items-center justify-end gap-1">
