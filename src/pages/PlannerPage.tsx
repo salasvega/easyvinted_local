@@ -358,20 +358,6 @@ export function PlannerPage() {
                   Optimisez vos ventes en publiant vos articles et lots au meilleur
                   moment.
                 </p>
-
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Pill variant={totalReady > 0 ? 'primary' : 'neutral'}>
-                    {totalReady} annonce{totalReady > 1 ? 's' : ''} prêtes
-                  </Pill>
-                  <Pill variant={totalScheduled > 0 ? 'success' : 'neutral'}>
-                    {totalScheduled} publication
-                    {totalScheduled > 1 ? 's' : ''} planifiée
-                  </Pill>
-                  <Pill variant={pendingSuggestions > 0 ? 'warning' : 'neutral'}>
-                    {pendingSuggestions.length} suggestion
-                    {pendingSuggestions.length > 1 ? 's' : ''} à traiter
-                  </Pill>
-                </div>
               </div>
             </div>
 
