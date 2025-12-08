@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Package, Plus, Search, Eye, ClipboardEdit, Trash2, MoreVertical } from 'lucide-react';
+import { Package, Plus, Search, Eye, ClipboardEdit, Trash2, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Lot, LotStatus } from '../types/lot';
 import { Article } from '../types/article';
 import { Button } from '../components/ui/Button';
@@ -44,6 +44,7 @@ export default function LotsPage() {
     isOpen: false,
     lotId: null,
   });
+  const [photoIndexes, setPhotoIndexes] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchLots();
@@ -128,16 +129,42 @@ export default function LotsPage() {
     return lot.lot_items?.length || 0;
   };
 
-  const getFirstPhoto = (lot: any) => {
-    if (lot.cover_photo) return lot.cover_photo;
-    if (lot.photos && lot.photos.length > 0) return lot.photos[0];
-    if (lot.lot_items && lot.lot_items.length > 0) {
-      const firstArticle = lot.lot_items[0].articles;
-      if (firstArticle?.photos && firstArticle.photos.length > 0) {
-        return firstArticle.photos[0];
-      }
+  const getAllPhotos = (lot: any): string[] => {
+    const photos: string[] = [];
+
+    if (lot.cover_photo) {
+      photos.push(lot.cover_photo);
     }
-    return null;
+
+    if (lot.photos && Array.isArray(lot.photos)) {
+      photos.push(...lot.photos);
+    }
+
+    if (lot.lot_items && lot.lot_items.length > 0) {
+      lot.lot_items.forEach((item: any) => {
+        if (item.articles?.photos && Array.isArray(item.articles.photos)) {
+          photos.push(...item.articles.photos);
+        }
+      });
+    }
+
+    return photos;
+  };
+
+  const handlePreviousPhoto = (e: React.MouseEvent, lotId: string, totalPhotos: number) => {
+    e.stopPropagation();
+    setPhotoIndexes(prev => ({
+      ...prev,
+      [lotId]: ((prev[lotId] || 0) - 1 + totalPhotos) % totalPhotos
+    }));
+  };
+
+  const handleNextPhoto = (e: React.MouseEvent, lotId: string, totalPhotos: number) => {
+    e.stopPropagation();
+    setPhotoIndexes(prev => ({
+      ...prev,
+      [lotId]: ((prev[lotId] || 0) + 1) % totalPhotos
+    }));
   };
 
   return (
@@ -227,8 +254,10 @@ export default function LotsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredLots.map((lot: any) => {
-              const photo = getFirstPhoto(lot);
+              const photos = getAllPhotos(lot);
               const articleCount = getArticleCount(lot);
+              const currentPhotoIndex = photoIndexes[lot.id] || 0;
+              const currentPhoto = photos[currentPhotoIndex];
 
               return (
                 <div
@@ -236,10 +265,10 @@ export default function LotsPage() {
                   className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                   onClick={() => navigate(`/lots/${lot.id}/preview`)}
                 >
-                  <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
-                    {photo ? (
+                  <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden group">
+                    {currentPhoto ? (
                       <img
-                        src={photo}
+                        src={currentPhoto}
                         alt={lot.name}
                         className="w-full h-full object-cover"
                       />
@@ -248,6 +277,36 @@ export default function LotsPage() {
                         <Package className="w-16 h-16 text-gray-300" />
                       </div>
                     )}
+
+                    {photos.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => handlePreviousPhoto(e, lot.id, photos.length)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => handleNextPhoto(e, lot.id, photos.length)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1">
+                          {photos.map((_, index) => (
+                            <div
+                              key={index}
+                              className={`h-1.5 rounded-full transition-all ${
+                                index === currentPhotoIndex
+                                  ? 'w-4 bg-white'
+                                  : 'w-1.5 bg-white/50'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+
                     <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
                       <span className="text-white text-xs font-medium">{articleCount} articles</span>
                     </div>
