@@ -18,7 +18,6 @@ import { Lot } from '../types/lot';
 
 // UI Kit Apple-style
 import {
-  PageSection,
   Card,
   SoftCard,
   Pill,
@@ -339,7 +338,7 @@ export function PlannerPage() {
         />
       )}
 
-      <PageSection>
+      <div>
         <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Planificateur intelligent</h1>
             <p className="text-sm text-gray-600 mt-1">
@@ -640,7 +639,7 @@ export function PlannerPage() {
               </Card>
             </div>
           )}
-      </PageSection>
+      </div>
     </>
   );
 }
