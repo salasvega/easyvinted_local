@@ -132,14 +132,6 @@ export default function LotsPage() {
   const getAllPhotos = (lot: any): string[] => {
     const photos: string[] = [];
 
-    if (lot.cover_photo) {
-      photos.push(lot.cover_photo);
-    }
-
-    if (lot.photos && Array.isArray(lot.photos)) {
-      photos.push(...lot.photos);
-    }
-
     if (lot.lot_items && lot.lot_items.length > 0) {
       lot.lot_items.forEach((item: any) => {
         if (item.articles?.photos && Array.isArray(item.articles.photos)) {
