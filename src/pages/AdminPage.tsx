@@ -407,8 +407,10 @@ export function AdminPage() {
   };
 
   const handleEdit = (item: AdminItem) => {
-    if (item.type === 'article') {
-      navigate(`/articles/${item.id}/edit`);
+    if (item.status === 'sold') {
+      setSoldModal({ isOpen: true, item });
+    } else if (item.type === 'article') {
+      navigate(`/articles/${item.id}/edit-v2`);
     } else {
       navigate(`/lots/${item.id}/preview`);
     }
