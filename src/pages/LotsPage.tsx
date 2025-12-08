@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Package, Plus, Search, Eye, ClipboardEdit, Trash2, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, Plus, Search, Eye, ClipboardEdit, Trash2, MoreVertical, ChevronLeft, ChevronRight, FileText, CheckCircle2, Clock, Send, DollarSign } from 'lucide-react';
 import { Lot, LotStatus } from '../types/lot';
 import { Article } from '../types/article';
 import { Button } from '../components/ui/Button';
@@ -223,195 +223,206 @@ export default function LotsPage() {
     }));
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-12">
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 pt-0">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-                <Package className="w-5 h-5 text-white" />
-              </div>
-              Mes lots
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Créez des packs d'articles pour des ventes groupées
-            </p>
-          </div>
+  const renderStatusIcon = (status: LotStatus) => {
+    switch (status) {
+      case 'draft':
+        return <FileText className="w-3.5 h-3.5" />;
+      case 'ready':
+        return <CheckCircle2 className="w-3.5 h-3.5" />;
+      case 'scheduled':
+        return <Clock className="w-3.5 h-3.5" />;
+      case 'published':
+        return <Send className="w-3.5 h-3.5" />;
+      case 'sold':
+        return <DollarSign className="w-3.5 h-3.5" />;
+      default:
+        return null;
+    }
+  };
 
-          <Button
-            onClick={() => setBuilderOpen(true)}
-            className="inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Créer un lot
-          </Button>
+  return (
+    <div>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Mes lots</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Créez des packs d'articles pour des ventes groupées. ({filteredLots.length} {filteredLots.length === 1 ? 'lot' : 'lots'})
+          </p>
         </div>
 
-        <div className="mb-5 space-y-3">
-          <div className="relative max-w-2xl w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher un lot..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white shadow-sm transition-all hover:shadow"
-            />
-          </div>
+        <Button
+          onClick={() => setBuilderOpen(true)}
+          className="inline-flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Créer un lot
+        </Button>
+      </div>
 
-          <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-0.5 h-3 bg-gradient-to-b from-emerald-500 to-emerald-600 rounded-full"></div>
-              <h3 className="text-xs font-semibold text-gray-900">Statut</h3>
-            </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide -mx-0.5 px-0.5">
+      <div className="mb-5 space-y-3">
+        <div className="relative max-w-2xl w-full">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher un lot..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white shadow-sm transition-all hover:shadow"
+          />
+        </div>
+
+        <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-0.5 h-3 bg-gradient-to-b from-emerald-500 to-emerald-600 rounded-full"></div>
+            <h3 className="text-xs font-semibold text-gray-900">Statut</h3>
+          </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide -mx-0.5 px-0.5">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 transition-all ${
+                statusFilter === 'all'
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm scale-[1.02]'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
+              }`}
+            >
+              Tous
+            </button>
+            {(['draft', 'ready', 'scheduled', 'published'] as LotStatus[]).map((status) => (
               <button
-                onClick={() => setStatusFilter('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 transition-all ${
-                  statusFilter === 'all'
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 transition-all ${
+                  statusFilter === status
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm scale-[1.02]'
                     : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
                 }`}
               >
-                Tous
+                {renderStatusIcon(status)}
+                {STATUS_LABELS[status]}
               </button>
-              {(['draft', 'ready', 'scheduled', 'published', 'sold'] as LotStatus[]).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0 transition-all ${
-                    statusFilter === status
-                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm scale-[1.02]'
-                      : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
-                  }`}
-                >
-                  {STATUS_LABELS[status]}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-          </div>
-        ) : filteredLots.length === 0 ? (
-          <div className="text-center py-20">
-            <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun lot</h3>
-            <p className="text-sm text-gray-500 mb-6">Créez votre premier lot pour vendre plusieurs articles ensemble</p>
-            <Button onClick={() => setBuilderOpen(true)} className="inline-flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Créer un lot
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredLots.map((lot: any) => {
-              const photos = getAllPhotos(lot);
-              const articleCount = getArticleCount(lot);
-              const currentPhotoIndex = photoIndexes[lot.id] || 0;
-              const currentPhoto = photos[currentPhotoIndex];
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        </div>
+      ) : filteredLots.length === 0 ? (
+        <div className="text-center py-20">
+          <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun lot</h3>
+          <p className="text-sm text-gray-500 mb-6">Créez votre premier lot pour vendre plusieurs articles ensemble</p>
+          <Button onClick={() => setBuilderOpen(true)} className="inline-flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Créer un lot
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredLots.map((lot: any) => {
+            const photos = getAllPhotos(lot);
+            const articleCount = getArticleCount(lot);
+            const currentPhotoIndex = photoIndexes[lot.id] || 0;
+            const currentPhoto = photos[currentPhotoIndex];
 
-              return (
-                <div
-                  key={lot.id}
-                  className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer"
-                  onClick={() => navigate(`/lots/${lot.id}/preview`)}
-                >
-                  <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden group">
-                    {currentPhoto ? (
-                      <img
-                        src={currentPhoto}
-                        alt={lot.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <Package className="w-16 h-16 text-gray-300" />
-                      </div>
-                    )}
-
-                    {photos.length > 1 && (
-                      <>
-                        <button
-                          onClick={(e) => handlePreviousPhoto(e, lot.id, photos.length)}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => handleNextPhoto(e, lot.id, photos.length)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </>
-                    )}
-
-                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
-                      <span className="text-white text-xs font-medium">{articleCount} articles</span>
+            return (
+              <div
+                key={lot.id}
+                className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                onClick={() => navigate(`/lots/${lot.id}/preview`)}
+              >
+                <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden group">
+                  {currentPhoto ? (
+                    <img
+                      src={currentPhoto}
+                      alt={lot.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Package className="w-16 h-16 text-gray-300" />
                     </div>
-                    <div className="absolute bottom-3 left-3">
+                  )}
+
+                  {photos.length > 1 && (
+                    <>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setStatusModal({ isOpen: true, lotId: lot.id, currentStatus: lot.status });
-                        }}
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all hover:shadow-md active:scale-95 ${STATUS_COLORS[lot.status]}`}
+                        onClick={(e) => handlePreviousPhoto(e, lot.id, photos.length)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
                       >
-                        {STATUS_LABELS[lot.status]}
+                        <ChevronLeft className="w-4 h-4" />
                       </button>
-                    </div>
+                      <button
+                        onClick={(e) => handleNextPhoto(e, lot.id, photos.length)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+
+                  <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <span className="text-white text-xs font-medium">{articleCount} articles</span>
                   </div>
-
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">{lot.name}</h3>
-                    {lot.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{lot.description}</p>
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Prix du lot</p>
-                        <p className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
-                          {lot.price.toFixed(0)}€
-                        </p>
-                      </div>
-
-                      {lot.discount_percentage > 0 && (
-                        <div className="text-right">
-                          <p className="text-sm text-gray-500 mb-1">Remise</p>
-                          <p className="text-lg font-bold text-emerald-600">
-                            -{lot.discount_percentage}%
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
-                        Valeur totale: {lot.original_total_price.toFixed(0)}€
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteModal({ isOpen: true, lotId: lot.id });
-                        }}
-                        className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                  <div className="absolute bottom-3 left-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStatusModal({ isOpen: true, lotId: lot.id, currentStatus: lot.status });
+                      }}
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all hover:shadow-md active:scale-95 ${STATUS_COLORS[lot.status]}`}
+                    >
+                      {STATUS_LABELS[lot.status]}
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">{lot.name}</h3>
+                  {lot.description && (
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{lot.description}</p>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Prix du lot</p>
+                      <p className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
+                        {lot.price.toFixed(0)}€
+                      </p>
+                    </div>
+
+                    {lot.discount_percentage > 0 && (
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500 mb-1">Remise</p>
+                        <p className="text-lg font-bold text-emerald-600">
+                          -{lot.discount_percentage}%
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-xs text-gray-500">
+                      Valeur totale: {lot.original_total_price.toFixed(0)}€
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteModal({ isOpen: true, lotId: lot.id });
+                      }}
+                      className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <LotBuilder
         isOpen={builderOpen}
