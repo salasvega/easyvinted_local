@@ -535,11 +535,90 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes formDrawerSlideIn {
+          0% {
+            transform: translateX(100%) rotateY(-15deg) scale(0.95);
+            opacity: 0;
+          }
+          60% {
+            transform: translateX(-15px) rotateY(0deg) scale(1.02);
+          }
+          100% {
+            transform: translateX(0) rotateY(0deg) scale(1);
+            opacity: 1;
+          }
+        }
+        @keyframes formDrawerSlideOut {
+          0% {
+            transform: translateX(0) scale(1) rotateY(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(120%) scale(0.9) rotateY(15deg);
+            opacity: 0;
+          }
+        }
+        @keyframes formContentFadeIn {
+          0% {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes formBackdropFadeIn {
+          0% {
+            opacity: 0;
+            backdrop-filter: blur(0px) brightness(100%);
+          }
+          100% {
+            opacity: 1;
+            backdrop-filter: blur(4px) brightness(60%);
+          }
+        }
+        @keyframes formBackdropFadeOut {
+          0% {
+            opacity: 1;
+            backdrop-filter: blur(4px) brightness(60%);
+          }
+          100% {
+            opacity: 0;
+            backdrop-filter: blur(0px) brightness(100%);
+          }
+        }
+        .form-drawer-backdrop-enter {
+          animation: formBackdropFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .form-drawer-backdrop-exit {
+          animation: formBackdropFadeOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        .form-drawer-enter {
+          animation: formDrawerSlideIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .form-drawer-exit {
+          animation: formDrawerSlideOut 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        .form-drawer-content-item {
+          animation: formContentFadeIn 0.7s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+          animation-delay: calc(var(--item-index) * 0.06s);
+        }
+      `}} />
+
       <div
-        className="fixed inset-0 bg-black/50 z-[70] transition-opacity"
+        className={`fixed inset-0 bg-black/50 z-[70] ${
+          isOpen ? 'form-drawer-backdrop-enter' : 'form-drawer-backdrop-exit pointer-events-none'
+        }`}
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-out">
+      <div
+        className={`fixed inset-y-0 right-0 w-full max-w-md bg-white z-[70] shadow-2xl ${
+          isOpen ? 'form-drawer-enter' : 'form-drawer-exit'
+        }`}
+        style={{ perspective: '1000px' }}
+      >
         <div className="h-full flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white sticky top-0 z-10">
             <div>
@@ -567,7 +646,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
               <div className="flex-1 overflow-y-auto">
                 <div className="p-5 space-y-5">
                 {/* Photos */}
-                <div className="space-y-4">
+                <div className="space-y-4 form-drawer-content-item" style={{ '--item-index': 0 } as React.CSSProperties}>
                   <div className="bg-white rounded-3xl border-2 border-slate-200 overflow-hidden aspect-square relative">
                     {formData.photos.length > 0 ? (
                       <>
@@ -729,7 +808,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                 {/* Form */}
                 <div className="space-y-5">
                   {/* Title */}
-                  <div>
+                  <div className="form-drawer-content-item" style={{ '--item-index': 1 } as React.CSSProperties}>
                     <h3 className="text-xl font-bold text-slate-900 mb-1">
                       <input
                         type="text"
@@ -747,7 +826,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   </div>
 
                   {/* Description */}
-                  <div>
+                  <div className="form-drawer-content-item" style={{ '--item-index': 2 } as React.CSSProperties}>
                     <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Description</h4>
                     <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
                       <textarea
@@ -761,7 +840,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   </div>
 
                   {/* Article Details Grid */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 form-drawer-content-item" style={{ '--item-index': 3 } as React.CSSProperties}>
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                       <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
                       <input
@@ -845,7 +924,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   </div>
 
                   {/* Category */}
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 form-drawer-content-item" style={{ '--item-index': 4 } as React.CSSProperties}>
                     <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Categorie</p>
                     <select
                       value={formData.main_category}
@@ -896,7 +975,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   )}
 
                   {/* Price & Seller */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 form-drawer-content-item" style={{ '--item-index': 5 } as React.CSSProperties}>
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
                       <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
                       <div className="flex items-center">
