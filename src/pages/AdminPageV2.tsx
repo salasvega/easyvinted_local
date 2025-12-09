@@ -61,6 +61,13 @@ interface AdminItem {
   shipping_cost?: number;
   buyer_name?: string;
   sale_notes?: string;
+  size?: string;
+  color?: string;
+  material?: string;
+  condition?: string;
+  main_category?: string;
+  subcategory?: string;
+  item_category?: string;
 }
 
 export function AdminPageV2() {
@@ -218,6 +225,13 @@ export function AdminPageV2() {
         shipping_cost: article.shipping_cost ? parseFloat(article.shipping_cost) : undefined,
         buyer_name: article.buyer_name,
         sale_notes: article.sale_notes,
+        size: article.size,
+        color: article.color,
+        material: article.material,
+        condition: article.condition,
+        main_category: article.main_category,
+        subcategory: article.subcategory,
+        item_category: article.item_category,
       }));
 
       const lotItems: AdminItem[] = lots.map((lot: any) => ({

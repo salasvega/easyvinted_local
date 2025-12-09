@@ -28,6 +28,13 @@ interface AdminItem {
   shipping_cost?: number;
   buyer_name?: string;
   sale_notes?: string;
+  size?: string;
+  color?: string;
+  material?: string;
+  condition?: string;
+  main_category?: string;
+  subcategory?: string;
+  item_category?: string;
 }
 
 interface AdminDetailDrawerProps {
@@ -68,6 +75,16 @@ const SEASON_LABELS: Record<Season, string> = {
   winter: 'Hiver',
   'all-seasons': 'Toutes saisons',
   undefined: 'Non defini',
+};
+
+const CONDITION_LABELS: Record<string, string> = {
+  new_with_tag: 'Neuf avec étiquette',
+  new_without_tag: 'Neuf sans étiquette',
+  new_with_tags: 'Neuf avec étiquette',
+  new_without_tags: 'Neuf sans étiquette',
+  very_good: 'Très bon état',
+  good: 'Bon état',
+  satisfactory: 'Satisfaisant',
 };
 
 const renderStatusIcon = (status: ArticleStatus) => {
@@ -280,6 +297,51 @@ export function AdminDetailDrawer({
                       {item.description}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {item.type === 'article' && (
+                <div className="grid grid-cols-2 gap-3">
+                  {item.brand && (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
+                      <p className="text-sm font-medium text-slate-900">{item.brand}</p>
+                    </div>
+                  )}
+                  {item.size && (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Taille</p>
+                      <p className="text-sm font-medium text-slate-900">{item.size}</p>
+                    </div>
+                  )}
+                  {item.color && (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Couleur</p>
+                      <p className="text-sm font-medium text-slate-900">{item.color}</p>
+                    </div>
+                  )}
+                  {item.material && (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Matière</p>
+                      <p className="text-sm font-medium text-slate-900">{item.material}</p>
+                    </div>
+                  )}
+                  {item.condition && (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">État</p>
+                      <p className="text-sm font-medium text-slate-900">{CONDITION_LABELS[item.condition] || item.condition}</p>
+                    </div>
+                  )}
+                  {item.main_category && (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 col-span-2">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Catégorie</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {item.main_category}
+                        {item.subcategory && ` > ${item.subcategory}`}
+                        {item.item_category && ` > ${item.item_category}`}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
