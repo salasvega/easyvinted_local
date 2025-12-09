@@ -940,10 +940,7 @@ export default function LotBuilder({
                           <option value="published">Publié</option>
                           <option value="sold">Vendu</option>
                         </select>
-                        <p className="mt-2 text-xs text-slate-500">
-                          Le lot est créé en mode brouillon. Vous pourrez le
-                          modifier et publier plus tard.
-                        </p>
+                      
                       </div>
                     </div>
                   </Card>
