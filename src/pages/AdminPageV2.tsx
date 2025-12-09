@@ -36,6 +36,15 @@ const STATUS_COLORS: Record<ArticleStatus, string> = {
   sold: 'bg-emerald-100 text-emerald-700',
 };
 
+interface LotArticle {
+  id: string;
+  title: string;
+  brand?: string;
+  price: number;
+  photos: string[];
+  size?: string;
+}
+
 interface AdminItem {
   id: string;
   type: 'article' | 'lot';
@@ -69,6 +78,9 @@ interface AdminItem {
   main_category?: string;
   subcategory?: string;
   item_category?: string;
+  original_total_price?: number;
+  discount_percentage?: number;
+  articles?: LotArticle[];
 }
 
 export function AdminPageV2() {
@@ -187,7 +199,16 @@ export function AdminPageV2() {
           .from('lots')
           .select(`
             *,
-            lot_items!inner(article_id),
+            lot_items(
+              articles(
+                id,
+                title,
+                brand,
+                price,
+                photos,
+                size
+              )
+            ),
             family_members:seller_id (name)
           `)
           .eq('user_id', user.id)
@@ -243,31 +264,48 @@ export function AdminPageV2() {
         item_category: article.item_category,
       }));
 
-      const lotItems: AdminItem[] = lots.map((lot: any) => ({
-        id: lot.id,
-        type: 'lot',
-        title: lot.name,
-        brand: `Lot (${lot.lot_items?.length || 0} articles)`,
-        price: parseFloat(lot.price),
-        status: lot.status,
-        photos: lot.photos || [],
-        created_at: lot.created_at,
-        scheduled_for: lot.scheduled_for,
-        seller_id: lot.seller_id,
-        seller_name: lot.family_members?.name || null,
-        published_at: lot.published_at,
-        sold_at: lot.sold_at,
-        sold_price: lot.sold_price ? parseFloat(lot.sold_price) : undefined,
-        net_profit: lot.net_profit ? parseFloat(lot.net_profit) : undefined,
-        reference_number: lot.reference_number,
-        lot_article_count: lot.lot_items?.length || 0,
-        description: lot.description,
-        vinted_url: lot.vinted_url,
-        fees: lot.fees ? parseFloat(lot.fees) : undefined,
-        shipping_cost: lot.shipping_cost ? parseFloat(lot.shipping_cost) : undefined,
-        buyer_name: lot.buyer_name,
-        sale_notes: lot.sale_notes,
-      }));
+      const lotItems: AdminItem[] = lots.map((lot: any) => {
+        const lotArticles: LotArticle[] = (lot.lot_items || [])
+          .map((item: any) => item.articles)
+          .filter(Boolean)
+          .map((article: any) => ({
+            id: article.id,
+            title: article.title,
+            brand: article.brand,
+            price: parseFloat(article.price),
+            photos: article.photos || [],
+            size: article.size,
+          }));
+
+        return {
+          id: lot.id,
+          type: 'lot',
+          title: lot.name,
+          brand: `Lot (${lotArticles.length} articles)`,
+          price: parseFloat(lot.price),
+          status: lot.status,
+          photos: lot.photos || [],
+          created_at: lot.created_at,
+          scheduled_for: lot.scheduled_for,
+          seller_id: lot.seller_id,
+          seller_name: lot.family_members?.name || null,
+          published_at: lot.published_at,
+          sold_at: lot.sold_at,
+          sold_price: lot.sold_price ? parseFloat(lot.sold_price) : undefined,
+          net_profit: lot.net_profit ? parseFloat(lot.net_profit) : undefined,
+          reference_number: lot.reference_number,
+          lot_article_count: lotArticles.length,
+          description: lot.description,
+          vinted_url: lot.vinted_url,
+          fees: lot.fees ? parseFloat(lot.fees) : undefined,
+          shipping_cost: lot.shipping_cost ? parseFloat(lot.shipping_cost) : undefined,
+          buyer_name: lot.buyer_name,
+          sale_notes: lot.sale_notes,
+          original_total_price: lot.original_total_price ? parseFloat(lot.original_total_price) : undefined,
+          discount_percentage: lot.discount_percentage,
+          articles: lotArticles,
+        };
+      });
 
       const allItems = [...articleItems, ...lotItems].sort((a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

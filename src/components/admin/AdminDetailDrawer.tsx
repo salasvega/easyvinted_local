@@ -1,6 +1,15 @@
-import { X, Package, Eye, ClipboardEdit, Upload, Copy, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink, ChevronLeft, ChevronRight, Tag } from 'lucide-react';
+import { X, Package, Eye, ClipboardEdit, Upload, Copy, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink, ChevronLeft, ChevronRight, Tag, Layers, TrendingDown } from 'lucide-react';
 import { ArticleStatus, Season } from '../../types/article';
 import { useState, useEffect } from 'react';
+
+interface LotArticle {
+  id: string;
+  title: string;
+  brand?: string;
+  price: number;
+  photos: string[];
+  size?: string;
+}
 
 interface AdminItem {
   id: string;
@@ -35,6 +44,9 @@ interface AdminItem {
   main_category?: string;
   subcategory?: string;
   item_category?: string;
+  original_total_price?: number;
+  discount_percentage?: number;
+  articles?: LotArticle[];
 }
 
 interface AdminDetailDrawerProps {
@@ -274,6 +286,88 @@ export function AdminDetailDrawer({
                     </p>
                   </div>
                 </div>
+              )}
+
+              {item.type === 'lot' && item.articles && item.articles.length > 0 && (
+                <>
+                  {/* Articles List */}
+                  <div className="border-t border-slate-100 pt-4">
+                    <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">
+                      Articles inclus dans ce lot
+                    </h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {item.articles.map((article) => (
+                        <div
+                          key={article.id}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80"
+                        >
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                            {article.photos?.[0] ? (
+                              <img
+                                src={article.photos[0]}
+                                alt={article.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Package className="w-5 h-5 text-slate-300" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 truncate">
+                              {article.title}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {article.brand || 'Sans marque'}
+                              {article.size && ` • ${article.size}`}
+                            </p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-sm font-semibold text-slate-900">
+                              {article.price.toFixed(0)} €
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Articles Statistics */}
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-slate-600" />
+                        <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">
+                          Articles inclus
+                        </p>
+                      </div>
+                      <span className="text-2xl font-bold text-slate-900">{item.articles.length}</span>
+                    </div>
+                    {item.original_total_price !== undefined && (
+                      <p className="text-xs text-slate-500">
+                        Valeur totale : <span className="font-semibold text-slate-700">{item.original_total_price.toFixed(2)} €</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Prix et Remise */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                      <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix du lot</p>
+                      <p className="text-lg font-bold text-emerald-600">{item.price.toFixed(2)} €</p>
+                    </div>
+                    {item.discount_percentage !== undefined && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Remise</p>
+                        <div className="flex items-center gap-1.5">
+                          <TrendingDown className="w-4 h-4 text-rose-500" />
+                          <p className="text-lg font-bold text-slate-900">{item.discount_percentage}%</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
 
               {item.type === 'article' && (
