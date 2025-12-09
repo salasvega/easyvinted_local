@@ -268,22 +268,22 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
               </button>
 
               {showInfo && (
-                <div className="absolute top-full right-0 mt-2 w-96 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute top-full right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white border-2 border-blue-300 rounded-xl p-5 shadow-2xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      <Sparkles className="text-blue-600" size={22} />
+                    <div className="flex-shrink-0 mt-0.5 bg-blue-100 rounded-lg p-2">
+                      <Sparkles className="text-blue-600" size={20} />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-blue-900 font-bold text-base mb-2">
+                      <h3 className="text-slate-900 font-bold text-base mb-2">
                         Studio Photo IA - Gemini 2.5 Flash Image
                       </h3>
-                      <p className="text-blue-800 text-sm leading-relaxed">
+                      <p className="text-slate-700 text-sm leading-relaxed">
                         Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit, ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
                       </p>
                     </div>
                     <button
                       onClick={() => setShowInfo(false)}
-                      className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                      className="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors hover:bg-slate-100 rounded-lg p-1"
                       title="Fermer"
                     >
                       <X size={18} />
