@@ -626,9 +626,9 @@ export function AdminPageV2() {
               <table className="min-w-full">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Type</th>
                     <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Article / Lot</th>
                     <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Details</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Type</th>
                     <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
                     <th className="px-4 py-3 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Vendeur</th>
                     <th className="px-4 py-3 text-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Saison</th>
@@ -642,15 +642,6 @@ export function AdminPageV2() {
                       className="group hover:bg-slate-50 cursor-pointer transition-colors"
                       onClick={() => openItemDrawer(item)}
                     >
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold ${
-                          item.type === 'lot'
-                            ? 'bg-violet-100 text-violet-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {item.type === 'lot' ? 'LOT' : 'ARTICLE'}
-                        </span>
-                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -671,6 +662,15 @@ export function AdminPageV2() {
                             <span className="text-[10px] text-slate-400">{getDateLabel(item)} {formatDate(getItemDate(item))}</span>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold ${
+                          item.type === 'lot'
+                            ? 'bg-violet-100 text-violet-700'
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {item.type === 'lot' ? 'LOT' : 'ARTICLE'}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <button
