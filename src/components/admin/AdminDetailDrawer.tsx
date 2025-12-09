@@ -269,7 +269,10 @@ export function AdminDetailDrawer({
             <div className="p-5 space-y-5">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">{item.title}</h3>
-                <p className="text-sm font-medium text-slate-600">{item.brand || 'Sans marque'}</p>
+                <p className="text-sm font-medium text-slate-600">
+                  {item.brand || 'Sans marque'}
+                  {item.size && ` • ${item.size}`}
+                </p>
                 {item.reference_number && (
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs text-slate-400 font-mono">Ref. #{item.reference_number}</span>
