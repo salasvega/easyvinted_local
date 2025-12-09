@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, Edit2, Trash2, Star, Pencil } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, Star, Pencil, MoreVertical, X, Shirt, Footprints } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -35,6 +35,8 @@ export function FamilyMembersPage() {
   const [editingCustomPersonaId, setEditingCustomPersonaId] = useState<string | null>(null);
   const [customPersonas, setCustomPersonas] = useState<Record<string, CustomPersonaData & { id: string }>>({});
   const [standaloneCustomPersonas, setStandaloneCustomPersonas] = useState<Array<CustomPersonaData & { id: string }>>([]);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [showPersonaSection, setShowPersonaSection] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -50,6 +52,14 @@ export function FamilyMembersPage() {
     loadData();
     loadCustomPersonas();
   }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenuId(null);
+    if (activeMenuId) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [activeMenuId]);
 
   async function loadData() {
     if (!user) return;
@@ -133,12 +143,15 @@ export function FamilyMembersPage() {
         shoe_size: '',
       });
     }
+    setShowPersonaSection(false);
     setShowModal(true);
+    setActiveMenuId(null);
   }
 
   function closeModal() {
     setShowModal(false);
     setEditingMember(null);
+    setShowPersonaSection(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -225,6 +238,7 @@ export function FamilyMembersPage() {
 
       if (error) throw error;
       loadData();
+      setActiveMenuId(null);
     } catch (error) {
       console.error('Error updating default:', error);
       setToast({ message: 'Erreur lors de la mise à jour', type: 'error' });
@@ -352,128 +366,151 @@ export function FamilyMembersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-600">Chargement...</div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-600 mx-auto mb-4"></div>
+            <p className="text-slate-600">Chargement...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <Users className="w-8 h-8 text-teal-600" />
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Nos vendeurs</h1>
-            <p className="text-sm text-gray-600">Gérez les vendeurs de votre compte</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Nos vendeurs</h1>
+            <p className="text-sm text-slate-600 mt-0.5">Gérez les vendeurs de votre compte</p>
           </div>
         </div>
-        <Button type="button" onClick={() => openModal()}>
+        <Button type="button" onClick={() => openModal()} className="w-full sm:w-auto">
           <Plus className="w-5 h-5" />
-          Ajouter un membre
+          <span className="sm:inline">Ajouter</span>
         </Button>
       </div>
 
       {members.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun membre</h3>
-          <p className="text-gray-600 mb-6">
-            Créez des profils pour les différents vendeurs de votre équipe
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 text-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 sm:w-10 sm:h-10 text-slate-400" />
+          </div>
+          <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">Aucun vendeur</h3>
+          <p className="text-slate-600 mb-6 max-w-md mx-auto">
+            Créez des profils pour les différents vendeurs de votre équipe et personnalisez leur style rédactionnel
           </p>
-          
+          <Button type="button" onClick={() => openModal()}>
+            <Plus className="w-5 h-5" />
+            Ajouter votre premier vendeur
+          </Button>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 sm:gap-5">
           {members.map(member => {
             const personaInfo = getPersonaInfo(member);
             return (
               <div
                 key={member.id}
-                className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-4 sm:p-6 hover:shadow-lg hover:border-slate-300 transition-all duration-200"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900">{member.name}</h3>
-                      {member.is_default && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                          <Star className="w-3 h-3 mr-1" />
-                          Par défaut
-                        </span>
-                      )}
+                <div className="flex items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">{member.name}</h3>
+                          {member.is_default && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 flex-shrink-0">
+                              <Star className="w-3 h-3 mr-1 fill-current" />
+                              Par défaut
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-600">{member.age} ans</p>
+                      </div>
+
+                      <div className="relative flex-shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenuId(activeMenuId === member.id ? null : member.id);
+                          }}
+                          className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+
+                        {activeMenuId === member.id && (
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-50">
+                            <button
+                              onClick={() => {
+                                toggleDefault(member.id, member.is_default);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                            >
+                              <Star className={`w-4 h-4 ${member.is_default ? 'fill-current text-emerald-600' : 'text-slate-400'}`} />
+                              {member.is_default ? 'Retirer par défaut' : 'Définir par défaut'}
+                            </button>
+                            <button
+                              onClick={() => openModal(member)}
+                              className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                            >
+                              <Edit2 className="w-4 h-4 text-blue-600" />
+                              Modifier
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMemberToDelete(member.id);
+                                setActiveMenuId(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {member.age} ans
-                    </p>
+
                     {(member.clothing_size || member.shoe_size) && (
-                      <div className="flex gap-3 mb-3 text-sm text-gray-700">
+                      <div className="flex flex-wrap gap-2 sm:gap-3 mb-3">
                         {member.clothing_size && (
-                          <div>
-                            <span className="text-gray-500">Taille: </span>
-                            <span className="font-medium">{member.clothing_size}</span>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-lg text-sm">
+                            <Shirt className="w-4 h-4 text-slate-600" />
+                            <span className="font-medium text-slate-900">{member.clothing_size}</span>
                           </div>
                         )}
                         {member.shoe_size && (
-                          <div>
-                            <span className="text-gray-500">Pointure: </span>
-                            <span className="font-medium">{member.shoe_size}</span>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-lg text-sm">
+                            <Footprints className="w-4 h-4 text-slate-600" />
+                            <span className="font-medium text-slate-900">{member.shoe_size}</span>
                           </div>
                         )}
                       </div>
                     )}
-                    <div className={`flex items-center justify-between p-3 rounded-lg border ${personaInfo.color}`}>
-                      <div className="flex items-center flex-1 min-w-0">
-                        <span className="mr-2 text-lg flex-shrink-0">{personaInfo.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium text-gray-900">{personaInfo.name}</span>
-                            {(member.persona_id === 'custom' || customPersonas[member.persona_id]) && (
-                              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
-                                Personnalisé
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">
-                            {personaInfo.description}
-                          </p>
+
+                    <div className={`flex items-center gap-2 p-3 rounded-lg border ${personaInfo.color}`}>
+                      <span className="text-xl flex-shrink-0">{personaInfo.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-semibold text-slate-900">{personaInfo.name}</span>
+                          {(member.persona_id === 'custom' || customPersonas[member.persona_id]) && (
+                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+                              Personnalisé
+                            </span>
+                          )}
                         </div>
+                        <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">
+                          {personaInfo.description}
+                        </p>
                       </div>
-                      <button
-                        onClick={() => openModal(member)}
-                        className="ml-2 p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-100 rounded transition-colors flex-shrink-0"
-                        title="Modifier le persona"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => toggleDefault(member.id, member.is_default)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        member.is_default
-                          ? 'text-teal-600 hover:bg-teal-50'
-                          : 'text-gray-400 hover:bg-gray-50 hover:text-teal-600'
-                      }`}
-                      title={member.is_default ? 'Retirer par défaut' : 'Définir par défaut'}
-                    >
-                      <Star className={`w-5 h-5 ${member.is_default ? 'fill-current' : ''}`} />
-                    </button>
-                    <button
-                      onClick={() => openModal(member)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Modifier"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setMemberToDelete(member.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -486,232 +523,242 @@ export function FamilyMembersPage() {
         <Modal
           isOpen={showModal}
           onClose={closeModal}
-          title={editingMember ? 'Modifier le membre' : 'Ajouter un membre'}
-          footer={
-            <div className="flex space-x-3">
-              <Button type="button" variant="secondary" onClick={closeModal} className="flex-1">
-                Annuler
-              </Button>
-              <Button type="submit" form="family-member-form" className="flex-1">
-                {editingMember ? 'Modifier' : 'Ajouter'}
-              </Button>
-            </div>
-          }
+          title={editingMember ? 'Modifier le vendeur' : 'Ajouter un vendeur'}
         >
-          <form id="family-member-form" onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nom / Pseudo
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: Nina, Tom, Papa..."
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Âge
-              </label>
-              <input
-                type="number"
-                value={formData.age}
-                onChange={e => setFormData({ ...formData, age: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: 25"
-                min="1"
-                max="120"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <label htmlFor="clothing_size" className="block text-sm font-medium text-gray-700 mb-1">
-                  Taille de vêtements
-                </label>
-                <select
-                  id="clothing_size"
-                  value={formData.clothing_size}
-                  onChange={(e) => setFormData({ ...formData, clothing_size: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="">Sélectionner</option>
-                  <option value="XS">XS</option>
-                  <option value="S">S</option>
-                  <option value="M">M</option>
-                  <option value="L">L</option>
-                  <option value="XL">XL</option>
-                  <option value="XXL">XXL</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="shoe_size" className="block text-sm font-medium text-gray-700 mb-1">
-                  Pointure
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Nom / Pseudo <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="shoe_size"
-                  value={formData.shoe_size}
-                  onChange={(e) => setFormData({ ...formData, shoe_size: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="Ex: 38, 42"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  placeholder="Ex: Nina, Tom, Papa..."
+                  required
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Âge <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.age}
+                  onChange={e => setFormData({ ...formData, age: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  placeholder="Ex: 25"
+                  min="1"
+                  max="120"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    <div className="flex items-center gap-1">
+                      <Shirt className="w-4 h-4" />
+                      Taille
+                    </div>
+                  </label>
+                  <select
+                    value={formData.clothing_size}
+                    onChange={(e) => setFormData({ ...formData, clothing_size: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">-</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="XXL">XXL</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    <div className="flex items-center gap-1">
+                      <Footprints className="w-4 h-4" />
+                      Pointure
+                    </div>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.shoe_size}
+                    onChange={(e) => setFormData({ ...formData, shoe_size: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    placeholder="38, 42..."
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Style rédactionnel
-                </label>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsPersonaModalOpen(true)}
-                  className="text-xs"
-                >
-                  <Plus className="w-3 h-3" />
-                  Créer un style personnalisé
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {PERSONAS.map(persona => {
-                  const customPersona = customPersonas[persona.id];
-                  const displayPersona = customPersona || persona;
+            <div className="border-t border-slate-200 pt-5">
+              <button
+                type="button"
+                onClick={() => setShowPersonaSection(!showPersonaSection)}
+                className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-slate-900">Style rédactionnel</span>
+                  <span className="text-xs text-slate-600">(optionnel)</span>
+                </div>
+                {showPersonaSection ? <X className="w-5 h-5 text-slate-600" /> : <Plus className="w-5 h-5 text-slate-600" />}
+              </button>
 
-                  return (
-                    <div
-                      key={persona.id}
-                      className={`flex items-start p-3 border rounded-lg transition-colors ${
-                        formData.persona_id === persona.id
-                          ? 'border-teal-500 bg-teal-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+              {showPersonaSection && (
+                <div className="mt-4 space-y-3 max-h-[400px] overflow-y-auto">
+                  <div className="flex items-center justify-end">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setIsPersonaModalOpen(true)}
+                      className="text-xs"
                     >
-                      <input
-                        type="radio"
-                        name="persona"
-                        value={persona.id}
-                        checked={formData.persona_id === persona.id}
-                        onChange={() => setFormData({
-                          ...formData,
-                          persona_id: persona.id,
-                          writing_style: customPersona?.writing_style || persona.writingStyle
-                        })}
-                        className="mt-1 mr-3 cursor-pointer"
-                      />
-                      <div className="flex-1 cursor-pointer" onClick={() => setFormData({
-                        ...formData,
-                        persona_id: persona.id,
-                        writing_style: customPersona?.writing_style || persona.writingStyle
-                      })}>
-                        <div className="flex items-center mb-1">
-                          <span className="mr-2">{displayPersona.emoji}</span>
-                          <span className="font-medium text-gray-900">{displayPersona.name}</span>
-                          {customPersona && (
-                            <span className="ml-2 text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded">
+                      <Plus className="w-3 h-3" />
+                      Créer un style personnalisé
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {PERSONAS.map(persona => {
+                      const customPersona = customPersonas[persona.id];
+                      const displayPersona = customPersona || persona;
+
+                      return (
+                        <label
+                          key={persona.id}
+                          className={`flex items-start gap-3 p-3 border rounded-lg transition-all cursor-pointer ${
+                            formData.persona_id === persona.id
+                              ? 'border-emerald-500 bg-emerald-50 shadow-sm'
+                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="persona"
+                            value={persona.id}
+                            checked={formData.persona_id === persona.id}
+                            onChange={() => setFormData({
+                              ...formData,
+                              persona_id: persona.id,
+                              writing_style: customPersona?.writing_style || persona.writingStyle
+                            })}
+                            className="mt-1 flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg">{displayPersona.emoji}</span>
+                              <span className="font-medium text-slate-900 text-sm">{displayPersona.name}</span>
+                              {customPersona && (
+                                <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                  Personnalisé
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-600">{displayPersona.description}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setEditingBasePersonaId(persona.id);
+                              setCustomPersonaData(customPersona || {
+                                name: persona.name,
+                                emoji: persona.emoji,
+                                description: persona.description,
+                                color: persona.color,
+                                writing_style: persona.writingStyle,
+                              });
+                              setIsPersonaModalOpen(true);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-100 rounded transition-colors flex-shrink-0"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        </label>
+                      );
+                    })}
+                    {standaloneCustomPersonas.map(customPersona => (
+                      <label
+                        key={customPersona.id}
+                        className={`flex items-start gap-3 p-3 border rounded-lg transition-all cursor-pointer ${
+                          formData.persona_id === 'custom'
+                            ? 'border-emerald-500 bg-emerald-50 shadow-sm'
+                            : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="persona"
+                          value="custom"
+                          checked={formData.persona_id === 'custom'}
+                          onChange={() => setFormData({
+                            ...formData,
+                            persona_id: 'custom',
+                            writing_style: customPersona.writing_style
+                          })}
+                          className="mt-1 flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">{customPersona.emoji}</span>
+                            <span className="font-medium text-slate-900 text-sm">{customPersona.name}</span>
+                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
                               Personnalisé
                             </span>
-                          )}
+                          </div>
+                          <p className="text-xs text-slate-600">{customPersona.description}</p>
                         </div>
-                        <p className="text-sm text-gray-600">{displayPersona.description}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingBasePersonaId(persona.id);
-                          setCustomPersonaData(customPersona || {
-                            name: persona.name,
-                            emoji: persona.emoji,
-                            description: persona.description,
-                            color: persona.color,
-                            writing_style: persona.writingStyle,
-                          });
-                          setIsPersonaModalOpen(true);
-                        }}
-                        className="ml-2 p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-100 rounded transition-colors"
-                        title="Modifier ce persona"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })}
-                {standaloneCustomPersonas.map(customPersona => (
-                  <div
-                    key={customPersona.id}
-                    className={`flex items-start p-3 border rounded-lg transition-colors ${
-                      formData.persona_id === 'custom'
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="persona"
-                      value="custom"
-                      checked={formData.persona_id === 'custom'}
-                      onChange={() => setFormData({
-                        ...formData,
-                        persona_id: 'custom',
-                        writing_style: customPersona.writing_style
-                      })}
-                      className="mt-1 mr-3 cursor-pointer"
-                    />
-                    <div className="flex-1 cursor-pointer" onClick={() => setFormData({
-                      ...formData,
-                      persona_id: 'custom',
-                      writing_style: customPersona.writing_style
-                    })}>
-                      <div className="flex items-center mb-1">
-                        <span className="mr-2">{customPersona.emoji}</span>
-                        <span className="font-medium text-gray-900">{customPersona.name}</span>
-                        <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
-                          Personnalisé
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600">{customPersona.description}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCustomPersonaId(customPersona.id);
-                        setCustomPersonaData({
-                          name: customPersona.name,
-                          emoji: customPersona.emoji,
-                          description: customPersona.description,
-                          color: customPersona.color,
-                          writing_style: customPersona.writing_style,
-                        });
-                        setIsPersonaModalOpen(true);
-                      }}
-                      className="ml-2 p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-100 rounded transition-colors"
-                      title="Modifier ce persona"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setEditingCustomPersonaId(customPersona.id);
+                            setCustomPersonaData({
+                              name: customPersona.name,
+                              emoji: customPersona.emoji,
+                              description: customPersona.description,
+                              color: customPersona.color,
+                              writing_style: customPersona.writing_style,
+                            });
+                            setIsPersonaModalOpen(true);
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-100 rounded transition-colors flex-shrink-0"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </label>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="is_default"
-                checked={formData.is_default}
-                onChange={e => setFormData({ ...formData, is_default: e.target.checked })}
-                className="mr-2 rounded"
-              />
-              <label htmlFor="is_default" className="text-sm text-gray-700">
-                Définir comme vendeur par défaut
+            <div className="border-t border-slate-200 pt-5">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_default}
+                  onChange={e => setFormData({ ...formData, is_default: e.target.checked })}
+                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+                <span className="text-sm text-slate-700">Définir comme vendeur par défaut</span>
               </label>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="secondary" onClick={closeModal} className="flex-1">
+                Annuler
+              </Button>
+              <Button type="submit" className="flex-1">
+                {editingMember ? 'Modifier' : 'Ajouter'}
+              </Button>
             </div>
           </form>
         </Modal>
@@ -721,8 +768,8 @@ export function FamilyMembersPage() {
         isOpen={memberToDelete !== null}
         onClose={() => setMemberToDelete(null)}
         onConfirm={handleDelete}
-        title="Supprimer le membre"
-        message="Êtes-vous sûr de vouloir supprimer ce membre ? Cette action est irréversible."
+        title="Supprimer le vendeur"
+        message="Êtes-vous sûr de vouloir supprimer ce vendeur ? Cette action est irréversible."
         confirmLabel="Supprimer"
         cancelLabel="Annuler"
         variant="danger"
