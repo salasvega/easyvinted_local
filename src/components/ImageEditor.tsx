@@ -254,7 +254,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
             {/* Photo principale */}
             <div
               ref={imageContainerRef}
-              className="aspect-[4/5] bg-slate-100 rounded-xl overflow-hidden relative select-none"
+              className="h-[400px] bg-slate-100 rounded-xl overflow-hidden relative select-none"
             >
               <div
                 className="absolute inset-0 flex items-center justify-center overflow-hidden"
