@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Package, Settings, BarChart3, Calendar, Menu, X, LogOut, Users, Boxes, Shield } from 'lucide-react';
+import { Package, Settings, BarChart3, Calendar, Menu, X, LogOut, Users, Boxes, Shield, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
@@ -134,14 +134,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                   Statistiques
                 </Link>
                 <Link
-                  to="/admin"
+                  to="/admin-v2"
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/admin')
+                    isActive('/admin-v2')
                       ? 'bg-emerald-50 text-emerald-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  <Shield className="w-4 h-4" />
+                  <LayoutDashboard className="w-4 h-4" />
                   Admin
                 </Link>
               </nav>
@@ -282,18 +282,18 @@ export function AppLayout({ children }: AppLayoutProps) {
               Statistiques
             </Link>
             <Link
-              to="/admin"
+              to="/admin-v2"
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
                 mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
               } ${
-                isActive('/admin')
+                isActive('/admin-v2')
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
               style={{ transitionDelay: mobileMenuOpen ? '90ms' : '0ms' }}
             >
-              <Shield className="w-5 h-5" />
+              <LayoutDashboard className="w-5 h-5" />
               Administration
             </Link>
 
