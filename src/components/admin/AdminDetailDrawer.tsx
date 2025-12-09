@@ -401,6 +401,32 @@ export function AdminDetailDrawer({
                 </a>
               )}
 
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900">{item.price.toFixed(2)}€</p>
+                    {item.status === 'sold' && item.sold_price && (
+                      <p className="text-sm text-slate-500 mt-0.5">
+                        Vendu à <span className="font-semibold text-emerald-600">{item.sold_price.toFixed(2)}€</span>
+                      </p>
+                    )}
+                    {item.status === 'sold' && item.net_profit !== undefined && (
+                      <p className={`text-sm font-semibold mt-0.5 ${item.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {item.net_profit >= 0 ? '+' : ''}{item.net_profit.toFixed(2)}€ bénéfice net
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={onStatusChange}
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} hover:scale-105 transition-transform text-sm font-semibold`}
+                  >
+                    {renderStatusIcon(item.status)}
+                    <span>{STATUS_LABELS[item.status]}</span>
+                  </button>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">{getStatusMessage()}</p>
+              </div>
+
               <div>
                 <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Actions rapides</h4>
                 <div className="grid grid-cols-2 gap-2">
@@ -428,32 +454,6 @@ export function AdminDetailDrawer({
                     </button>
                   )}
                 </div>
-              </div>
-
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="text-2xl font-bold text-slate-900">{item.price.toFixed(2)}€</p>
-                    {item.status === 'sold' && item.sold_price && (
-                      <p className="text-sm text-slate-500 mt-0.5">
-                        Vendu à <span className="font-semibold text-emerald-600">{item.sold_price.toFixed(2)}€</span>
-                      </p>
-                    )}
-                    {item.status === 'sold' && item.net_profit !== undefined && (
-                      <p className={`text-sm font-semibold mt-0.5 ${item.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                        {item.net_profit >= 0 ? '+' : ''}{item.net_profit.toFixed(2)}€ bénéfice net
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={onStatusChange}
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} hover:scale-105 transition-transform text-sm font-semibold`}
-                  >
-                    {renderStatusIcon(item.status)}
-                    <span>{STATUS_LABELS[item.status]}</span>
-                  </button>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">{getStatusMessage()}</p>
               </div>
             </div>
           </div>
