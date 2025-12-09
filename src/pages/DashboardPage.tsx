@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, ClipboardEdit, MoreVertical, Plus, Image as ImageIcon, Search, Copy, Trash2, DollarSign, Calendar, Clock, CheckCircle2, FileText, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ClipboardList, Upload } from 'lucide-react';
+import { Eye, ClipboardEdit, Plus, Image as ImageIcon, Search, Trash2, DollarSign, Calendar, Clock, FileText, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ClipboardList, Upload } from 'lucide-react';
 import { Article, ArticleStatus, Season } from '../types/article';
 import { Button } from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
@@ -91,35 +91,10 @@ export function DashboardPage() {
     article: null,
   });
 
-
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const desktopMenuRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
     fetchArticles();
     fetchFamilyMembers();
   }, [user]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        desktopMenuRef.current &&
-        !desktopMenuRef.current.contains(event.target as Node)
-      ) {
-        setOpenMenuId(null);
-      }
-    }
-
-    if (openMenuId) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [openMenuId]);
 
   const fetchArticles = async () => {
     if (!user) return;
@@ -232,39 +207,6 @@ export function DashboardPage() {
         return <CloudSun className={`${sizeClass} text-gray-600`} title="Toutes saisons" />;
       default:
         return <CloudSun className={`${sizeClass} text-gray-400`} title="Non défini" />;
-    }
-  };
-
-  const handleDuplicate = async (article: Article) => {
-    try {
-      const { id, created_at, updated_at, reference_number, ...rest } = article;
-
-      const { error } = await supabase
-        .from('articles')
-        .insert([
-          {
-            ...rest,
-            status: 'draft',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]);
-
-      if (error) throw error;
-
-      setToast({
-        type: 'success',
-        text: 'Article dupliqué avec succès',
-      });
-      fetchArticles();
-    } catch (error) {
-      console.error('Error duplicating article:', error);
-      setToast({
-        type: 'error',
-        text: 'Erreur lors de la duplication de l\'article',
-      });
-    } finally {
-      setOpenMenuId(null);
     }
   };
 
@@ -388,71 +330,6 @@ export function DashboardPage() {
         type: 'error',
         text: "Erreur lors de la mise à jour de l'article",
       });
-    }
-  };
-
-  const handlePlanification = (article: Article) => {
-    setScheduleModal({
-      isOpen: true,
-      article,
-    });
-    setOpenMenuId(null);
-  };
-
-  const handleMarkReady = async (article: Article) => {
-    try {
-      const { error } = await supabase
-        .from('articles')
-        .update({
-          status: 'ready',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', article.id);
-
-      if (error) throw error;
-
-      setToast({
-        type: 'success',
-        text: 'Article marqué comme prêt',
-      });
-      fetchArticles();
-    } catch (error) {
-      console.error('Error marking article as ready:', error);
-      setToast({
-        type: 'error',
-        text: 'Erreur lors de la mise à jour de l\'article',
-      });
-    } finally {
-      setOpenMenuId(null);
-    }
-  };
-
-  const handleMarkPublished = async (article: Article) => {
-    try {
-      const { error } = await supabase
-        .from('articles')
-        .update({
-          status: 'published',
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', article.id);
-
-      if (error) throw error;
-
-      setToast({
-        type: 'success',
-        text: 'Article marqué comme publié',
-      });
-      fetchArticles();
-    } catch (error) {
-      console.error('Error marking article as published:', error);
-      setToast({
-        type: 'error',
-        text: 'Erreur lors de la mise à jour de l\'article',
-      });
-    } finally {
-      setOpenMenuId(null);
     }
   };
 
@@ -661,28 +538,29 @@ export function DashboardPage() {
                       {STATUS_LABELS[article.status]}
                     </button>
 
-                    <div className="flex items-center gap-1">
-                      {(article.status === 'ready' || article.status === 'scheduled') && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/articles/${article.id}/structure`);
-                          }}
-                          className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-all active:scale-90"
-                          title="Envoyer à Vinted"
-                        >
-                          <Upload className="w-4 h-4" />
-                        </button>
-                      )}
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/articles/${article.id}/edit`);
                         }}
-                        className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-all active:scale-90"
+                        className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-all active:scale-90"
                         title="Modifier"
                       >
                         <ClipboardEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteModal({
+                            isOpen: true,
+                            articleId: article.id,
+                          });
+                        }}
+                        className="p-2 rounded-xl hover:bg-red-50 text-gray-500 hover:text-red-600 transition-all active:scale-90"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -830,107 +708,30 @@ export function DashboardPage() {
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap relative">
-                      <div className="flex items-center justify-end gap-1">
-                        {(article.status === 'ready' || article.status === 'scheduled') && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/articles/${article.id}/structure`);
-                            }}
-                            className="p-2.5 rounded-xl text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all active:scale-90"
-                            title="Envoyer à Vinted"
-                          >
-                            <Upload className="w-4 h-4" />
-                          </button>
-                        )}
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/articles/${article.id}/edit`);
                           }}
-                          className="p-2.5 rounded-xl text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all active:scale-90"
+                          className="p-2.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90"
                           title="Modifier"
                         >
                           <ClipboardEdit className="w-4 h-4" />
                         </button>
-                        <div
-                          className="relative"
-                          ref={openMenuId === article.id ? desktopMenuRef : null}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteModal({
+                              isOpen: true,
+                              articleId: article.id,
+                            });
+                          }}
+                          className="p-2.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all active:scale-90"
+                          title="Supprimer"
                         >
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenMenuId(
-                                openMenuId === article.id ? null : article.id
-                              );
-                            }}
-                            className="p-2.5 rounded-xl text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all active:scale-90"
-                            title="Plus d'actions"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {openMenuId === article.id && (
-                            <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-200/50 py-2 z-[9999] backdrop-blur-sm">
-                              <button
-                                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 flex items-center gap-3 rounded-lg transition-all mx-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDuplicate(article);
-                                }}
-                              >
-                                <Copy className="w-4 h-4" />
-                                <span className="font-medium">Dupliquer</span>
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 flex items-center gap-3 rounded-lg transition-all mx-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handlePlanification(article);
-                                }}
-                              >
-                                <Calendar className="w-4 h-4" />
-                                <span className="font-medium">Programmer</span>
-                              </button>
-                              {article.status !== 'ready' && (
-                                <button
-                                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 flex items-center gap-3 rounded-lg transition-all mx-1"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleMarkReady(article);
-                                  }}
-                                >
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  <span className="font-medium">Marquer comme prêt</span>
-                                </button>
-                              )}
-                              <div className="h-px bg-gray-200 my-1.5 mx-2"></div>
-                              <button
-                                className="w-full text-left px-4 py-2.5 text-sm text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 flex items-center gap-3 rounded-lg transition-all mx-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSoldModal({ isOpen: true, article });
-                                }}
-                              >
-                                <DollarSign className="w-4 h-4" />
-                                <span className="font-medium">Marquer vendu</span>
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 flex items-center gap-3 rounded-lg transition-all mx-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleteModal({
-                                    isOpen: true,
-                                    articleId: article.id,
-                                  });
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                <span className="font-medium">Supprimer</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>

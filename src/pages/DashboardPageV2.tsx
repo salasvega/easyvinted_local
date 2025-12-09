@@ -393,30 +393,7 @@ export function DashboardPageV2() {
                   </div>
                 )}
 
-                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/articles/${article.id}/edit-v2`);
-                    }}
-                    className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
-                    title="Edit"
-                  >
-                    <Edit2 className="w-4 h-4 text-slate-700" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteModal({ isOpen: true, articleId: article.id });
-                    }}
-                    className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-rose-50 transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4 text-slate-700 hover:text-rose-600" />
-                  </button>
-                </div>
-
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between z-10">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -426,9 +403,28 @@ export function DashboardPageV2() {
                   >
                     {STATUS_LABELS[article.status]}
                   </button>
-                  <span className="inline-block px-3 py-1.5 bg-white rounded-lg text-sm font-bold text-slate-900 shadow-sm">
-                    {article.price.toFixed(2)}€
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/articles/${article.id}/edit-v2`);
+                      }}
+                      className="p-2 bg-white rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
+                      title="Modifier"
+                    >
+                      <Edit2 className="w-4 h-4 text-slate-600 hover:text-blue-600" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteModal({ isOpen: true, articleId: article.id });
+                      }}
+                      className="p-2 bg-white rounded-lg shadow-sm hover:bg-red-50 transition-colors"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-4 h-4 text-slate-600 hover:text-red-600" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
