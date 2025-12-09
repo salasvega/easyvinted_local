@@ -252,6 +252,24 @@ export default function LotBuilder({
     setFilteredArticles(filtered);
   };
 
+  const syncPhotosFromArticles = () => {
+    const selectedArticles = getSelectedArticles();
+    const newPhotos = selectedArticles.flatMap((a) => a.photos);
+
+    const existingPhotos = lotData.photos.filter(photo => newPhotos.includes(photo));
+    const addedPhotos = newPhotos.filter(photo => !existingPhotos.includes(photo));
+
+    const updatedPhotos = [...existingPhotos, ...addedPhotos];
+
+    setLotData((prev) => ({
+      ...prev,
+      photos: updatedPhotos,
+      cover_photo: prev.cover_photo && updatedPhotos.includes(prev.cover_photo)
+        ? prev.cover_photo
+        : updatedPhotos[0],
+    }));
+  };
+
   const getAvailableBrands = () => {
     const brands = new Set(articles.map((a) => a.brand).filter(Boolean));
     return Array.from(brands).sort();
@@ -270,6 +288,12 @@ export default function LotBuilder({
         : [...prev.selectedArticles, articleId],
     }));
   };
+
+  useEffect(() => {
+    if (lotData.selectedArticles.length > 0) {
+      syncPhotosFromArticles();
+    }
+  }, [lotData.selectedArticles.join(',')]);
 
   const getSelectedArticles = () => {
     return articles.filter((a) => lotData.selectedArticles.includes(a.id));
@@ -354,9 +378,6 @@ export default function LotBuilder({
       const totalPrice = calculateTotalPrice();
       const discount = calculateDiscount();
 
-      const selectedArticles = getSelectedArticles();
-      const allPhotos = selectedArticles.flatMap((a) => a.photos);
-
       let referenceNumber: string | undefined;
       if (!existingLotId) {
         referenceNumber = await generateLotReferenceNumber(user.id);
@@ -371,9 +392,8 @@ export default function LotBuilder({
         price: lotData.price,
         original_total_price: totalPrice,
         discount_percentage: discount,
-        cover_photo: lotData.cover_photo || allPhotos[0],
-        photos:
-          lotData.photos.length > 0 ? lotData.photos : allPhotos.slice(0, 5),
+        cover_photo: lotData.cover_photo || lotData.photos[0],
+        photos: lotData.photos.slice(0, 5),
         status: lotData.status,
         seller_id: lotData.seller_id,
       };
@@ -461,14 +481,16 @@ export default function LotBuilder({
 
   const handlePhotoDrop = (e: DragEvent, targetIndex: number) => {
     e.preventDefault();
-    if (draggedPhotoIndex === null) return;
+    if (draggedPhotoIndex === null || draggedPhotoIndex === targetIndex) {
+      setDraggedPhotoIndex(null);
+      return;
+    }
 
-    const allPhotos = getSelectedArticles().flatMap((a) => a.photos);
-    const newPhotos = [...allPhotos];
+    const newPhotos = [...lotData.photos];
     const [removed] = newPhotos.splice(draggedPhotoIndex, 1);
     newPhotos.splice(targetIndex, 0, removed);
 
-    setLotData({ ...lotData, photos: newPhotos.slice(0, 5) });
+    setLotData({ ...lotData, photos: newPhotos });
     setDraggedPhotoIndex(null);
   };
 
@@ -490,7 +512,7 @@ export default function LotBuilder({
 
   const totalPrice = calculateTotalPrice();
   const discount = calculateDiscount();
-  const allPhotos = getSelectedArticles().flatMap((a) => a.photos);
+  const allPhotos = lotData.photos;
   const isLotValid = lotData.name.trim() && lotData.selectedArticles.length >= 2 && lotData.price > 0;
   const availableBrands = getAvailableBrands();
   const availableSizes = getAvailableSizes();
@@ -595,12 +617,18 @@ export default function LotBuilder({
                         Réinitialiser
                       </button>
                     </div>
-                    <p className="text-xs text-slate-500 mb-2">
-                      Cliquez sur une photo pour la définir comme principale
-                    </p>
+                    <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 mb-2">
+                      <p className="text-xs text-blue-700 flex items-center gap-2">
+                        <Layers className="w-3.5 h-3.5 shrink-0" />
+                        <span>
+                          <strong>Glissez-déposez</strong> pour réorganiser • <strong>Cliquez</strong> pour définir en principal
+                        </span>
+                      </p>
+                    </div>
                     <div className="grid grid-cols-5 gap-2">
                       {allPhotos.slice(0, 5).map((photo, idx) => {
                         const isMainPhoto = (lotData.cover_photo || allPhotos[0]) === photo;
+                        const isDragging = draggedPhotoIndex === idx;
                         return (
                           <div
                             key={idx}
@@ -611,9 +639,11 @@ export default function LotBuilder({
                             onClick={() => setLotData({ ...lotData, cover_photo: photo })}
                             className={[
                               'relative aspect-square rounded-xl overflow-hidden border-2 transition-all group',
-                              isMainPhoto
-                                ? 'border-emerald-500 ring-2 ring-emerald-200 shadow-md cursor-pointer'
-                                : 'border-slate-200 hover:border-emerald-300 cursor-pointer hover:scale-105',
+                              isDragging
+                                ? 'opacity-50 scale-95 border-blue-400'
+                                : isMainPhoto
+                                ? 'border-emerald-500 ring-2 ring-emerald-200 shadow-md cursor-grab active:cursor-grabbing'
+                                : 'border-slate-200 hover:border-emerald-300 cursor-grab active:cursor-grabbing hover:scale-105',
                             ].join(' ')}
                           >
                             <img src={photo} alt="" className="w-full h-full object-cover" />
@@ -625,16 +655,19 @@ export default function LotBuilder({
                                 </div>
                               </div>
                             )}
-                            {!isMainPhoto && (
+                            {!isMainPhoto && !isDragging && (
                               <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                                 <div className="bg-white/90 rounded-full p-1.5 shadow-lg">
                                   <ImageIcon className="w-3 h-3 text-slate-700" />
                                 </div>
                               </div>
                             )}
-                            <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-700/60 flex items-center justify-center text-[10px] font-bold text-white">
+                            <div className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/80 flex items-center justify-center text-[11px] font-bold text-white shadow-lg">
                               {idx + 1}
                             </div>
+                            {draggedPhotoIndex !== null && draggedPhotoIndex !== idx && (
+                              <div className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-400 rounded-xl pointer-events-none" />
+                            )}
                           </div>
                         );
                       })}
