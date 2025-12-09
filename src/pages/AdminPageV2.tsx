@@ -54,6 +54,13 @@ interface AdminItem {
   net_profit?: number;
   reference_number?: string;
   lot_article_count?: number;
+  description?: string;
+  suggested_period?: string;
+  vinted_url?: string;
+  fees?: number;
+  shipping_cost?: number;
+  buyer_name?: string;
+  sale_notes?: string;
 }
 
 export function AdminPageV2() {
@@ -204,6 +211,13 @@ export function AdminPageV2() {
         sold_price: article.sold_price ? parseFloat(article.sold_price) : undefined,
         net_profit: article.net_profit ? parseFloat(article.net_profit) : undefined,
         reference_number: article.reference_number,
+        description: article.description,
+        suggested_period: article.suggested_period,
+        vinted_url: article.vinted_url,
+        fees: article.fees ? parseFloat(article.fees) : undefined,
+        shipping_cost: article.shipping_cost ? parseFloat(article.shipping_cost) : undefined,
+        buyer_name: article.buyer_name,
+        sale_notes: article.sale_notes,
       }));
 
       const lotItems: AdminItem[] = lots.map((lot: any) => ({
@@ -220,10 +234,16 @@ export function AdminPageV2() {
         seller_name: lot.family_members?.name || null,
         published_at: lot.published_at,
         sold_at: lot.sold_at,
-        sold_price: lot.price ? parseFloat(lot.price) : undefined,
+        sold_price: lot.sold_price ? parseFloat(lot.sold_price) : undefined,
         net_profit: lot.net_profit ? parseFloat(lot.net_profit) : undefined,
         reference_number: lot.reference_number,
         lot_article_count: lot.lot_items?.length || 0,
+        description: lot.description,
+        vinted_url: lot.vinted_url,
+        fees: lot.fees ? parseFloat(lot.fees) : undefined,
+        shipping_cost: lot.shipping_cost ? parseFloat(lot.shipping_cost) : undefined,
+        buyer_name: lot.buyer_name,
+        sale_notes: lot.sale_notes,
       }));
 
       const allItems = [...articleItems, ...lotItems].sort((a, b) =>

@@ -1,5 +1,6 @@
-import { X, Package, Eye, ClipboardEdit, Upload, Copy, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink } from 'lucide-react';
+import { X, Package, Eye, ClipboardEdit, Upload, Copy, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink, ChevronLeft, ChevronRight, Tag } from 'lucide-react';
 import { ArticleStatus, Season } from '../../types/article';
+import { useState, useEffect } from 'react';
 
 interface AdminItem {
   id: string;
@@ -20,6 +21,13 @@ interface AdminItem {
   net_profit?: number;
   reference_number?: string;
   lot_article_count?: number;
+  description?: string;
+  suggested_period?: string;
+  vinted_url?: string;
+  fees?: number;
+  shipping_cost?: number;
+  buyer_name?: string;
+  sale_notes?: string;
 }
 
 interface AdminDetailDrawerProps {
@@ -100,9 +108,46 @@ export function AdminDetailDrawer({
   onStatusChange,
   formatDate,
 }: AdminDetailDrawerProps) {
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+
+  useEffect(() => {
+    setCurrentPhotoIndex(0);
+  }, [item?.id]);
+
   if (!item) return null;
 
   const statusColors = STATUS_COLORS[item.status];
+
+  const handlePreviousPhoto = () => {
+    if (!item?.photos) return;
+    setCurrentPhotoIndex((prev) =>
+      prev === 0 ? item.photos.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextPhoto = () => {
+    if (!item?.photos) return;
+    setCurrentPhotoIndex((prev) =>
+      prev === item.photos.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const getStatusMessage = () => {
+    switch (item.status) {
+      case 'draft':
+        return "Cette annonce est en cours de préparation. Complétez les champs obligatoires avant de l'envoyer.";
+      case 'ready':
+        return 'Tous les champs requis sont remplis. Vous pouvez maintenant envoyer cette annonce sur Vinted.';
+      case 'published':
+        return 'Cette annonce est actuellement en ligne sur Vinted.';
+      case 'sold':
+        return 'Cet article a été vendu avec succès.';
+      case 'scheduled':
+        return 'Cette annonce est planifiée pour une publication ultérieure sur Vinted.';
+      default:
+        return '';
+    }
+  };
 
   return (
     <>
@@ -119,7 +164,7 @@ export function AdminDetailDrawer({
         }`}
       >
         <div className="h-full flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b border-slate-200">
+          <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white sticky top-0 z-10">
             <div className="flex items-center gap-3">
               <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-lg ${
                 item.type === 'lot' ? 'bg-violet-100 text-violet-700' : 'bg-blue-100 text-blue-700'
@@ -139,111 +184,224 @@ export function AdminDetailDrawer({
           <div className="flex-1 overflow-y-auto">
             <div className="aspect-square bg-slate-100 relative">
               {item.photos && item.photos.length > 0 ? (
-                <img
-                  src={item.photos[0]}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <img
+                    src={item.photos[currentPhotoIndex]}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {item.photos.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePreviousPhoto}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+                      >
+                        <ChevronLeft className="w-4 h-4 text-slate-900" />
+                      </button>
+                      <button
+                        onClick={handleNextPhoto}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+                      >
+                        <ChevronRight className="w-4 h-4 text-slate-900" />
+                      </button>
+                      <div className="absolute bottom-3 right-3 bg-slate-900/80 text-white px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
+                        {currentPhotoIndex + 1} / {item.photos.length}
+                      </div>
+                    </>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Package className="w-20 h-20 text-slate-300" />
                 </div>
               )}
-              {item.photos && item.photos.length > 1 && (
-                <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 text-white text-xs font-medium rounded-lg backdrop-blur-sm">
-                  +{item.photos.length - 1} photos
-                </div>
-              )}
             </div>
+
+            {item.photos && item.photos.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto p-3 bg-slate-50 border-b border-slate-200">
+                {item.photos.map((photo, index) => (
+                  <div
+                    key={index}
+                    className={`relative flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden cursor-pointer transition-all ${
+                      currentPhotoIndex === index
+                        ? 'border-blue-500 ring-2 ring-blue-100'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                    onClick={() => setCurrentPhotoIndex(index)}
+                  >
+                    <img src={photo} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="p-5 space-y-5">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">{item.title}</h3>
-                <p className="text-slate-500">{item.brand || 'Sans marque'}</p>
+                <p className="text-sm font-medium text-slate-600">{item.brand || 'Sans marque'}</p>
                 {item.reference_number && (
-                  <p className="text-xs text-slate-400 font-mono mt-1">Ref. #{item.reference_number}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-slate-400 font-mono">Ref. #{item.reference_number}</span>
+                  </div>
                 )}
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-slate-900">{item.price.toFixed(0)}€</p>
-                  {item.status === 'sold' && item.net_profit !== undefined && (
-                    <p className={`text-sm font-semibold mt-0.5 ${item.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {item.net_profit >= 0 ? '+' : ''}{item.net_profit.toFixed(0)}€ de benefice net
-                    </p>
-                  )}
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900">{item.price.toFixed(2)}€</p>
+                    {item.status === 'sold' && item.sold_price && (
+                      <p className="text-sm text-slate-500 mt-0.5">
+                        Vendu à <span className="font-semibold text-emerald-600">{item.sold_price.toFixed(2)}€</span>
+                      </p>
+                    )}
+                    {item.status === 'sold' && item.net_profit !== undefined && (
+                      <p className={`text-sm font-semibold mt-0.5 ${item.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {item.net_profit >= 0 ? '+' : ''}{item.net_profit.toFixed(2)}€ bénéfice net
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={onStatusChange}
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} hover:scale-105 transition-transform text-sm font-semibold`}
+                  >
+                    {renderStatusIcon(item.status)}
+                    <span>{STATUS_LABELS[item.status]}</span>
+                  </button>
                 </div>
-                <button
-                  onClick={onStatusChange}
-                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} hover:scale-105 transition-transform`}
-                >
-                  {renderStatusIcon(item.status)}
-                  <span className="font-semibold">{STATUS_LABELS[item.status]}</span>
-                </button>
+                <p className="text-xs text-slate-600 leading-relaxed">{getStatusMessage()}</p>
               </div>
 
+              {item.description && (
+                <div>
+                  <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Description</h4>
+                  <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
+                {item.seller_name && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Vendeur</p>
+                    <p className="text-sm font-medium text-slate-900">{item.seller_name}</p>
+                  </div>
+                )}
                 {item.type === 'article' && item.season && (
-                  <div className="p-3 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Saison</p>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
                     <div className="flex items-center gap-2">
                       {renderSeasonIcon(item.season)}
-                      <span className="text-sm font-medium text-slate-700">{SEASON_LABELS[item.season]}</span>
+                      <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[item.season]}</span>
                     </div>
                   </div>
                 )}
-                {item.seller_name && (
-                  <div className="p-3 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Vendeur</p>
-                    <p className="text-sm font-medium text-slate-700">{item.seller_name}</p>
+                {item.suggested_period && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Période conseillée</p>
+                    <p className="text-sm font-medium text-slate-900">{item.suggested_period}</p>
                   </div>
                 )}
                 {item.type === 'lot' && item.lot_article_count && (
-                  <div className="p-3 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Articles</p>
-                    <p className="text-sm font-medium text-slate-700">{item.lot_article_count} articles</p>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Articles</p>
+                    <p className="text-sm font-medium text-slate-900">{item.lot_article_count} articles</p>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <h4 className="text-xs uppercase tracking-wide text-slate-400 font-semibold">Dates</h4>
+              {item.status === 'sold' && (item.fees !== undefined || item.shipping_cost !== undefined || item.buyer_name) && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                  <h4 className="text-xs uppercase tracking-wide text-emerald-700 font-semibold mb-3">Détails de la vente</h4>
+                  <div className="space-y-2">
+                    {item.buyer_name && (
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-sm text-emerald-700">Acheteur</span>
+                        <span className="text-sm font-medium text-emerald-900">{item.buyer_name}</span>
+                      </div>
+                    )}
+                    {item.fees !== undefined && (
+                      <div className="flex items-center justify-between py-1.5 border-t border-emerald-200">
+                        <span className="text-sm text-emerald-700">Frais</span>
+                        <span className="text-sm font-medium text-emerald-900">{item.fees.toFixed(2)}€</span>
+                      </div>
+                    )}
+                    {item.shipping_cost !== undefined && (
+                      <div className="flex items-center justify-between py-1.5 border-t border-emerald-200">
+                        <span className="text-sm text-emerald-700">Frais de port</span>
+                        <span className="text-sm font-medium text-emerald-900">{item.shipping_cost.toFixed(2)}€</span>
+                      </div>
+                    )}
+                    {item.sale_notes && (
+                      <div className="pt-2 border-t border-emerald-200">
+                        <p className="text-xs text-emerald-700 mb-1 font-semibold">Notes</p>
+                        <p className="text-sm text-emerald-900">{item.sale_notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Dates</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                    <span className="text-sm text-slate-500">Cree le</span>
-                    <span className="text-sm font-medium text-slate-700">{formatDate(item.created_at)}</span>
+                    <span className="text-sm text-slate-600">Créé le</span>
+                    <span className="text-sm font-medium text-slate-900">{formatDate(item.created_at)}</span>
                   </div>
                   {item.scheduled_for && (
                     <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-500">Planifie pour le</span>
+                      <span className="text-sm text-slate-600">Planifié pour le</span>
                       <span className="text-sm font-medium text-amber-600">{formatDate(item.scheduled_for)}</span>
                     </div>
                   )}
                   {item.published_at && (
                     <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-500">Publie le</span>
+                      <span className="text-sm text-slate-600">Publié le</span>
                       <span className="text-sm font-medium text-violet-600">{formatDate(item.published_at)}</span>
                     </div>
                   )}
                   {item.sold_at && (
                     <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-500">Vendu le</span>
+                      <span className="text-sm text-slate-600">Vendu le</span>
                       <span className="text-sm font-medium text-emerald-600">{formatDate(item.sold_at)}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <h4 className="text-xs uppercase tracking-wide text-slate-400 font-semibold">Actions rapides</h4>
+              {item.vinted_url && (
+                <a
+                  href={item.vinted_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl hover:from-teal-100 hover:to-cyan-100 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center">
+                      <ExternalLink className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-teal-900">Voir sur Vinted</p>
+                      <p className="text-xs text-teal-600">Ouvrir l&apos;annonce</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-teal-500 group-hover:translate-x-1 transition-transform" />
+                </a>
+              )}
+
+              <div>
+                <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Actions rapides</h4>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={onView}
                     className="flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-medium text-sm"
                   >
                     <Eye className="w-4 h-4" />
-                    Apercu
+                    Aperçu
                   </button>
                   <button
                     onClick={onEdit}
@@ -258,7 +416,7 @@ export function AdminDetailDrawer({
                       className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-colors font-medium text-sm col-span-2"
                     >
                       <Upload className="w-4 h-4" />
-                      Envoyer a Vinted
+                      Envoyer à Vinted
                     </button>
                   )}
                 </div>
@@ -266,7 +424,7 @@ export function AdminDetailDrawer({
             </div>
           </div>
 
-          <div className="p-4 border-t border-slate-200 bg-slate-50">
+          <div className="p-4 border-t border-slate-200 bg-slate-50 sticky bottom-0">
             <div className="grid grid-cols-4 gap-2">
               {item.type === 'article' && (
                 <button
