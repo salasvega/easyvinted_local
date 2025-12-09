@@ -278,6 +278,13 @@ export function AdminPageV2() {
             size: article.size,
           }));
 
+        const allPhotos: string[] = [];
+        lotArticles.forEach((article) => {
+          if (article.photos && Array.isArray(article.photos)) {
+            allPhotos.push(...article.photos);
+          }
+        });
+
         return {
           id: lot.id,
           type: 'lot',
@@ -285,7 +292,7 @@ export function AdminPageV2() {
           brand: `Lot (${lotArticles.length} articles)`,
           price: parseFloat(lot.price),
           status: lot.status,
-          photos: lot.photos || [],
+          photos: allPhotos,
           created_at: lot.created_at,
           scheduled_for: lot.scheduled_for,
           seller_id: lot.seller_id,

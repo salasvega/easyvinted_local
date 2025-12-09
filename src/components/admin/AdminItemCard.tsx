@@ -161,7 +161,12 @@ export function AdminItemCard({
           )}
         </div>
 
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          {item.type === 'lot' && item.lot_article_count && (
+            <div className="bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
+              <span className="text-white text-xs font-medium">{item.lot_article_count} articles</span>
+            </div>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
