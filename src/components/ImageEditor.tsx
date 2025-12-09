@@ -280,7 +280,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
                       <p className="text-slate-700 text-sm leading-relaxed">
                         Décrivez les modifications que vous souhaitez apporter à la photo.
                         Studio Magik-AI peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit, placer le vêtement à plat ou le plier... 
-                        Votre assistant préserve l'aspect original du produit. Notre seule limite est votre imagination :)
+                         Notre seule limite est votre imagination :)
                       </p>
                     </div>
                     <button
