@@ -1,6 +1,7 @@
-import { X, Package, Eye, ClipboardEdit, Upload, Copy, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink, ChevronLeft, ChevronRight, Tag, Layers, TrendingDown } from 'lucide-react';
+import { X, Package, Eye, ClipboardEdit, Upload, Copy, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink, ChevronLeft, ChevronRight, Tag, Layers, TrendingDown, ArrowLeft } from 'lucide-react';
 import { ArticleStatus, Season } from '../../types/article';
 import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 interface LotArticle {
   id: string;
@@ -9,6 +10,25 @@ interface LotArticle {
   price: number;
   photos: string[];
   size?: string;
+}
+
+interface FullArticleDetails {
+  id: string;
+  title: string;
+  brand?: string;
+  price: number;
+  photos: string[];
+  size?: string;
+  color?: string;
+  material?: string;
+  condition?: string;
+  description?: string;
+  season?: Season;
+  main_category?: string;
+  subcategory?: string;
+  item_category?: string;
+  reference_number?: string;
+  status?: ArticleStatus;
 }
 
 interface AdminItem {
@@ -140,10 +160,60 @@ export function AdminDetailDrawer({
   formatDate,
 }: AdminDetailDrawerProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [selectedArticle, setSelectedArticle] = useState<FullArticleDetails | null>(null);
+  const [articlePhotoIndex, setArticlePhotoIndex] = useState(0);
+  const [loadingArticle, setLoadingArticle] = useState(false);
 
   useEffect(() => {
     setCurrentPhotoIndex(0);
+    setSelectedArticle(null);
+    setArticlePhotoIndex(0);
   }, [item?.id]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedArticle(null);
+      setArticlePhotoIndex(0);
+    }
+  }, [isOpen]);
+
+  const fetchArticleDetails = async (articleId: string) => {
+    setLoadingArticle(true);
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('id', articleId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setSelectedArticle({
+          id: data.id,
+          title: data.title,
+          brand: data.brand,
+          price: parseFloat(data.price),
+          photos: data.photos || [],
+          size: data.size,
+          color: data.color,
+          material: data.material,
+          condition: data.condition,
+          description: data.description,
+          season: data.season === 'all_seasons' ? 'all-seasons' : data.season,
+          main_category: data.main_category,
+          subcategory: data.subcategory,
+          item_category: data.item_category,
+          reference_number: data.reference_number,
+          status: data.status,
+        });
+        setArticlePhotoIndex(0);
+      }
+    } catch (error) {
+      console.error('Error fetching article details:', error);
+    } finally {
+      setLoadingArticle(false);
+    }
+  };
 
   if (!item) return null;
 
@@ -293,16 +363,16 @@ export function AdminDetailDrawer({
 
               {item.type === 'lot' && item.articles && item.articles.length > 0 && (
                 <>
-                  {/* Articles List */}
                   <div className="border-t border-slate-100 pt-4">
                     <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">
                       Articles inclus dans ce lot
                     </h4>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {item.articles.map((article) => (
-                        <div
+                        <button
                           key={article.id}
-                          className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80"
+                          onClick={() => fetchArticleDetails(article.id)}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80 hover:bg-slate-100 hover:border-slate-200 transition-colors text-left group"
                         >
                           <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
                             {article.photos?.[0] ? (
@@ -318,7 +388,7 @@ export function AdminDetailDrawer({
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900 truncate">
+                            <p className="text-sm font-medium text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                               {article.title}
                             </p>
                             <p className="text-xs text-slate-500">
@@ -326,12 +396,13 @@ export function AdminDetailDrawer({
                               {article.size && ` • ${article.size}`}
                             </p>
                           </div>
-                          <div className="text-right flex-shrink-0">
+                          <div className="text-right flex-shrink-0 flex items-center gap-2">
                             <p className="text-sm font-semibold text-slate-900">
                               {article.price.toFixed(0)} €
                             </p>
+                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -595,6 +666,198 @@ export function AdminDetailDrawer({
             </div>
           </div>
         </div>
+      </div>
+
+      <div
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[60] transition-transform duration-300 ease-out ${
+          selectedArticle ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {(selectedArticle || loadingArticle) && (
+          <div className="h-full flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedArticle(null)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div>
+                  <p className="text-xs text-slate-500">Retour au lot</p>
+                  <h2 className="font-semibold text-slate-900">Details article</h2>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedArticle(null)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {loadingArticle ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : selectedArticle && (
+              <div className="flex-1 overflow-y-auto">
+                <div className="aspect-square bg-slate-100 relative">
+                  {selectedArticle.photos && selectedArticle.photos.length > 0 ? (
+                    <>
+                      <img
+                        src={selectedArticle.photos[articlePhotoIndex]}
+                        alt={selectedArticle.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {selectedArticle.photos.length > 1 && (
+                        <>
+                          <button
+                            onClick={() => setArticlePhotoIndex((prev) =>
+                              prev === 0 ? selectedArticle.photos.length - 1 : prev - 1
+                            )}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+                          >
+                            <ChevronLeft className="w-4 h-4 text-slate-900" />
+                          </button>
+                          <button
+                            onClick={() => setArticlePhotoIndex((prev) =>
+                              prev === selectedArticle.photos.length - 1 ? 0 : prev + 1
+                            )}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+                          >
+                            <ChevronRight className="w-4 h-4 text-slate-900" />
+                          </button>
+                          <div className="absolute bottom-3 right-3 bg-slate-900/80 text-white px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
+                            {articlePhotoIndex + 1} / {selectedArticle.photos.length}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="w-20 h-20 text-slate-300" />
+                    </div>
+                  )}
+                </div>
+
+                {selectedArticle.photos && selectedArticle.photos.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto p-3 bg-slate-50 border-b border-slate-200">
+                    {selectedArticle.photos.map((photo, index) => (
+                      <div
+                        key={index}
+                        className={`relative flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden cursor-pointer transition-all ${
+                          articlePhotoIndex === index
+                            ? 'border-blue-500 ring-2 ring-blue-100'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                        onClick={() => setArticlePhotoIndex(index)}
+                      >
+                        <img src={photo} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="p-5 space-y-5">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-1">{selectedArticle.title}</h3>
+                    <p className="text-sm font-medium text-slate-600">
+                      {selectedArticle.brand || 'Sans marque'}
+                      {selectedArticle.size && ` • ${selectedArticle.size}`}
+                    </p>
+                    {selectedArticle.reference_number && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-slate-400 font-mono">Ref. #{selectedArticle.reference_number}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedArticle.description && (
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Description</h4>
+                      <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                        <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                          {selectedArticle.description}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                      <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
+                      <p className="text-lg font-bold text-emerald-600">{selectedArticle.price.toFixed(2)}€</p>
+                    </div>
+                    {selectedArticle.status && (
+                      <div className={`p-3 rounded-xl border ${STATUS_COLORS[selectedArticle.status].bg} ${STATUS_COLORS[selectedArticle.status].border}`}>
+                        <p className="text-[10px] uppercase tracking-wide font-semibold mb-1 opacity-70">Statut</p>
+                        <div className="flex items-center gap-1.5">
+                          {renderStatusIcon(selectedArticle.status)}
+                          <span className={`text-sm font-semibold ${STATUS_COLORS[selectedArticle.status].text}`}>
+                            {STATUS_LABELS[selectedArticle.status]}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {selectedArticle.brand && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
+                        <p className="text-sm font-medium text-slate-900">{selectedArticle.brand}</p>
+                      </div>
+                    )}
+                    {selectedArticle.size && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Taille</p>
+                        <p className="text-sm font-medium text-slate-900">{selectedArticle.size}</p>
+                      </div>
+                    )}
+                    {selectedArticle.color && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Couleur</p>
+                        <p className="text-sm font-medium text-slate-900">{selectedArticle.color}</p>
+                      </div>
+                    )}
+                    {selectedArticle.material && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Matiere</p>
+                        <p className="text-sm font-medium text-slate-900">{selectedArticle.material}</p>
+                      </div>
+                    )}
+                    {selectedArticle.condition && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Etat</p>
+                        <p className="text-sm font-medium text-slate-900">{CONDITION_LABELS[selectedArticle.condition] || selectedArticle.condition}</p>
+                      </div>
+                    )}
+                    {selectedArticle.season && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
+                        <div className="flex items-center gap-2">
+                          {renderSeasonIcon(selectedArticle.season)}
+                          <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[selectedArticle.season]}</span>
+                        </div>
+                      </div>
+                    )}
+                    {selectedArticle.main_category && (
+                      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 col-span-2">
+                        <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Categorie</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {selectedArticle.main_category}
+                          {selectedArticle.subcategory && ` > ${selectedArticle.subcategory}`}
+                          {selectedArticle.item_category && ` > ${selectedArticle.item_category}`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
