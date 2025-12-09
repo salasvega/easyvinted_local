@@ -488,7 +488,7 @@ export function AdminPage() {
       <div>
         <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Administration (Page Admin Page)</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Administration (Page AdminPage)</h1>
             <p className="text-sm text-gray-600 mt-1">
               Vue d'ensemble et gestion complète de tous vos articles et lots
             </p>
