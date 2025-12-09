@@ -555,11 +555,17 @@ export default function LotBuilder({
                   className="aspect-square rounded-2xl overflow-hidden bg-slate-100 border-2 border-dashed border-slate-300 mb-4 flex items-center justify-center relative group"
                 >
                   {allPhotos.length > 0 ? (
-                    <img
-                      src={lotData.cover_photo || allPhotos[0]}
-                      alt="Aperçu"
-                      className="w-full h-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={lotData.cover_photo || allPhotos[0]}
+                        alt="Aperçu"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500 shadow-lg">
+                        <ImageIcon className="w-3.5 h-3.5 text-white" />
+                        <span className="text-xs font-semibold text-white">Photo principale</span>
+                      </div>
+                    </>
                   ) : (
                     <div className="text-center">
                       <Package className="w-12 h-12 text-slate-400 mx-auto mb-2" />
@@ -574,27 +580,65 @@ export default function LotBuilder({
                   )}
                 </div>
 
-                {/* Photos Thumbnails with Drag & Drop */}
+                {/* Photos Thumbnails with Selection */}
                 {allPhotos.length > 0 && (
-                  <div className="grid grid-cols-5 gap-2 mb-4">
-                    {allPhotos.slice(0, 5).map((photo, idx) => (
-                      <div
-                        key={idx}
-                        draggable
-                        onDragStart={(e) => handlePhotoDragStart(e, idx)}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handlePhotoDrop(e, idx)}
-                        onClick={() => setLotData({ ...lotData, cover_photo: photo })}
-                        className={[
-                          'aspect-square rounded-xl overflow-hidden border-2 cursor-move transition-all hover:scale-105',
-                          lotData.cover_photo === photo
-                            ? 'border-emerald-500 ring-2 ring-emerald-200'
-                            : 'border-slate-200',
-                        ].join(' ')}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        Photos du lot
+                      </label>
+                      <button
+                        onClick={() => setLotData({ ...lotData, cover_photo: allPhotos[0] })}
+                        className="text-xs text-slate-500 hover:text-emerald-600 font-medium transition-colors"
                       >
-                        <img src={photo} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    ))}
+                        Réinitialiser
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 mb-2">
+                      Cliquez sur une photo pour la définir comme principale
+                    </p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {allPhotos.slice(0, 5).map((photo, idx) => {
+                        const isMainPhoto = (lotData.cover_photo || allPhotos[0]) === photo;
+                        return (
+                          <div
+                            key={idx}
+                            draggable
+                            onDragStart={(e) => handlePhotoDragStart(e, idx)}
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handlePhotoDrop(e, idx)}
+                            onClick={() => setLotData({ ...lotData, cover_photo: photo })}
+                            className={[
+                              'relative aspect-square rounded-xl overflow-hidden border-2 transition-all group',
+                              isMainPhoto
+                                ? 'border-emerald-500 ring-2 ring-emerald-200 shadow-md cursor-pointer'
+                                : 'border-slate-200 hover:border-emerald-300 cursor-pointer hover:scale-105',
+                            ].join(' ')}
+                          >
+                            <img src={photo} alt="" className="w-full h-full object-cover" />
+                            {isMainPhoto && (
+                              <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/70 to-transparent flex items-end justify-center pb-1.5">
+                                <div className="flex items-center gap-1 text-white">
+                                  <Check className="w-3 h-3" />
+                                  <span className="text-[10px] font-bold uppercase tracking-wide">Principale</span>
+                                </div>
+                              </div>
+                            )}
+                            {!isMainPhoto && (
+                              <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <div className="bg-white/90 rounded-full p-1.5 shadow-lg">
+                                  <ImageIcon className="w-3 h-3 text-slate-700" />
+                                </div>
+                              </div>
+                            )}
+                            <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-700/60 flex items-center justify-center text-[10px] font-bold text-white">
+                              {idx + 1}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
