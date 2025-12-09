@@ -368,14 +368,14 @@ export function AdminDetailDrawer({
       {shouldRender && (
         <>
           <div
-            className={`fixed inset-0 bg-black/50 z-[70] ${
+            className={`fixed inset-0 bg-black/50 z-[60] ${
               !isClosing ? 'drawer-backdrop-enter' : 'drawer-backdrop-exit'
             } ${isClosing ? 'pointer-events-none' : ''}`}
             onClick={handleClose}
           />
 
           <div
-            className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[70] ${
+            className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[60] ${
               !isClosing ? 'drawer-enter' : 'drawer-exit'
             }`}
             style={{ perspective: '1000px' }}
@@ -764,7 +764,7 @@ export function AdminDetailDrawer({
 
       {/* Backdrop pour le drawer de l'article */}
       <div
-        className={`fixed inset-0 bg-black/40 z-[75] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/40 z-[85] transition-opacity duration-300 ${
           selectedArticle ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setSelectedArticle(null)}
@@ -772,7 +772,7 @@ export function AdminDetailDrawer({
 
       {/* Drawer de détail de l'article */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[80] transition-transform duration-300 ease-out ${
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[85] transition-transform duration-300 ease-out ${
           selectedArticle ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

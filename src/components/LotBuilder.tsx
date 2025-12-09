@@ -553,8 +553,194 @@ export default function LotBuilder({
 
         {/* Main Content - Split View */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-          {/* LEFT PANEL - Lot Builder */}
-          <div className="w-full lg:w-[480px] xl:w-[520px] border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/50 overflow-y-auto">
+          {/* LEFT PANEL - Articles Library */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-white order-2 lg:order-1">
+            {/* Filters Bar */}
+            <div className="border-b border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900"
+                >
+                  <Filter className="w-4 h-4" />
+                  Filtres
+                </button>
+                <div className="h-4 w-px bg-slate-300" />
+                <span className="text-sm text-slate-600">
+                  {filteredArticles.length} article(s) disponible(s)
+                </span>
+              </div>
+
+              {showFilters && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Rechercher..."
+                        value={filters.search}
+                        onChange={(e) =>
+                          setFilters({ ...filters, search: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <select
+                      value={filters.season}
+                      onChange={(e) =>
+                        setFilters({ ...filters, season: e.target.value })
+                      }
+                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="all">Toutes saisons</option>
+                      <option value="spring">Printemps</option>
+                      <option value="summer">Été</option>
+                      <option value="autumn">Automne</option>
+                      <option value="winter">Hiver</option>
+                      <option value="all-seasons">Multi-saisons</option>
+                    </select>
+
+                    <select
+                      value={filters.brand}
+                      onChange={(e) =>
+                        setFilters({ ...filters, brand: e.target.value })
+                      }
+                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="all">Toutes marques</option>
+                      {availableBrands.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={filters.size}
+                      onChange={(e) =>
+                        setFilters({ ...filters, size: e.target.value })
+                      }
+                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="all">Toutes tailles</option>
+                      {availableSizes.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Quick Selection */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                    <span className="text-xs font-medium text-slate-600">Sélection rapide:</span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setLotData({ ...lotData, selectedArticles: filteredArticles.filter(a => !articlesInLots.has(a.id)).map(a => a.id) })}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-100 text-xs font-medium text-emerald-700 hover:bg-emerald-200 transition-colors"
+                      >
+                        Tout sélectionner
+                      </button>
+                      <button
+                        onClick={() => setLotData({ ...lotData, selectedArticles: [] })}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-medium text-slate-700 hover:bg-slate-200 transition-colors"
+                      >
+                        Tout désélectionner
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Articles Grid */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                {filteredArticles.map((article) => {
+                  const isSelected = lotData.selectedArticles.includes(article.id);
+                  const isInAnotherLot = articlesInLots.has(article.id);
+
+                  return (
+                    <div
+                      key={article.id}
+                      draggable={!isInAnotherLot}
+                      onDragStart={(e) => handleDragStart(e, article.id)}
+                      onClick={() =>
+                        !isInAnotherLot && toggleArticleSelection(article.id)
+                      }
+                      className={[
+                        'group relative rounded-2xl overflow-hidden border-2 bg-white cursor-pointer transition-all hover:shadow-lg',
+                        isSelected
+                          ? 'border-emerald-500 ring-2 ring-emerald-200 shadow-md'
+                          : isInAnotherLot
+                          ? 'border-slate-200 opacity-40 cursor-not-allowed'
+                          : 'border-slate-200 hover:border-emerald-300',
+                      ].join(' ')}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-emerald-500 shadow-lg flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                      {isInAnotherLot && (
+                        <div className="absolute top-2 left-2 z-10 rounded-full bg-amber-500 text-[10px] font-semibold text-white px-2 py-1 shadow">
+                          Déjà dans un lot
+                        </div>
+                      )}
+
+                      <div className="aspect-square bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                        {article.photos && article.photos.length > 0 ? (
+                          <img
+                            src={article.photos[0]}
+                            alt={article.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <Package className="w-10 h-10 text-slate-300" />
+                        )}
+                      </div>
+
+                      <div className="p-2.5 space-y-1">
+                        <p className="text-xs font-semibold text-slate-900 truncate">
+                          {article.title}
+                        </p>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {article.brand || 'Sans marque'}
+                        </p>
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-sm font-bold text-emerald-600">
+                            {article.price.toFixed(0)}€
+                          </span>
+                          {article.size && (
+                            <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                              {article.size}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {filteredArticles.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                  <Grid3x3 className="w-12 h-12 text-slate-300 mb-4" />
+                  <p className="text-slate-600 font-medium mb-1">Aucun article disponible</p>
+                  <p className="text-sm text-slate-500">
+                    Modifiez vos filtres ou ajoutez de nouveaux articles
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT PANEL - Lot Builder */}
+          <div className="w-full lg:w-[480px] xl:w-[520px] border-b lg:border-b-0 lg:border-l border-slate-200 bg-slate-50/50 overflow-y-auto order-1 lg:order-2">
             <div className="p-4 sm:p-5 space-y-4">
               {error && (
                 <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 flex gap-3 items-start">
@@ -910,192 +1096,6 @@ export default function LotBuilder({
                   </>
                 )}
               </PrimaryButton>
-            </div>
-          </div>
-
-          {/* RIGHT PANEL - Articles Library */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-white">
-            {/* Filters Bar */}
-            <div className="border-b border-slate-200 bg-slate-50/50 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900"
-                >
-                  <Filter className="w-4 h-4" />
-                  Filtres
-                </button>
-                <div className="h-4 w-px bg-slate-300" />
-                <span className="text-sm text-slate-600">
-                  {filteredArticles.length} article(s) disponible(s)
-                </span>
-              </div>
-
-              {showFilters && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Rechercher..."
-                        value={filters.search}
-                        onChange={(e) =>
-                          setFilters({ ...filters, search: e.target.value })
-                        }
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <select
-                      value={filters.season}
-                      onChange={(e) =>
-                        setFilters({ ...filters, season: e.target.value })
-                      }
-                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    >
-                      <option value="all">Toutes saisons</option>
-                      <option value="spring">Printemps</option>
-                      <option value="summer">Été</option>
-                      <option value="autumn">Automne</option>
-                      <option value="winter">Hiver</option>
-                      <option value="all-seasons">Multi-saisons</option>
-                    </select>
-
-                    <select
-                      value={filters.brand}
-                      onChange={(e) =>
-                        setFilters({ ...filters, brand: e.target.value })
-                      }
-                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    >
-                      <option value="all">Toutes marques</option>
-                      {availableBrands.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={filters.size}
-                      onChange={(e) =>
-                        setFilters({ ...filters, size: e.target.value })
-                      }
-                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    >
-                      <option value="all">Toutes tailles</option>
-                      {availableSizes.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Quick Selection */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
-                    <span className="text-xs font-medium text-slate-600">Sélection rapide:</span>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setLotData({ ...lotData, selectedArticles: filteredArticles.filter(a => !articlesInLots.has(a.id)).map(a => a.id) })}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-100 text-xs font-medium text-emerald-700 hover:bg-emerald-200 transition-colors"
-                      >
-                        Tout sélectionner
-                      </button>
-                      <button
-                        onClick={() => setLotData({ ...lotData, selectedArticles: [] })}
-                        className="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-medium text-slate-700 hover:bg-slate-200 transition-colors"
-                      >
-                        Tout désélectionner
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Articles Grid */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
-                {filteredArticles.map((article) => {
-                  const isSelected = lotData.selectedArticles.includes(article.id);
-                  const isInAnotherLot = articlesInLots.has(article.id);
-
-                  return (
-                    <div
-                      key={article.id}
-                      draggable={!isInAnotherLot}
-                      onDragStart={(e) => handleDragStart(e, article.id)}
-                      onClick={() =>
-                        !isInAnotherLot && toggleArticleSelection(article.id)
-                      }
-                      className={[
-                        'group relative rounded-2xl overflow-hidden border-2 bg-white cursor-pointer transition-all hover:shadow-lg',
-                        isSelected
-                          ? 'border-emerald-500 ring-2 ring-emerald-200 shadow-md'
-                          : isInAnotherLot
-                          ? 'border-slate-200 opacity-40 cursor-not-allowed'
-                          : 'border-slate-200 hover:border-emerald-300',
-                      ].join(' ')}
-                    >
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-emerald-500 shadow-lg flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                      {isInAnotherLot && (
-                        <div className="absolute top-2 left-2 z-10 rounded-full bg-amber-500 text-[10px] font-semibold text-white px-2 py-1 shadow">
-                          Déjà dans un lot
-                        </div>
-                      )}
-
-                      <div className="aspect-square bg-slate-100 flex items-center justify-center relative overflow-hidden">
-                        {article.photos && article.photos.length > 0 ? (
-                          <img
-                            src={article.photos[0]}
-                            alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <Package className="w-10 h-10 text-slate-300" />
-                        )}
-                      </div>
-
-                      <div className="p-2.5 space-y-1">
-                        <p className="text-xs font-semibold text-slate-900 truncate">
-                          {article.title}
-                        </p>
-                        <p className="text-[11px] text-slate-500 truncate">
-                          {article.brand || 'Sans marque'}
-                        </p>
-                        <div className="flex items-center justify-between pt-1">
-                          <span className="text-sm font-bold text-emerald-600">
-                            {article.price.toFixed(0)}€
-                          </span>
-                          {article.size && (
-                            <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                              {article.size}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {filteredArticles.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                  <Grid3x3 className="w-12 h-12 text-slate-300 mb-4" />
-                  <p className="text-slate-600 font-medium mb-1">Aucun article disponible</p>
-                  <p className="text-sm text-slate-500">
-                    Modifiez vos filtres ou ajoutez de nouveaux articles
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </div>

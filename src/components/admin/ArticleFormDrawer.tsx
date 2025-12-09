@@ -686,13 +686,13 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
       `}} />
 
       <div
-        className={`fixed inset-0 bg-black/50 z-[70] ${
+        className={`fixed inset-0 bg-black/50 z-[60] ${
           !isClosing ? 'form-drawer-backdrop-enter' : 'form-drawer-backdrop-exit'
         } ${isClosing ? 'pointer-events-none' : ''}`}
         onClick={handleClose}
       />
       <div
-        className={`fixed inset-y-0 right-0 w-full max-w-md bg-white z-[70] shadow-2xl ${
+        className={`fixed inset-y-0 right-0 w-full max-w-md bg-white z-[60] shadow-2xl ${
           !isClosing ? 'form-drawer-enter' : 'form-drawer-exit'
         }`}
         style={{ perspective: '1000px' }}
