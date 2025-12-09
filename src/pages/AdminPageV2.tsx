@@ -712,7 +712,6 @@ export function AdminPageV2() {
                 onEdit={() => handleEdit(item)}
                 onPublish={() => handlePublish(item)}
                 onStatusClick={() => setStatusModal({ isOpen: true, item })}
-                onMenuClick={() => openItemDrawer(item)}
                 formatDate={formatDate}
                 currentPhotoIndex={photoIndexes[item.id] || 0}
                 onPreviousPhoto={(e) => handlePreviousPhoto(e, item.id, item.photos.length)}

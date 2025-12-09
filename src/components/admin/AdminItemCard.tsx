@@ -1,4 +1,4 @@
-import { Package, FileText, CheckCircle2, Clock, Send, DollarSign, MoreHorizontal, Eye, ClipboardEdit, Upload, Flower2, Sun, Leaf, Snowflake, CloudSun, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, FileText, CheckCircle2, Clock, Send, DollarSign, Eye, ClipboardEdit, Upload, Flower2, Sun, Leaf, Snowflake, CloudSun, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ArticleStatus, Season } from '../../types/article';
 
 interface AdminItem {
@@ -29,7 +29,6 @@ interface AdminItemCardProps {
   onEdit: () => void;
   onPublish: () => void;
   onStatusClick: () => void;
-  onMenuClick: () => void;
   formatDate: (date?: string) => string;
   currentPhotoIndex: number;
   onPreviousPhoto: (e: React.MouseEvent) => void;
@@ -82,7 +81,6 @@ export function AdminItemCard({
   onEdit,
   onPublish,
   onStatusClick,
-  onMenuClick,
   formatDate,
   currentPhotoIndex,
   onPreviousPhoto,
@@ -161,22 +159,13 @@ export function AdminItemCard({
           )}
         </div>
 
-        <div className="absolute top-3 right-3 flex items-center gap-2">
-          {item.type === 'lot' && item.lot_article_count && (
+        {item.type === 'lot' && item.lot_article_count && (
+          <div className="absolute top-3 right-3">
             <div className="bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
               <span className="text-white text-xs font-medium">{item.lot_article_count} articles</span>
             </div>
-          )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onMenuClick();
-            }}
-            className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-slate-600 hover:bg-white hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100"
-          >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-        </div>
+          </div>
+        )}
 
         <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
           <button
