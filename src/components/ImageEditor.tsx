@@ -254,7 +254,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
             </div>
             <div className="min-w-0">
               <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate">Édition d'image IA</h2>
-              <p className="text-xs sm:text-sm text-slate-500 truncate">Propulsé par Gemini 2.5 Flash</p>
+              <p className="text-xs sm:text-sm text-slate-500 truncate">Propulsé par SALAS VEGA</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
