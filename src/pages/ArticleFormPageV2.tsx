@@ -1081,7 +1081,10 @@ export function ArticleFormPageV2() {
       {showImageEditor && editingImageIndex !== null && (
         <ImageEditor
           imageUrl={formData.photos[editingImageIndex]}
+          allPhotos={formData.photos}
+          currentPhotoIndex={editingImageIndex}
           onImageEdited={handleImageEdited}
+          onPhotoSelect={(index) => setEditingImageIndex(index)}
           onClose={() => {
             setShowImageEditor(false);
             setEditingImageIndex(null);

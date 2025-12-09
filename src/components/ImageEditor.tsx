@@ -4,8 +4,11 @@ import { editProductImage } from '../lib/geminiService';
 
 interface ImageEditorProps {
   imageUrl: string;
+  allPhotos: string[];
+  currentPhotoIndex: number;
   onImageEdited: (newImageDataUrl: string) => void;
   onClose: () => void;
+  onPhotoSelect?: (index: number) => void;
 }
 
 const SMART_BACKGROUND_PROMPT = `
@@ -36,7 +39,7 @@ const ACTION_PROMPTS = {
   TRY_ON: `Action: Real-Life Try-On. Display the garment worn or held by a realistic human model, in a natural, everyday context (street, neutral interior). Determine correct model type. Keep model realistic, neutral. Integrate garment with perfect physical accuracy (fit, drape, fabric behavior). NO distortion. Strictly preserve the product details.`
 };
 
-export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorProps) {
+export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdited, onClose, onPhotoSelect }: ImageEditorProps) {
   const [instruction, setInstruction] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -225,7 +228,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="bg-white rounded-2xl max-w-7xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
@@ -276,89 +279,89 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div
-            ref={imageContainerRef}
-            className="aspect-video bg-slate-100 rounded-xl overflow-hidden relative select-none"
-          >
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Colonne de gauche - Photo principale et miniatures */}
+          <div className="space-y-4">
+            {/* Photo principale */}
             <div
-              className="absolute inset-0 flex items-center justify-center overflow-hidden"
-              style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
+              ref={imageContainerRef}
+              className="aspect-[4/5] bg-slate-100 rounded-xl overflow-hidden relative select-none"
             >
-              <img
-                src={currentImage}
-                alt="Image à éditer"
-                draggable={false}
-                style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                  transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-                }}
-                className={`w-full h-full object-contain origin-center ${processing ? 'opacity-50 blur-sm' : ''}`}
-              />
-            </div>
-
-            {zoom > 1 && (
-              <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full backdrop-blur-md shadow-sm border border-white/20 flex items-center gap-2 pointer-events-none transition-all duration-300 ${isDragging ? 'bg-blue-600/90 text-white shadow-blue-500/20 scale-105' : 'bg-white/80 text-slate-600 hover:bg-white'}`}>
-                <Move size={14} className={isDragging ? 'animate-pulse' : ''} />
-                <span className="text-xs font-semibold tracking-wide">{isDragging ? 'Déplacement' : 'Glisser pour déplacer'}</span>
-              </div>
-            )}
-
-            {hasEdited && !processing && (
-              <div className="absolute top-3 left-3 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-10">
-                <Check className="w-3.5 h-3.5" />
-                <span>Éditée</span>
-              </div>
-            )}
-            <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-10">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>IA Gemini</span>
-            </div>
-
-            <div className="hidden absolute bottom-3 right-3 z-20 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleZoomIn}
-                disabled={zoom >= 5}
-                className="p-2.5 bg-white/90 backdrop-blur-md text-slate-700 rounded-full hover:bg-white hover:text-blue-600 shadow-lg border border-slate-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Zoom avant"
+              <div
+                className="absolute inset-0 flex items-center justify-center overflow-hidden"
+                style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
               >
-                <ZoomIn size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={handleZoomOut}
-                disabled={zoom <= 1}
-                className="p-2.5 bg-white/90 backdrop-blur-md text-slate-700 rounded-full hover:bg-white hover:text-blue-600 shadow-lg border border-slate-200/50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Zoom arrière"
-              >
-                <ZoomOut size={18} />
-              </button>
+                <img
+                  src={currentImage}
+                  alt="Image à éditer"
+                  draggable={false}
+                  style={{
+                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                  }}
+                  className={`w-full h-full object-contain origin-center ${processing ? 'opacity-50 blur-sm' : ''}`}
+                />
+              </div>
+
               {zoom > 1 && (
-                <button
-                  type="button"
-                  onClick={handleResetZoom}
-                  className="p-2.5 bg-blue-600/90 backdrop-blur-md text-white rounded-full hover:bg-blue-700 shadow-lg border border-blue-500/50 transition-all active:scale-95"
-                  title="Réinitialiser la vue"
-                >
-                  <Maximize2 size={18} />
-                </button>
+                <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full backdrop-blur-md shadow-sm border border-white/20 flex items-center gap-2 pointer-events-none transition-all duration-300 ${isDragging ? 'bg-blue-600/90 text-white shadow-blue-500/20 scale-105' : 'bg-white/80 text-slate-600 hover:bg-white'}`}>
+                  <Move size={14} className={isDragging ? 'animate-pulse' : ''} />
+                  <span className="text-xs font-semibold tracking-wide">{isDragging ? 'Déplacement' : 'Glisser pour déplacer'}</span>
+                </div>
+              )}
+
+              {hasEdited && !processing && (
+                <div className="absolute top-3 left-3 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-10">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Éditée</span>
+                </div>
+              )}
+              <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-10">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>IA Gemini</span>
+              </div>
+
+              {processing && (
+                <div className="absolute inset-0 flex items-center justify-center z-30">
+                  <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <span className="font-semibold text-slate-900">Édition en cours...</span>
+                  </div>
+                </div>
               )}
             </div>
 
-            {processing && (
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                  <span className="font-semibold text-slate-900">Édition en cours...</span>
-                </div>
+            {/* Miniatures des autres photos */}
+            {allPhotos.length > 1 && (
+              <div className="grid grid-cols-4 gap-2">
+                {allPhotos.map((photo, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => onPhotoSelect && onPhotoSelect(index)}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                      index === currentPhotoIndex
+                        ? 'border-blue-600 ring-2 ring-blue-200'
+                        : 'border-slate-200 hover:border-blue-400'
+                    }`}
+                  >
+                    <img
+                      src={photo}
+                      alt={`Photo ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             )}
           </div>
+
+          {/* Colonne de droite - AI Magic Editor */}
+          <div className="space-y-6">
 
           {error && (
             <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-rose-700 text-sm">
@@ -370,7 +373,7 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
             <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
               AI Magic Editor
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => handleEdit(SMART_BACKGROUND_PROMPT)}
@@ -482,16 +485,17 @@ export function ImageEditor({ imageUrl, onImageEdited, onClose }: ImageEditorPro
             </button>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-blue-900">
-                <p className="font-semibold mb-1">Studio Photo IA - Gemini 2.5 Flash Image</p>
-                <p className="text-blue-800 leading-relaxed">
-                  Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan
-                  (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit,
-                  ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
-                </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-blue-900">
+                  <p className="font-semibold mb-1">Studio Photo IA - Gemini 2.5 Flash Image</p>
+                  <p className="text-blue-800 leading-relaxed">
+                    Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan
+                    (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit,
+                    ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
