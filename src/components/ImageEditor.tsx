@@ -278,7 +278,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
                         Studio Magik-AI - By AXS Design
                       </h3>
                       <p className="text-slate-700 text-sm leading-relaxed">
-                        Décrivez les modifications que vous souhaitez apporter à votre article et laissez Studio Magik-AI le réaliser. Il peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair...), améliorer la luminosité, centrer le produit, placer le vêtement à plat, le plier (si-si)...Si vous etes moche il peut le mettre en situation sur un modèle beaugosse, What else? :) 
+                        Décrivez les modifications que vous souhaitez apporter à votre article et laissez Studio Magik-AI le réaliser. Il peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair...), améliorer la luminosité, centrer le produit, placer le vêtement à plat, le plier! (si-si) Si vous êtes moche il peut le mettre en situation sur un modèle, What else? :) 
                       </p>
                     </div>
                     <button
