@@ -544,7 +544,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">
-                {articleId ? 'Modifier l\'article' : 'Nouvel article'}
+                {articleId ? 'Modifier l\'article' : 'Nouvel article Drawer'}
               </h2>
               <p className="text-sm text-slate-500 mt-1">
                 Completez les informations de votre article
