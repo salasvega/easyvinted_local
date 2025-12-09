@@ -667,7 +667,7 @@ export function AdminPageV2() {
                           <p className="font-medium text-slate-900 truncate group-hover:text-slate-700">{item.title}</p>
                           <p className="text-xs text-slate-500 truncate">{item.brand || 'Sans marque'}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-sm font-bold text-slate-900">{item.price.toFixed(0)}€</span>
+                            <span className="text-sm font-bold text-emerald-600">{item.price.toFixed(0)}€</span>
                             <span className="text-[10px] text-slate-400">{getDateLabel(item)} {formatDate(getItemDate(item))}</span>
                           </div>
                         </div>

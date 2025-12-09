@@ -163,7 +163,7 @@ export function AdminItemCard({
 
         <div className="flex items-end justify-between mb-3">
           <div>
-            <p className="text-2xl font-bold text-slate-900">{item.price.toFixed(0)}€</p>
+            <p className="text-2xl font-bold text-emerald-600">{item.price.toFixed(0)}€</p>
             {item.status === 'sold' && item.net_profit !== undefined && (
               <p className={`text-xs font-semibold ${item.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {item.net_profit >= 0 ? '+' : ''}{item.net_profit.toFixed(0)}€ net
