@@ -795,6 +795,16 @@ export function ArticleFormPageV2() {
                   </select>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Periode conseillee</p>
+                  <input
+                    type="text"
+                    value={formData.suggested_period}
+                    onChange={(e) => setFormData({ ...formData, suggested_period: e.target.value })}
+                    className="w-full text-sm font-medium text-slate-900 bg-transparent border-0 focus:ring-0 p-0"
+                    placeholder="Ex: Sept-Oct"
+                  />
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
                   <select
                     value={formData.season}
@@ -805,16 +815,6 @@ export function ArticleFormPageV2() {
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-                </div>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Periode conseillee</p>
-                  <input
-                    type="text"
-                    value={formData.suggested_period}
-                    onChange={(e) => setFormData({ ...formData, suggested_period: e.target.value })}
-                    className="w-full text-sm font-medium text-slate-900 bg-transparent border-0 focus:ring-0 p-0"
-                    placeholder="Ex: Sept-Oct"
-                  />
                 </div>
               </div>
 
