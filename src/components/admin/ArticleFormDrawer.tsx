@@ -519,6 +519,46 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
     }
   };
 
+  const handleAddAsNewPhoto = async (newImageDataUrl: string) => {
+    if (!user || formData.photos.length >= 8) {
+      if (formData.photos.length >= 8) {
+        setToast({ type: 'error', text: 'Maximum 8 photos autorisees' });
+      }
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(newImageDataUrl);
+      const blob = await response.blob();
+
+      const fileExt = 'jpg';
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('article-photos')
+        .upload(fileName, blob);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('article-photos')
+        .getPublicUrl(fileName);
+
+      setFormData((prev) => ({
+        ...prev,
+        photos: [...prev.photos, urlData.publicUrl],
+      }));
+      setToast({ type: 'success', text: 'Nouvelle photo ajoutee avec succes' });
+    } catch (error) {
+      console.error('Error adding new photo:', error);
+      setToast({ type: 'error', text: "Erreur lors de l'ajout de la nouvelle photo" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePreviousPhoto = () => {
     setSelectedPhotoIndex((prev) => (prev === 0 ? formData.photos.length - 1 : prev - 1));
   };
@@ -1106,6 +1146,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
           allPhotos={formData.photos}
           currentPhotoIndex={editingImageIndex}
           onImageEdited={handleImageEdited}
+          onAddAsNewPhoto={formData.photos.length < 8 ? handleAddAsNewPhoto : undefined}
           onPhotoSelect={(index) => setEditingImageIndex(index)}
           onClose={() => {
             setShowImageEditor(false);
