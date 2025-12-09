@@ -96,13 +96,7 @@ export function HomePage() {
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
 
-              <Link
-                to="/photo-studio"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white border-2 border-slate-200 text-slate-900 text-base font-semibold rounded-full hover:border-slate-300 hover:bg-slate-50 transition-all hover:shadow-lg"
-              >
-                <Camera className="w-5 h-5" />
-                Essayer le Photo Studio IA
-              </Link>
+             
             </div>
 
             {/* Social proof */}
