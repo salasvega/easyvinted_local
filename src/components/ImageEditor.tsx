@@ -304,11 +304,11 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
 
         <div className="p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 relative">
           {/* Colonne de gauche - Photo principale et miniatures */}
-          <div className="space-y-4 relative z-0">
+          <div className="flex flex-col space-y-4 relative z-0 h-full">
             {/* Photo principale */}
             <div
               ref={imageContainerRef}
-              className="h-[350px] bg-slate-100 rounded-xl overflow-hidden relative select-none z-0"
+              className="flex-1 min-h-[400px] bg-slate-100 rounded-xl overflow-hidden relative select-none z-0"
             >
               <div
                 className="absolute inset-0 flex items-center justify-center overflow-hidden"
