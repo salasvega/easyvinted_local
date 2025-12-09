@@ -73,7 +73,6 @@ interface AdminDetailDrawerProps {
   item: AdminItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onView: () => void;
   onEdit: () => void;
   onPublish: () => void;
   onDuplicate: () => void;
@@ -148,7 +147,6 @@ export function AdminDetailDrawer({
   item,
   isOpen,
   onClose,
-  onView,
   onEdit,
   onPublish,
   onDuplicate,

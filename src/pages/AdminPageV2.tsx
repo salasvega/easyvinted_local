@@ -528,14 +528,6 @@ export function AdminPageV2() {
     }
   };
 
-  const handleView = (item: AdminItem) => {
-    if (item.type === 'article') {
-      navigate(`/articles/${item.id}/preview`);
-    } else {
-      navigate(`/lots/${item.id}/preview`);
-    }
-  };
-
   const handlePublish = (item: AdminItem) => {
     if (item.type === 'article') {
       navigate(`/articles/${item.id}/structure`);
@@ -716,7 +708,7 @@ export function AdminPageV2() {
               <AdminItemCard
                 key={`${item.type}-${item.id}`}
                 item={item}
-                onView={() => handleView(item)}
+                onView={() => openItemDrawer(item)}
                 onEdit={() => handleEdit(item)}
                 onPublish={() => handlePublish(item)}
                 onStatusClick={() => setStatusModal({ isOpen: true, item })}
@@ -863,7 +855,6 @@ export function AdminPageV2() {
           setDrawerOpen(false);
           setSelectedItem(null);
         }}
-        onView={() => selectedItem && handleView(selectedItem)}
         onEdit={() => selectedItem && handleEdit(selectedItem)}
         onPublish={() => selectedItem && handlePublish(selectedItem)}
         onDuplicate={() => selectedItem && handleDuplicate(selectedItem)}
