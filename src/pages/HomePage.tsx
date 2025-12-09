@@ -69,7 +69,7 @@ export function HomePage() {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full shadow-sm mb-8 hover:shadow-md transition-shadow">
               <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-sm font-medium text-slate-700">L'assistant IA pour vendeurs Vinted</span>
-            </div>
+            </div
 
             {/* Main title */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 tracking-tight leading-[1.1]">
