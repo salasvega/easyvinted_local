@@ -661,12 +661,7 @@ export function PreviewPage() {
                     <p className="text-sm font-medium text-slate-900">{sellerName}</p>
                   </div>
                 )}
-                {article.suggested_period && (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Periode conseillee</p>
-                    <p className="text-sm font-medium text-slate-900">{article.suggested_period}</p>
-                  </div>
-                )}
+               
               </div>
 
               {/* 5. Sale Details (if sold) */}
