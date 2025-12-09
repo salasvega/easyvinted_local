@@ -407,34 +407,6 @@ export function AdminDetailDrawer({
                 </div>
               )}
 
-              <div>
-                <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Dates</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                    <span className="text-sm text-slate-600">Créé le</span>
-                    <span className="text-sm font-medium text-slate-900">{formatDate(item.created_at)}</span>
-                  </div>
-                  {item.scheduled_for && (
-                    <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-600">Planifié pour le</span>
-                      <span className="text-sm font-medium text-amber-600">{formatDate(item.scheduled_for)}</span>
-                    </div>
-                  )}
-                  {item.published_at && (
-                    <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-600">Publié le</span>
-                      <span className="text-sm font-medium text-violet-600">{formatDate(item.published_at)}</span>
-                    </div>
-                  )}
-                  {item.sold_at && (
-                    <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-600">Vendu le</span>
-                      <span className="text-sm font-medium text-emerald-600">{formatDate(item.sold_at)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {item.vinted_url && (
                 <a
                   href={item.vinted_url}
