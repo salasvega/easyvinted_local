@@ -302,39 +302,39 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Boutons de navigation et téléchargement */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 bg-slate-100 rounded-lg border border-slate-200 p-1">
+              {/* Boutons de navigation et téléchargement - en overlay */}
+              <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
+                <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-lg border border-slate-200 p-1 shadow-lg">
+                  <button
+                    type="button"
+                    onClick={handleUndo}
+                    disabled={!canUndo}
+                    className={`p-2 rounded-md transition-all ${canUndo ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed'}`}
+                    title="Annuler"
+                  >
+                    <Undo2 size={18} />
+                  </button>
+                  <div className="w-px h-5 bg-slate-300 mx-0.5"></div>
+                  <button
+                    type="button"
+                    onClick={handleRedo}
+                    disabled={!canRedo}
+                    className={`p-2 rounded-md transition-all ${canRedo ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed'}`}
+                    title="Refaire"
+                  >
+                    <Redo2 size={18} />
+                  </button>
+                </div>
                 <button
                   type="button"
-                  onClick={handleUndo}
-                  disabled={!canUndo}
-                  className={`p-2 rounded-md transition-all ${canUndo ? 'text-slate-700 hover:bg-white' : 'text-slate-300 cursor-not-allowed'}`}
-                  title="Annuler"
+                  onClick={handleDownload}
+                  className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg"
+                  title="Télécharger l'image"
                 >
-                  <Undo2 size={18} />
-                </button>
-                <div className="w-px h-5 bg-slate-300 mx-0.5"></div>
-                <button
-                  type="button"
-                  onClick={handleRedo}
-                  disabled={!canRedo}
-                  className={`p-2 rounded-md transition-all ${canRedo ? 'text-slate-700 hover:bg-white' : 'text-slate-300 cursor-not-allowed'}`}
-                  title="Refaire"
-                >
-                  <Redo2 size={18} />
+                  <Download className="w-5 h-5" />
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={handleDownload}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
-                title="Télécharger l'image"
-              >
-                <Download className="w-5 h-5" />
-              </button>
             </div>
 
             {/* Miniatures des autres photos */}
