@@ -335,7 +335,7 @@ export function AdminDetailDrawer({
 
                   {/* Articles Statistics */}
                   <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Layers className="w-4 h-4 text-slate-600" />
                         <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">
@@ -344,11 +344,6 @@ export function AdminDetailDrawer({
                       </div>
                       <span className="text-2xl font-bold text-slate-900">{item.articles.length}</span>
                     </div>
-                    {item.original_total_price !== undefined && (
-                      <p className="text-xs text-slate-500">
-                        Valeur totale : <span className="font-semibold text-slate-700">{item.original_total_price.toFixed(2)} €</span>
-                      </p>
-                    )}
                   </div>
 
                   {/* Prix et Remise */}
