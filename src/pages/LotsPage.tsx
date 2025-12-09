@@ -41,6 +41,7 @@ export default function LotsPage() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingLotId, setEditingLotId] = useState<string | undefined>(undefined);
+  const [comeFromAdmin, setComeFromAdmin] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     lotId: string | null;
@@ -84,11 +85,13 @@ export default function LotsPage() {
     if (editId) {
       setEditingLotId(editId);
       setBuilderOpen(true);
+      setComeFromAdmin(false);
       searchParams.delete('edit');
       setSearchParams(searchParams);
     } else if (create === 'true') {
       setEditingLotId(undefined);
       setBuilderOpen(true);
+      setComeFromAdmin(true);
       searchParams.delete('create');
       setSearchParams(searchParams);
     }
@@ -517,11 +520,17 @@ export default function LotsPage() {
         onClose={() => {
           setBuilderOpen(false);
           setEditingLotId(undefined);
+          if (comeFromAdmin) {
+            navigate('/admin');
+          }
         }}
         onSuccess={() => {
           fetchLots();
           setToast({ type: 'success', text: editingLotId ? 'Lot modifié avec succès' : 'Lot créé avec succès' });
           setEditingLotId(undefined);
+          if (comeFromAdmin) {
+            navigate('/admin');
+          }
         }}
         existingLotId={editingLotId}
       />
