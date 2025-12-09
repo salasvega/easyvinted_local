@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Wand2, RotateCcw, Download, Sparkles, Undo2, Redo2, Palette, Store, Shirt, User } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Wand2, RotateCcw, Download, Sparkles, Undo2, Redo2, Palette, Store, Shirt, User, Info, X } from 'lucide-react';
 
 interface EditorPanelProps {
   onEdit: (prompt: string) => void;
@@ -53,6 +53,24 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   onDownload
 }) => {
   const [prompt, setPrompt] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
+  const infoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (infoRef.current && !infoRef.current.contains(event.target as Node)) {
+        setShowInfo(false);
+      }
+    };
+
+    if (showInfo) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showInfo]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +81,41 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col max-w-2xl mx-auto">
+      <div ref={infoRef} className="relative mb-4">
+        <button
+          onClick={() => setShowInfo(!showInfo)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 text-sm font-medium shadow-sm hover:shadow-md"
+        >
+          <Info size={18} />
+          {showInfo ? 'Masquer les infos' : 'Infos'}
+        </button>
+
+        {showInfo && (
+          <div className="mt-3 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <Sparkles className="text-blue-600" size={22} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-blue-900 font-bold text-base mb-2 flex items-center gap-2">
+                  Studio Photo IA - Gemini 2.5 Flash Image
+                </h3>
+                <p className="text-blue-800 text-sm leading-relaxed">
+                  Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit, ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowInfo(false)}
+                className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                title="Fermer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
         <div className="flex items-start gap-3">
           <Sparkles className="text-orange-600 shrink-0 mt-0.5" size={20} />
