@@ -1,4 +1,4 @@
-import { Package, FileText, CheckCircle2, Clock, Send, DollarSign, MoreHorizontal, Eye, ClipboardEdit, Upload, Flower2, Sun, Leaf, Snowflake, CloudSun } from 'lucide-react';
+import { Package, FileText, CheckCircle2, Clock, Send, DollarSign, MoreHorizontal, Eye, ClipboardEdit, Upload, Flower2, Sun, Leaf, Snowflake, CloudSun, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ArticleStatus, Season } from '../../types/article';
 
 interface AdminItem {
@@ -30,6 +30,9 @@ interface AdminItemCardProps {
   onStatusClick: () => void;
   onMenuClick: () => void;
   formatDate: (date?: string) => string;
+  currentPhotoIndex: number;
+  onPreviousPhoto: (e: React.MouseEvent) => void;
+  onNextPhoto: (e: React.MouseEvent) => void;
 }
 
 const STATUS_LABELS: Record<ArticleStatus, string> = {
@@ -80,6 +83,9 @@ export function AdminItemCard({
   onStatusClick,
   onMenuClick,
   formatDate,
+  currentPhotoIndex,
+  onPreviousPhoto,
+  onNextPhoto,
 }: AdminItemCardProps) {
   const getDateInfo = () => {
     if (item.status === 'sold' && item.sold_at) {
@@ -100,11 +106,41 @@ export function AdminItemCard({
     >
       <div className="relative aspect-square bg-slate-100">
         {item.photos && item.photos.length > 0 ? (
-          <img
-            src={item.photos[0]}
-            alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+          <>
+            <img
+              src={item.photos[currentPhotoIndex]}
+              alt={item.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            {item.type === 'lot' && item.photos.length > 1 && (
+              <>
+                <button
+                  onClick={onPreviousPhoto}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={onNextPhoto}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {item.photos.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                        index === currentPhotoIndex
+                          ? 'bg-white w-4'
+                          : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Package className="w-16 h-16 text-slate-300" />

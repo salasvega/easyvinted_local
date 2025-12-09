@@ -152,6 +152,7 @@ export function AdminPageV2() {
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const desktopMenuRef = useRef<HTMLDivElement | null>(null);
+  const [photoIndexes, setPhotoIndexes] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (user) {
@@ -541,6 +542,22 @@ export function AdminPageV2() {
     setDrawerOpen(true);
   };
 
+  const handlePreviousPhoto = (e: React.MouseEvent, itemId: string, totalPhotos: number) => {
+    e.stopPropagation();
+    setPhotoIndexes(prev => ({
+      ...prev,
+      [itemId]: ((prev[itemId] || 0) - 1 + totalPhotos) % totalPhotos
+    }));
+  };
+
+  const handleNextPhoto = (e: React.MouseEvent, itemId: string, totalPhotos: number) => {
+    e.stopPropagation();
+    setPhotoIndexes(prev => ({
+      ...prev,
+      [itemId]: ((prev[itemId] || 0) + 1) % totalPhotos
+    }));
+  };
+
   const stats = {
     total: items.length,
     articles: items.filter(i => i.type === 'article').length,
@@ -698,6 +715,9 @@ export function AdminPageV2() {
                 onStatusClick={() => setStatusModal({ isOpen: true, item })}
                 onMenuClick={() => openItemDrawer(item)}
                 formatDate={formatDate}
+                currentPhotoIndex={photoIndexes[item.id] || 0}
+                onPreviousPhoto={(e) => handlePreviousPhoto(e, item.id, item.photos.length)}
+                onNextPhoto={(e) => handleNextPhoto(e, item.id, item.photos.length)}
               />
             ))}
           </div>
