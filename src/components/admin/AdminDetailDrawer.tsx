@@ -432,12 +432,6 @@ export function AdminDetailDrawer({
                     <p className="text-sm font-medium text-slate-900">{item.suggested_period}</p>
                   </div>
                 )}
-                {item.type === 'lot' && item.lot_article_count && (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Articles</p>
-                    <p className="text-sm font-medium text-slate-900">{item.lot_article_count} articles</p>
-                  </div>
-                )}
               </div>
 
               {item.status === 'sold' && (item.fees !== undefined || item.shipping_cost !== undefined || item.buyer_name) && (
