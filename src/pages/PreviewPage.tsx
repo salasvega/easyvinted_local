@@ -598,16 +598,16 @@ export function PreviewPage() {
 
               {/* 3. Article Details Grid */}
               <div className="grid grid-cols-2 gap-3">
-                {article.brand && (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
-                    <p className="text-sm font-medium text-slate-900">{article.brand}</p>
-                  </div>
-                )}
                 {article.size && (
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Taille</p>
                     <p className="text-sm font-medium text-slate-900">{article.size}</p>
+                  </div>
+                )}
+                {article.brand && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
+                    <p className="text-sm font-medium text-slate-900">{article.brand}</p>
                   </div>
                 )}
                 {article.color && (
