@@ -906,19 +906,25 @@ export function AdminPage() {
                 try {
                   const netProfit = saleData.soldPrice - saleData.fees - saleData.shippingCost;
 
+                  const updateData: any = {
+                    status: 'sold',
+                    price: saleData.soldPrice,
+                    sold_at: saleData.soldAt,
+                    shipping_cost: saleData.shippingCost,
+                    fees: saleData.fees,
+                    net_profit: netProfit,
+                    buyer_name: saleData.buyerName || null,
+                    sale_notes: saleData.notes || null,
+                    updated_at: new Date().toISOString(),
+                  };
+
+                  if (saleData.sellerId) {
+                    updateData.seller_id = saleData.sellerId;
+                  }
+
                   const { error } = await supabase
                     .from('lots')
-                    .update({
-                      status: 'sold',
-                      price: saleData.soldPrice,
-                      sold_at: saleData.soldAt,
-                      shipping_cost: saleData.shippingCost,
-                      fees: saleData.fees,
-                      net_profit: netProfit,
-                      buyer_name: saleData.buyerName || null,
-                      sale_notes: saleData.notes || null,
-                      updated_at: new Date().toISOString(),
-                    })
+                    .update(updateData)
                     .eq('id', soldModal.item!.id);
 
                   if (error) throw error;
@@ -931,7 +937,7 @@ export function AdminPage() {
                   setToast({ type: 'error', text: 'Erreur lors de la mise à jour' });
                 }
               }}
-              lot={{ id: soldModal.item.id, name: soldModal.item.title, price: soldModal.item.price } as any}
+              lot={{ id: soldModal.item.id, name: soldModal.item.title, price: soldModal.item.price, seller_id: soldModal.item.seller_id } as any}
             />
           ) : (
             <ArticleSoldModal

@@ -62,11 +62,13 @@ export default function LotsPage() {
     lotId: string | null;
     lotName: string;
     lotPrice: number;
+    sellerId?: string | null;
   }>({
     isOpen: false,
     lotId: null,
     lotName: '',
     lotPrice: 0,
+    sellerId: null,
   });
   const [photoIndexes, setPhotoIndexes] = useState<Record<string, number>>({});
 
@@ -197,7 +199,7 @@ export default function LotsPage() {
 
       setToast({ type: 'success', text: 'Lot marqué comme vendu' });
       fetchLots();
-      setSoldModal({ isOpen: false, lotId: null, lotName: '', lotPrice: 0 });
+      setSoldModal({ isOpen: false, lotId: null, lotName: '', lotPrice: 0, sellerId: null });
     } catch (error) {
       console.error('Error marking lot as sold:', error);
       setToast({ type: 'error', text: 'Erreur lors du marquage comme vendu' });
@@ -541,7 +543,8 @@ export default function LotsPage() {
                   isOpen: true,
                   lotId: lot.id,
                   lotName: lot.name,
-                  lotPrice: lot.price
+                  lotPrice: lot.price,
+                  sellerId: lot.seller_id || null,
                 });
               }
             }
@@ -552,12 +555,13 @@ export default function LotsPage() {
       {soldModal.lotId && (
         <LotSoldModal
           isOpen={soldModal.isOpen}
-          onClose={() => setSoldModal({ isOpen: false, lotId: null, lotName: '', lotPrice: 0 })}
+          onClose={() => setSoldModal({ isOpen: false, lotId: null, lotName: '', lotPrice: 0, sellerId: null })}
           onConfirm={handleMarkAsSold}
           lot={{
             id: soldModal.lotId,
             name: soldModal.lotName,
             price: soldModal.lotPrice,
+            seller_id: soldModal.sellerId,
           }}
         />
       )}

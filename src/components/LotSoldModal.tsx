@@ -21,6 +21,7 @@ interface LotSoldModalProps {
     id: string;
     name: string;
     price: number;
+    seller_id?: string | null;
   };
   initialData?: {
     soldPrice: number;
@@ -46,7 +47,7 @@ export function LotSoldModal({ isOpen, onClose, onConfirm, lot, initialData }: L
   const [shippingCost, setShippingCost] = useState(initialData?.shippingCost?.toString() || '0');
   const [buyerName, setBuyerName] = useState(initialData?.buyerName || '');
   const [notes, setNotes] = useState(initialData?.notes || '');
-  const [sellerId, setSellerId] = useState<string | null>(null);
+  const [sellerId, setSellerId] = useState<string | null>(lot.seller_id || null);
   const [familyMembers, setFamilyMembers] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
