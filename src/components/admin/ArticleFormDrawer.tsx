@@ -539,7 +539,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
         className="fixed inset-0 bg-black/50 z-[70] transition-opacity"
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 right-0 w-full max-w-6xl bg-white z-[70] shadow-2xl overflow-y-auto">
+      <div className="fixed inset-y-0 right-0 w-full max-w-3xl bg-white z-[70] shadow-2xl overflow-y-auto transform transition-transform duration-300 ease-out">
         <div className="p-6 lg:p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
