@@ -1,6 +1,6 @@
 import { useState, useEffect, DragEvent as ReactDragEvent, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical, Image as ImageIcon, Wand2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Save, X, Plus, Sparkles, Trash2, Send, CheckCircle, Edit, GripVertical, Image as ImageIcon, Wand2, ChevronLeft, ChevronRight, Package } from 'lucide-react';
 import { Condition, Season, ArticleStatus } from '../types/article';
 import { Toast } from '../components/ui/Toast';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -49,6 +49,7 @@ export function ArticleFormPageV2() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showImageEditor, setShowImageEditor] = useState(false);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
+  const [articleStatus, setArticleStatus] = useState<ArticleStatus>('draft');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -126,6 +127,7 @@ export function ArticleFormPageV2() {
 
       if (error) throw error;
       if (data) {
+        setArticleStatus(data.status || 'draft');
         setFormData({
           title: data.title || '',
           description: data.description || '',
@@ -493,6 +495,75 @@ export function ArticleFormPageV2() {
   const selectedCategory = VINTED_CATEGORIES.find((c) => c.name === formData.main_category);
   const selectedSubcategory = selectedCategory?.subcategories.find((s) => s.name === formData.subcategory);
 
+  const getStatusBadge = () => {
+    switch (articleStatus) {
+      case 'ready':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            Prêt pour Vinted
+          </span>
+        );
+      case 'scheduled':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+            Planifié
+          </span>
+        );
+      case 'published':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+            Publié
+          </span>
+        );
+      case 'sold':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+            Vendu
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
+            En cours
+          </span>
+        );
+    }
+  };
+
+  const getStatusLabel = () => {
+    switch (articleStatus) {
+      case 'draft':
+        return 'Brouillon';
+      case 'ready':
+        return 'Prêt';
+      case 'published':
+        return 'Publié';
+      case 'sold':
+        return 'Vendu';
+      case 'scheduled':
+        return 'Planifié';
+      default:
+        return 'Brouillon';
+    }
+  };
+
+  const getStatusDescription = () => {
+    switch (articleStatus) {
+      case 'draft':
+        return "Cette annonce est en cours de préparation. Complétez les champs obligatoires avant de l'envoyer sur Vinted.";
+      case 'ready':
+        return 'Tous les champs requis sont remplis. Vous pouvez maintenant envoyer cette annonce sur Vinted.';
+      case 'published':
+        return 'Cette annonce est actuellement en ligne sur Vinted.';
+      case 'sold':
+        return 'Cet article a été vendu avec succès.';
+      case 'scheduled':
+        return 'Cette annonce est planifiée pour une publication ultérieure sur Vinted.';
+      default:
+        return "Cette annonce est en cours de préparation.";
+    }
+  };
+
   if (loading && id) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -683,6 +754,26 @@ export function ArticleFormPageV2() {
             </div>
 
             <div className="space-y-6">
+              {/* Status Section */}
+              {id && (
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Package className="w-10 h-10 text-slate-900 bg-white rounded-full p-2 border border-slate-200" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-semibold text-slate-900">
+                          Statut : {getStatusLabel()}
+                        </h2>
+                        {getStatusBadge()}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    {getStatusDescription()}
+                  </p>
+                </div>
+              )}
+
               {/* Seller */}
               {familyMembers.length > 0 && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
