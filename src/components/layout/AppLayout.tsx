@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Package, Settings, BarChart3, Calendar, Menu, X, LogOut, Users, Boxes, Shield, LayoutDashboard } from 'lucide-react';
+import { Package, Settings, BarChart3, Calendar, Menu, X, LogOut, Users, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
@@ -90,26 +90,15 @@ export function AppLayout({ children }: AppLayoutProps) {
               {/* Menu desktop */}
               <nav className="hidden md:flex items-center gap-1">
                 <Link
-                  to="/dashboard-v2"
+                  to="/admin-v2"
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/dashboard-v2')
+                    isActive('/admin-v2')
                       ? 'bg-emerald-50 text-emerald-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  <Package className="w-4 h-4" />
-                  Mon stock
-                </Link>
-                <Link
-                  to="/lots"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/lots')
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Boxes className="w-4 h-4" />
-                  Mes lots
+                  <LayoutDashboard className="w-4 h-4" />
+                  Administration
                 </Link>
                 <Link
                   to="/planner"
@@ -132,17 +121,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                 >
                   <BarChart3 className="w-4 h-4" />
                   Statistiques
-                </Link>
-                <Link
-                  to="/admin-v2"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/admin-v2')
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Admin
                 </Link>
               </nav>
             </div>
@@ -222,34 +200,19 @@ export function AppLayout({ children }: AppLayoutProps) {
         >
           <nav className="max-w-6xl mx-auto px-4 py-3 space-y-1">
             <Link
-              to="/dashboard-v2"
+              to="/admin-v2"
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
                 mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
               } ${
-                isActive('/dashboard-v2')
+                isActive('/admin-v2')
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
               style={{ transitionDelay: mobileMenuOpen ? '50ms' : '0ms' }}
             >
-              <Package className="w-5 h-5" />
-              Mon stock
-            </Link>
-            <Link
-              to="/lots"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
-                mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
-              } ${
-                isActive('/lots')
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-              style={{ transitionDelay: mobileMenuOpen ? '60ms' : '0ms' }}
-            >
-              <Boxes className="w-5 h-5" />
-              Mes lots
+              <LayoutDashboard className="w-5 h-5" />
+              Administration
             </Link>
             <Link
               to="/planner"
@@ -261,7 +224,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '70ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '60ms' : '0ms' }}
             >
               <Calendar className="w-5 h-5" />
               Planificateur
@@ -276,25 +239,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-              style={{ transitionDelay: mobileMenuOpen ? '80ms' : '0ms' }}
+              style={{ transitionDelay: mobileMenuOpen ? '70ms' : '0ms' }}
             >
               <BarChart3 className="w-5 h-5" />
               Statistiques
-            </Link>
-            <Link
-              to="/admin-v2"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
-                mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
-              } ${
-                isActive('/admin-v2')
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-              style={{ transitionDelay: mobileMenuOpen ? '90ms' : '0ms' }}
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              Administration
             </Link>
 
             <div className="border-t border-gray-200 my-2 pt-2">
@@ -304,7 +252,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
                   mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
                 } text-gray-700 hover:bg-gray-50`}
-                style={{ transitionDelay: mobileMenuOpen ? '200ms' : '0ms' }}
+                style={{ transitionDelay: mobileMenuOpen ? '80ms' : '0ms' }}
               >
                 <Settings className="w-5 h-5" />
                 Paramètres
@@ -315,7 +263,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
                   mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
                 } text-gray-700 hover:bg-gray-50`}
-                style={{ transitionDelay: mobileMenuOpen ? '250ms' : '0ms' }}
+                style={{ transitionDelay: mobileMenuOpen ? '130ms' : '0ms' }}
               >
                 <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center">
                   <span className="text-xs font-semibold text-white">
@@ -330,7 +278,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
                   mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
                 } text-gray-700 hover:bg-gray-50`}
-                style={{ transitionDelay: mobileMenuOpen ? '300ms' : '0ms' }}
+                style={{ transitionDelay: mobileMenuOpen ? '180ms' : '0ms' }}
               >
                 <Users className="w-5 h-5" />
                 Membres / famille
@@ -343,7 +291,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
                   mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
                 } text-red-600 hover:bg-red-50`}
-                style={{ transitionDelay: mobileMenuOpen ? '350ms' : '0ms' }}
+                style={{ transitionDelay: mobileMenuOpen ? '230ms' : '0ms' }}
               >
                 <LogOut className="w-5 h-5" />
                 Se déconnecter
