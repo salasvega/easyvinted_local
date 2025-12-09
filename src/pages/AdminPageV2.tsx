@@ -878,19 +878,16 @@ export function AdminPageV2() {
         onSchedule={() => {
           if (selectedItem) {
             setScheduleModal({ isOpen: true, item: selectedItem });
-            setDrawerOpen(false);
           }
         }}
         onMarkSold={() => {
           if (selectedItem) {
             setSoldModal({ isOpen: true, item: selectedItem });
-            setDrawerOpen(false);
           }
         }}
         onDelete={() => {
           if (selectedItem) {
             setDeleteModal({ isOpen: true, item: selectedItem });
-            setDrawerOpen(false);
           }
         }}
         onStatusChange={() => {
@@ -901,7 +898,6 @@ export function AdminPageV2() {
         onLabelOpen={() => {
           if (selectedItem) {
             setLabelModal({ isOpen: true, item: selectedItem });
-            setDrawerOpen(false);
           }
         }}
         formatDate={formatDate}
