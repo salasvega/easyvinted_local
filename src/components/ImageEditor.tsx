@@ -275,7 +275,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
                     </div>
                     <div className="flex-1">
                       <h3 className="text-slate-900 font-bold text-base mb-2">
-                        Studio Photo AI - By SALAS VEGA Design
+                        Studio Photo AI - By AXS Design Lab
                       </h3>
                       <p className="text-slate-700 text-sm leading-relaxed">
                         Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit, ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
