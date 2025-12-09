@@ -253,7 +253,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
               <Wand2 className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate"> Studio Photo AI</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate"> Studio Magik-AI</h2>
               <p className="text-xs sm:text-sm text-slate-500 truncate">By AXS Design 2025</p>
             </div>
           </div>
