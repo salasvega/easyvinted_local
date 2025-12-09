@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, DragEvent } from 'react';
 import {
   X,
-  ChevronLeft,
-  ChevronRight,
   Check,
   Package,
   AlertCircle,
@@ -11,18 +9,25 @@ import {
   Layers,
   Tag,
   Image as ImageIcon,
+  Trash2,
+  Plus,
+  TrendingDown,
+  Filter,
+  Grid3x3,
+  Sparkles,
+  Euro,
+  User,
+  FileText,
+  Calendar,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Article, Season } from '../types/article';
 import { LotStatus } from '../types/lot';
-import { VINTED_CATEGORIES } from '../constants/categories';
 
 import {
   Card,
   SoftCard,
   Pill,
-  InfoRow,
-  GradientStatCard,
   PrimaryButton,
   GhostButton,
   IconButton,
@@ -54,12 +59,13 @@ export default function LotBuilder({
   onSuccess,
   existingLotId,
 }: LotBuilderProps) {
-  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [articles, setArticles] = useState<Article[]>([]);
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
   const [articlesInLots, setArticlesInLots] = useState<Set<string>>(new Set());
+  const [draggedArticleId, setDraggedArticleId] = useState<string | null>(null);
+  const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
 
   const [lotData, setLotData] = useState<LotData>({
     name: '',
@@ -79,6 +85,7 @@ export default function LotBuilder({
   });
 
   const [familyMembers, setFamilyMembers] = useState<Array<{ id: string; name: string }>>([]);
+  const [showFilters, setShowFilters] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
@@ -107,7 +114,6 @@ export default function LotBuilder({
       status: 'draft',
       seller_id: null,
     });
-    setCurrentStep(1);
     setError('');
   };
 
@@ -282,36 +288,10 @@ export default function LotBuilder({
     return Math.round(((total - lotData.price) / total) * 100);
   };
 
-  const handleNext = () => {
-    setError('');
-
-    if (currentStep === 1) {
-      if (!lotData.name.trim()) {
-        setError('Le nom du lot est obligatoire');
-        return;
-      }
-    }
-
-    if (currentStep === 2) {
-      if (lotData.selectedArticles.length < 2) {
-        setError('Vous devez sélectionner au moins 2 articles');
-        return;
-      }
-    }
-
-    if (currentStep === 3) {
-      if (lotData.price <= 0) {
-        setError('Le prix du lot doit être supérieur à 0');
-        return;
-      }
-    }
-
-    setCurrentStep((prev) => Math.min(prev + 1, 4));
-  };
-
-  const handlePrevious = () => {
-    setError('');
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  const handleDiscountSlider = (discountPercent: number) => {
+    const total = calculateTotalPrice();
+    const newPrice = Math.round(total * (1 - discountPercent / 100));
+    setLotData({ ...lotData, price: newPrice });
   };
 
   const generateLotReferenceNumber = async (
@@ -349,6 +329,19 @@ export default function LotBuilder({
   };
 
   const handleSubmit = async () => {
+    if (!lotData.name.trim()) {
+      setError('Le nom du lot est obligatoire');
+      return;
+    }
+    if (lotData.selectedArticles.length < 2) {
+      setError('Vous devez sélectionner au moins 2 articles');
+      return;
+    }
+    if (lotData.price <= 0) {
+      setError('Le prix du lot doit être supérieur à 0');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -443,129 +436,197 @@ export default function LotBuilder({
     }
   };
 
+  const handleDragStart = (e: DragEvent, articleId: string) => {
+    setDraggedArticleId(articleId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: DragEvent) => {
+    e.preventDefault();
+    if (draggedArticleId && !articlesInLots.has(draggedArticleId)) {
+      toggleArticleSelection(draggedArticleId);
+      setDraggedArticleId(null);
+    }
+  };
+
+  const handlePhotoDragStart = (e: DragEvent, index: number) => {
+    setDraggedPhotoIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handlePhotoDrop = (e: DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedPhotoIndex === null) return;
+
+    const allPhotos = getSelectedArticles().flatMap((a) => a.photos);
+    const newPhotos = [...allPhotos];
+    const [removed] = newPhotos.splice(draggedPhotoIndex, 1);
+    newPhotos.splice(targetIndex, 0, removed);
+
+    setLotData({ ...lotData, photos: newPhotos.slice(0, 5) });
+    setDraggedPhotoIndex(null);
+  };
+
+  const selectBySeason = (season: Season) => {
+    const articleIds = articles
+      .filter((a) => a.season === season && !articlesInLots.has(a.id))
+      .map((a) => a.id);
+    setLotData({ ...lotData, selectedArticles: articleIds });
+  };
+
+  const selectByBrand = (brand: string) => {
+    const articleIds = articles
+      .filter((a) => a.brand === brand && !articlesInLots.has(a.id))
+      .map((a) => a.id);
+    setLotData({ ...lotData, selectedArticles: articleIds });
+  };
+
   if (!isOpen) return null;
 
   const totalPrice = calculateTotalPrice();
   const discount = calculateDiscount();
-
-  const statusLabel = (status: LotStatus) => {
-    switch (status) {
-      case 'draft':
-        return 'Brouillon';
-      case 'ready':
-        return 'Prêt';
-      case 'scheduled':
-        return 'Planifié';
-      case 'published':
-        return 'Publié';
-      case 'sold':
-        return 'Vendu';
-      default:
-        return status;
-    }
-  };
-
-  const statusVariant = (status: LotStatus) => {
-    switch (status) {
-      case 'draft':
-        return 'neutral';
-      case 'ready':
-      case 'published':
-        return 'primary';
-      case 'scheduled':
-        return 'warning';
-      case 'sold':
-        return 'success';
-      default:
-        return 'neutral';
-    }
-  };
+  const allPhotos = getSelectedArticles().flatMap((a) => a.photos);
+  const isLotValid = lotData.name.trim() && lotData.selectedArticles.length >= 2 && lotData.price > 0;
+  const availableBrands = getAvailableBrands();
+  const availableSizes = getAvailableSizes();
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-3 sm:p-4">
-      <div className="bg-white w-full max-w-5xl h-full md:h-auto md:max-h-[90vh] rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
-        {/* Header Apple-like */}
-        <div className="sticky top-0 z-10 bg-white/85 backdrop-blur-xl border-b border-slate-200 px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-md flex-shrink-0">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4">
+      <div className="bg-white w-full h-full sm:h-[95vh] sm:max-w-[1600px] sm:rounded-3xl border-0 sm:border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-md flex-shrink-0">
               <Package className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-semibold text-slate-900 truncate">
+              <h2 className="text-lg font-semibold text-slate-900 truncate">
                 {existingLotId ? 'Modifier le lot' : 'Créer un lot'}
               </h2>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <Pill variant="neutral">Étape {currentStep} sur 4</Pill>
+              <div className="flex items-center gap-2 text-xs text-slate-500">
                 {lotData.selectedArticles.length > 0 && (
-                  <Pill variant="success">
-                    <Layers className="w-3.5 h-3.5" />
-                    {lotData.selectedArticles.length} article(s)
-                  </Pill>
+                  <span className="font-medium">
+                    {lotData.selectedArticles.length} article(s) • {totalPrice.toFixed(0)}€
+                  </span>
                 )}
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {discount !== 0 && currentStep >= 3 && (
-              <Pill
-                variant={discount > 0 ? 'success' : 'warning'}
-                className="hidden sm:inline-flex"
-              >
-                <Percent className="w-3.5 h-3.5" />
-                Remise {discount}%
+            {discount > 0 && (
+              <Pill variant="success" className="hidden md:inline-flex">
+                <TrendingDown className="w-3.5 h-3.5" />
+                {discount}% de remise
               </Pill>
             )}
             <IconButton icon={X} ariaLabel="Fermer" onClick={onClose} />
           </div>
         </div>
 
-        {/* Contenu */}
-        <div className="flex-1 overflow-y-auto bg-slate-50/70 px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
-          {error && (
-            <div className="mb-2">
-              <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 flex gap-3 items-start">
-                <div className="mt-0.5">
-                  <AlertCircle className="w-4.5 h-4.5 text-rose-600" />
+        {/* Main Content - Split View */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          {/* LEFT PANEL - Lot Builder */}
+          <div className="w-full lg:w-[480px] xl:w-[520px] border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/50 overflow-y-auto">
+            <div className="p-4 sm:p-5 space-y-4">
+              {error && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 flex gap-3 items-start">
+                  <AlertCircle className="w-4.5 h-4.5 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-rose-800 leading-snug">{error}</p>
                 </div>
-                <p className="text-sm text-rose-800 leading-snug">{error}</p>
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* STEP 1 : Infos de base */}
-          {currentStep === 1 && (
-            <div className="grid grid-cols-1 gap-4 sm:gap-5">
-              <Card>
-                <div className="space-y-4">
-                  {/* Seller */}
-                  {familyMembers.length > 0 && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-                        Vendeur
-                      </label>
-                      <select
-                        value={lotData.seller_id || ''}
-                        onChange={(e) =>
-                          setLotData({
-                            ...lotData,
-                            seller_id: e.target.value || null,
-                          })
-                        }
-                        className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      >
-                        <option value="">Me</option>
-                        {familyMembers.map((member) => (
-                          <option key={member.id} value={member.id}>
-                            {member.name}
-                          </option>
-                        ))}
-                      </select>
+              {/* Lot Preview Card */}
+              <Card className="bg-gradient-to-br from-white to-slate-50">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                  <h3 className="text-sm font-semibold text-slate-900">Aperçu du lot</h3>
+                </div>
+
+                {/* Photo Preview */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  className="aspect-square rounded-2xl overflow-hidden bg-slate-100 border-2 border-dashed border-slate-300 mb-4 flex items-center justify-center relative group"
+                >
+                  {allPhotos.length > 0 ? (
+                    <img
+                      src={lotData.cover_photo || allPhotos[0]}
+                      alt="Aperçu"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <Package className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                      <p className="text-sm text-slate-500">Glissez des articles ici</p>
+                      <p className="text-xs text-slate-400 mt-1">ou sélectionnez-les à droite</p>
                     </div>
                   )}
+                  {draggedArticleId && (
+                    <div className="absolute inset-0 bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center">
+                      <Plus className="w-10 h-10 text-emerald-600" />
+                    </div>
+                  )}
+                </div>
 
+                {/* Photos Thumbnails with Drag & Drop */}
+                {allPhotos.length > 0 && (
+                  <div className="grid grid-cols-5 gap-2 mb-4">
+                    {allPhotos.slice(0, 5).map((photo, idx) => (
+                      <div
+                        key={idx}
+                        draggable
+                        onDragStart={(e) => handlePhotoDragStart(e, idx)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handlePhotoDrop(e, idx)}
+                        onClick={() => setLotData({ ...lotData, cover_photo: photo })}
+                        className={[
+                          'aspect-square rounded-xl overflow-hidden border-2 cursor-move transition-all hover:scale-105',
+                          lotData.cover_photo === photo
+                            ? 'border-emerald-500 ring-2 ring-emerald-200'
+                            : 'border-slate-200',
+                        ].join(' ')}
+                      >
+                        <img src={photo} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-slate-100/80 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-1">
+                      <Layers className="w-3.5 h-3.5" />
+                      Articles
+                    </div>
+                    <p className="text-xl font-bold text-slate-900">
+                      {lotData.selectedArticles.length}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-emerald-100/80 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-700 mb-1">
+                      <Euro className="w-3.5 h-3.5" />
+                      Prix du lot
+                    </div>
+                    <p className="text-xl font-bold text-emerald-700">
+                      {lotData.price.toFixed(0)}€
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Lot Details Form */}
+              <Card>
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
+                      <FileText className="w-3.5 h-3.5" />
                       Nom du lot <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -575,12 +636,13 @@ export default function LotBuilder({
                         setLotData({ ...lotData, name: e.target.value })
                       }
                       placeholder="Ex : Pack fille 8 ans - Été"
-                      className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
+                      <FileText className="w-3.5 h-3.5" />
                       Description
                     </label>
                     <textarea
@@ -591,497 +653,374 @@ export default function LotBuilder({
                           description: e.target.value,
                         })
                       }
-                      placeholder="Décrivez rapidement le contenu du lot, la tranche d'âge, la saison, etc."
-                      rows={4}
-                      className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                      placeholder="Décrivez le contenu du lot..."
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none transition-all"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-                      Saison
-                    </label>
-                    <select
-                      value={lotData.season || ''}
-                      onChange={(e) => {
-                        const season = e.target.value as Season;
-                        setLotData({ ...lotData, season });
-                        setFilters({ ...filters, season: season || 'all' });
-                      }}
-                      className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
+                        <Calendar className="w-3.5 h-3.5" />
+                        Saison
+                      </label>
+                      <select
+                        value={lotData.season || ''}
+                        onChange={(e) =>
+                          setLotData({ ...lotData, season: e.target.value as Season })
+                        }
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                      >
+                        <option value="">Toutes</option>
+                        <option value="spring">Printemps</option>
+                        <option value="summer">Été</option>
+                        <option value="autumn">Automne</option>
+                        <option value="winter">Hiver</option>
+                        <option value="all-seasons">Multi-saisons</option>
+                      </select>
+                    </div>
+
+                    {familyMembers.length > 0 && (
+                      <div>
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
+                          <User className="w-3.5 h-3.5" />
+                          Vendeur
+                        </label>
+                        <select
+                          value={lotData.seller_id || ''}
+                          onChange={(e) =>
+                            setLotData({
+                              ...lotData,
+                              seller_id: e.target.value || null,
+                            })
+                          }
+                          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                        >
+                          <option value="">Moi</option>
+                          {familyMembers.map((member) => (
+                            <option key={member.id} value={member.id}>
+                              {member.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Pricing Card with Slider */}
+              {totalPrice > 0 && (
+                <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Tag className="w-4 h-4 text-emerald-600" />
+                    <h3 className="text-sm font-semibold text-slate-900">Prix intelligent</h3>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Prix total individuel</span>
+                      <span className="text-lg font-bold text-slate-900">{totalPrice.toFixed(0)}€</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                          Remise
+                        </label>
+                        <span className="text-sm font-bold text-emerald-600">{discount}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="50"
+                        step="5"
+                        value={discount}
+                        onChange={(e) => handleDiscountSlider(parseInt(e.target.value))}
+                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md"
+                      />
+                      <div className="flex justify-between text-xs text-slate-500 mt-1">
+                        <span>0%</span>
+                        <span>25%</span>
+                        <span>50%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-emerald-200">
+                      <span className="text-sm font-medium text-slate-700">Prix du lot</span>
+                      <input
+                        type="number"
+                        step="1"
+                        value={lotData.price || ''}
+                        onChange={(e) =>
+                          setLotData({
+                            ...lotData,
+                            price: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-24 px-3 py-2 rounded-lg border border-emerald-200 bg-white text-right text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Selected Articles List */}
+              {lotData.selectedArticles.length > 0 && (
+                <Card>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-slate-900">Articles sélectionnés</h3>
+                    <GhostButton
+                      onClick={() => setLotData({ ...lotData, selectedArticles: [] })}
+                      className="text-xs gap-1"
                     >
-                      <option value="">Sélectionner une saison</option>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Tout retirer
+                    </GhostButton>
+                  </div>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {getSelectedArticles().map((article) => (
+                      <div
+                        key={article.id}
+                        className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2 group hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                          {article.photos?.[0] ? (
+                            <img
+                              src={article.photos[0]}
+                              alt={article.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="w-4 h-4 text-slate-300" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-slate-900 truncate">
+                            {article.title}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">
+                            {article.brand || 'Sans marque'} • {article.price.toFixed(0)}€
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => toggleArticleSelection(article.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4 text-slate-400 hover:text-rose-500" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Action Button */}
+              <PrimaryButton
+                onClick={handleSubmit}
+                disabled={loading || !isLotValid}
+                className="w-full gap-2 h-12 text-base"
+              >
+                {loading ? (
+                  'Enregistrement...'
+                ) : (
+                  <>
+                    <Check className="w-5 h-5" />
+                    {existingLotId ? 'Mettre à jour le lot' : 'Créer le lot'}
+                  </>
+                )}
+              </PrimaryButton>
+            </div>
+          </div>
+
+          {/* RIGHT PANEL - Articles Library */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-white">
+            {/* Filters Bar */}
+            <div className="border-b border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900"
+                >
+                  <Filter className="w-4 h-4" />
+                  Filtres
+                </button>
+                <div className="h-4 w-px bg-slate-300" />
+                <span className="text-sm text-slate-600">
+                  {filteredArticles.length} article(s) disponible(s)
+                </span>
+              </div>
+
+              {showFilters && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Rechercher..."
+                        value={filters.search}
+                        onChange={(e) =>
+                          setFilters({ ...filters, search: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <select
+                      value={filters.season}
+                      onChange={(e) =>
+                        setFilters({ ...filters, season: e.target.value })
+                      }
+                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="all">Toutes saisons</option>
                       <option value="spring">Printemps</option>
                       <option value="summer">Été</option>
                       <option value="autumn">Automne</option>
                       <option value="winter">Hiver</option>
-                      <option value="all-seasons">Toutes saisons</option>
+                      <option value="all-seasons">Multi-saisons</option>
+                    </select>
+
+                    <select
+                      value={filters.brand}
+                      onChange={(e) =>
+                        setFilters({ ...filters, brand: e.target.value })
+                      }
+                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="all">Toutes marques</option>
+                      {availableBrands.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={filters.size}
+                      onChange={(e) =>
+                        setFilters({ ...filters, size: e.target.value })
+                      }
+                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="all">Toutes tailles</option>
+                      {availableSizes.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
                     </select>
                   </div>
+
+                  {/* Quick Selection */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                    <span className="text-xs font-medium text-slate-600">Sélection rapide:</span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setLotData({ ...lotData, selectedArticles: filteredArticles.filter(a => !articlesInLots.has(a.id)).map(a => a.id) })}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-100 text-xs font-medium text-emerald-700 hover:bg-emerald-200 transition-colors"
+                      >
+                        Tout sélectionner
+                      </button>
+                      <button
+                        onClick={() => setLotData({ ...lotData, selectedArticles: [] })}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-medium text-slate-700 hover:bg-slate-200 transition-colors"
+                      >
+                        Tout désélectionner
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </Card>
+              )}
             </div>
-          )}
 
-          {/* STEP 2 : Sélection des articles */}
-          {currentStep === 2 && (
-            <div className="space-y-4 sm:space-y-5">
-              <Card>
-                <div className="flex flex-wrap gap-3 items-center">
-                  <div className="flex-1 min-w-[180px] flex items-center gap-2">
-                    <Search className="w-4 h-4 text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder="Rechercher par titre ou marque..."
-                      value={filters.search}
-                      onChange={(e) =>
-                        setFilters({ ...filters, search: e.target.value })
-                      }
-                      className="w-full px-3 py-2 rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    />
-                  </div>
-
-                  <select
-                    value={filters.season}
-                    onChange={(e) =>
-                      setFilters({ ...filters, season: e.target.value })
-                    }
-                    className="px-3 py-2 rounded-2xl border border-slate-200 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  >
-                    <option value="all">Toutes saisons</option>
-                    <option value="spring">Printemps</option>
-                    <option value="summer">Été</option>
-                    <option value="autumn">Automne</option>
-                    <option value="winter">Hiver</option>
-                    <option value="all-seasons">Toutes saisons</option>
-                  </select>
-
-                  <select
-                    value={filters.brand}
-                    onChange={(e) =>
-                      setFilters({ ...filters, brand: e.target.value })
-                    }
-                    className="px-3 py-2 rounded-2xl border border-slate-200 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  >
-                    <option value="all">Toutes marques</option>
-                    {getAvailableBrands().map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={filters.size}
-                    onChange={(e) =>
-                      setFilters({ ...filters, size: e.target.value })
-                    }
-                    className="px-3 py-2 rounded-2xl border border-slate-200 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  >
-                    <option value="all">Toutes tailles</option>
-                    {getAvailableSizes().map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </Card>
-
-              <SoftCard>
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4.5 h-4.5 text-amber-700" />
-                    <p className="text-sm text-amber-900">
-                      <span className="font-semibold">
-                        {lotData.selectedArticles.length}
-                      </span>{' '}
-                      article(s) sélectionné(s) pour ce lot.
-                    </p>
-                  </div>
-                  <p className="text-xs text-amber-900/80 hidden sm:block">
-                    Un lot est plus attractif à partir de 3 pièces bien
-                    assorties.
-                  </p>
-                </div>
-              </SoftCard>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 max-h-[420px] overflow-y-auto">
+            {/* Articles Grid */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
                 {filteredArticles.map((article) => {
-                  const isSelected = lotData.selectedArticles.includes(
-                    article.id
-                  );
+                  const isSelected = lotData.selectedArticles.includes(article.id);
                   const isInAnotherLot = articlesInLots.has(article.id);
 
                   return (
                     <div
                       key={article.id}
+                      draggable={!isInAnotherLot}
+                      onDragStart={(e) => handleDragStart(e, article.id)}
                       onClick={() =>
                         !isInAnotherLot && toggleArticleSelection(article.id)
                       }
                       className={[
-                        'group relative rounded-2xl overflow-hidden border-2 bg-white cursor-pointer transition-all',
+                        'group relative rounded-2xl overflow-hidden border-2 bg-white cursor-pointer transition-all hover:shadow-lg',
                         isSelected
-                          ? 'border-emerald-500 ring-2 ring-emerald-200'
+                          ? 'border-emerald-500 ring-2 ring-emerald-200 shadow-md'
                           : isInAnotherLot
-                          ? 'border-slate-200 opacity-50 cursor-not-allowed'
-                          : 'border-slate-200 hover:border-emerald-300 hover:shadow-sm',
+                          ? 'border-slate-200 opacity-40 cursor-not-allowed'
+                          : 'border-slate-200 hover:border-emerald-300',
                       ].join(' ')}
                     >
                       {isSelected && (
-                        <div className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-emerald-500 shadow flex items-center justify-center">
+                        <div className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-emerald-500 shadow-lg flex items-center justify-center">
                           <Check className="w-4 h-4 text-white" />
                         </div>
                       )}
                       {isInAnotherLot && (
-                        <div className="absolute top-2 left-2 z-10 rounded-full bg-amber-500 text-[10px] text-white px-2 py-1 shadow">
-                          Dans un lot
+                        <div className="absolute top-2 left-2 z-10 rounded-full bg-amber-500 text-[10px] font-semibold text-white px-2 py-1 shadow">
+                          Déjà dans un lot
                         </div>
                       )}
 
-                      <div className="aspect-square bg-slate-100 flex items-center justify-center">
+                      <div className="aspect-square bg-slate-100 flex items-center justify-center relative overflow-hidden">
                         {article.photos && article.photos.length > 0 ? (
                           <img
                             src={article.photos[0]}
                             alt={article.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
                           <Package className="w-10 h-10 text-slate-300" />
                         )}
                       </div>
 
-                      <div className="p-3 space-y-1">
+                      <div className="p-2.5 space-y-1">
                         <p className="text-xs font-semibold text-slate-900 truncate">
                           {article.title}
                         </p>
                         <p className="text-[11px] text-slate-500 truncate">
                           {article.brand || 'Sans marque'}
                         </p>
-                        <p className="text-sm font-semibold text-emerald-600 mt-1">
-                          {article.price.toFixed(0)} €
-                        </p>
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-sm font-bold text-emerald-600">
+                            {article.price.toFixed(0)}€
+                          </span>
+                          {article.size && (
+                            <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                              {article.size}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
+
+              {filteredArticles.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                  <Grid3x3 className="w-12 h-12 text-slate-300 mb-4" />
+                  <p className="text-slate-600 font-medium mb-1">Aucun article disponible</p>
+                  <p className="text-sm text-slate-500">
+                    Modifiez vos filtres ou ajoutez de nouveaux articles
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* STEP 3 : Prix & photos & statut */}
-          {currentStep === 3 && (
-            <div className="space-y-4 sm:space-y-5">
-              <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
-                <div className="space-y-4">
-                  <Card>
-                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-                      Prix & remise
-                    </h3>
-                    <div className="space-y-2.5">
-                      <InfoRow
-                        icon={Tag}
-                        title="Prix total des articles"
-                        description="Somme des prix individuels"
-                        value={`${totalPrice.toFixed(2)} €`}
-                        valueClassName="text-slate-900"
-                      />
-
-                      <div className="flex items-center justify-between py-3">
-                        <div className="flex items-center gap-2">
-                          <Percent className="w-4 h-4 text-slate-500" />
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">
-                              Remise suggérée (20%)
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              Appliquer automatiquement un prix de lot attractif
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setLotData({
-                              ...lotData,
-                              price: Math.round(totalPrice * 0.8),
-                            })
-                          }
-                          className="text-xs sm:text-sm font-medium text-emerald-700 hover:text-emerald-800 underline-offset-2 hover:underline"
-                        >
-                          Appliquer
-                        </button>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-                          Prix du lot <span className="text-rose-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={lotData.price || ''}
-                            onChange={(e) =>
-                              setLotData({
-                                ...lotData,
-                                price: parseFloat(e.target.value) || 0,
-                              })
-                            }
-                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                          />
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                            €
-                          </span>
-                        </div>
-                        {discount !== 0 && (
-                          <p className="mt-1.5 text-xs text-slate-600">
-                            Remise :{' '}
-                            <span
-                              className={
-                                discount > 0
-                                  ? 'text-emerald-600 font-semibold'
-                                  : 'text-rose-600 font-semibold'
-                              }
-                            >
-                              {discount}%
-                            </span>
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card>
-                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-                      Résumé
-                    </h3>
-                    <GradientStatCard
-                      label="Prix du lot"
-                      value={`${lotData.price.toFixed(2)} €`}
-                      sublabel={
-                        discount !== 0
-                          ? `Remise de ${discount}% par rapport aux articles à l'unité`
-                          : 'Ajustez le prix pour le rendre attractif'
-                      }
-                    />
-                  </Card>
-                </div>
-
-                <div className="space-y-4">
-                  <Card>
-                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-                      Photos du lot
-                    </h3>
-                    <div className="grid grid-cols-4 gap-3">
-                      {getSelectedArticles()
-                        .flatMap((a) => a.photos)
-                        .slice(0, 8)
-                        .map((photo, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() =>
-                              setLotData({ ...lotData, cover_photo: photo })
-                            }
-                            className={[
-                              'aspect-square rounded-2xl overflow-hidden border-2 transition-all relative group',
-                              lotData.cover_photo === photo
-                                ? 'border-emerald-500 ring-2 ring-emerald-200'
-                                : 'border-slate-200 hover:border-emerald-300',
-                            ].join(' ')}
-                          >
-                            {photo ? (
-                              <img
-                                src={photo}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                                <ImageIcon className="w-6 h-6 text-slate-300" />
-                              </div>
-                            )}
-                            {lotData.cover_photo === photo && (
-                              <div className="absolute bottom-2 left-2 right-2 rounded-xl bg-slate-900/80 text-[10px] text-white px-2 py-1 text-center">
-                                Photo de couverture
-                              </div>
-                            )}
-                          </button>
-                        ))}
-                    </div>
-                    <p className="mt-2 text-xs text-slate-500">
-                      Cliquez sur une photo pour la définir comme couverture du lot.
-                    </p>
-                  </Card>
-
-                  <Card>
-                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-                      Statut & visibilité
-                    </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-                          Statut du lot
-                        </label>
-                        <select
-                          value={lotData.status}
-                          onChange={(e) =>
-                            setLotData({
-                              ...lotData,
-                              status: e.target.value as LotStatus,
-                            })
-                          }
-                          className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                        >
-                          <option value="draft">Brouillon</option>
-                          <option value="ready">Prêt</option>
-                          <option value="scheduled">Planifié</option>
-                          <option value="published">Publié</option>
-                          <option value="sold">Vendu</option>
-                        </select>
-                      
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4 : Récapitulatif */}
-          {currentStep === 4 && (
-            <div className="space-y-4 sm:space-y-5">
-              <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                  Récapitulatif du lot
-                </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Nom</span>
-                      <span className="font-semibold text-slate-900">
-                        {lotData.name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Articles</span>
-                      <span className="font-semibold text-slate-900">
-                        {lotData.selectedArticles.length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">
-                        Prix total des articles
-                      </span>
-                      <span className="font-semibold text-slate-900">
-                        {totalPrice.toFixed(2)} €
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Prix du lot</span>
-                      <span className="font-semibold text-emerald-700">
-                        {lotData.price.toFixed(2)} €
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Remise</span>
-                      <span className="font-semibold text-emerald-700">
-                        {discount}%
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-emerald-200">
-                      <span className="text-sm font-medium text-slate-700">
-                        Statut du lot
-                      </span>
-                      <Pill
-                        variant={statusVariant(lotData.status)}
-                        className="text-[11px]"
-                      >
-                        {statusLabel(lotData.status)}
-                      </Pill>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <h4 className="text-sm font-semibold text-slate-800 mb-3">
-                  Articles inclus
-                </h4>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {getSelectedArticles().map((article) => (
-                    <div
-                      key={article.id}
-                      className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2.5"
-                    >
-                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                        {article.photos?.[0] ? (
-                          <img
-                            src={article.photos[0]}
-                            alt={article.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-5 h-5 text-slate-300" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">
-                          {article.title}
-                        </p>
-                        <p className="text-[11px] text-slate-500 truncate">
-                          {article.brand || 'Sans marque'}
-                        </p>
-                      </div>
-                      <span className="text-sm font-semibold text-slate-900">
-                        {article.price.toFixed(0)} €
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-
-        {/* Footer navigation */}
-        <div className="border-t border-slate-200 bg-white/90 backdrop-blur px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
-          <GhostButton
-            onClick={handlePrevious}
-            className="gap-1.5 px-3 sm:px-4"
-            type="button"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Précédent</span>
-            <span className="sm:hidden">Retour</span>
-          </GhostButton>
-
-          {currentStep < 4 ? (
-            <PrimaryButton
-              onClick={handleNext}
-              className="gap-1.5 px-4 sm:px-5"
-              type="button"
-            >
-              <span>Suivant</span>
-              <ChevronRight className="w-4 h-4" />
-            </PrimaryButton>
-          ) : (
-            <PrimaryButton
-              onClick={handleSubmit}
-              disabled={loading}
-              className="gap-1.5 px-4 sm:px-5"
-              type="button"
-            >
-              <span>{loading ? 'Création…' : 'Créer le lot'}</span>
-              {!loading && <Check className="w-4 h-4" />}
-            </PrimaryButton>
-          )}
+          </div>
         </div>
       </div>
     </div>
