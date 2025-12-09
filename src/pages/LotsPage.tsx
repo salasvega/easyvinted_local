@@ -79,10 +79,17 @@ export default function LotsPage() {
 
   useEffect(() => {
     const editId = searchParams.get('edit');
+    const create = searchParams.get('create');
+
     if (editId) {
       setEditingLotId(editId);
       setBuilderOpen(true);
       searchParams.delete('edit');
+      setSearchParams(searchParams);
+    } else if (create === 'true') {
+      setEditingLotId(undefined);
+      setBuilderOpen(true);
+      searchParams.delete('create');
       setSearchParams(searchParams);
     }
   }, [searchParams]);

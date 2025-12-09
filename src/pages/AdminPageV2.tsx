@@ -621,7 +621,7 @@ export function AdminPageV2() {
                 Nouvel article
               </button>
               <button
-                onClick={() => navigate('/lots')}
+                onClick={() => navigate('/lots?create=true')}
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-medium text-sm"
               >
                 <Layers className="w-4 h-4" />
