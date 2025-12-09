@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Sparkles,
   Calendar,
@@ -16,6 +18,15 @@ import {
 } from "lucide-react";
 
 export function HomePage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/admin-v2');
+    }
+  }, [user, navigate]);
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 via-white to-slate-50">
       {/* Navigation */}

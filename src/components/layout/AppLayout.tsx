@@ -78,8 +78,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
-              {/* Logo = retour à la page d’accueil */}
-              <Link to="/" className="flex items-center gap-2">
+              {/* Logo = retour au dashboard */}
+              <Link to="/admin-v2" className="flex items-center gap-2">
                 <Package className="w-6 h-6 text-emerald-600" />
                 <span className="text-xl font-bold text-gray-900">EasyVinted</span>
                 <span className="hidden sm:inline-block px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded">

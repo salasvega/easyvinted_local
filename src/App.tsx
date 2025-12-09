@@ -22,8 +22,12 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Pages publiques */}
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+
+          {/* Pages protégées */}
           <Route
             path="/*"
             element={
@@ -31,22 +35,18 @@ function App() {
                 <NotificationBanner />
                 <AppLayout>
                   <Routes>
-                    {/* Nouvelle page d'accueil */}
-                    <Route path="/" element={<HomePage />} />
-
                     <Route path="/dashboard-v2" element={<DashboardPageV2 />} />
-
+                    <Route path="/admin-v2" element={<AdminPageV2 />} />
                     <Route path="/articles/new-v2" element={<ArticleFormPageV2 />} />
                     <Route path="/articles/:id/edit-v2" element={<ArticleFormPageV2 />} />
                     <Route path="/articles/:id/preview" element={<PreviewPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/planner" element={<PlannerPage />} />
-                    <Route path="/admin-v2" element={<AdminPageV2 />} />
                     <Route path="/photo-studio" element={<PhotoStudioPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/family" element={<FamilyMembersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<Navigate to="/admin-v2" replace />} />
                   </Routes>
                 </AppLayout>
               </ProtectedRoute>
