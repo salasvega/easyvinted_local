@@ -539,14 +539,14 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
         className="fixed inset-0 bg-black/50 z-[70] transition-opacity"
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white z-[70] shadow-2xl overflow-y-auto transform transition-transform duration-300 ease-out">
-        <div className="p-6 lg:p-8">
-          <div className="flex items-center justify-between mb-6">
+      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-out">
+        <div className="h-full flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white sticky top-0 z-10">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="font-semibold text-slate-900">
                 {articleId ? 'Modifier l\'article' : 'Nouvel article'}
               </h2>
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Completez les informations de votre article
               </p>
             </div>
@@ -554,17 +554,18 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
               onClick={onClose}
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {loading && articleId ? (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
             </div>
           ) : (
             <>
-              <div className="space-y-5">
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-5 space-y-5">
                 {/* Photos */}
                 <div className="space-y-4">
                   <div className="bg-white rounded-3xl border-2 border-slate-200 overflow-hidden aspect-square relative">
@@ -944,35 +945,39 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                     </div>
                   )}
                 </div>
+                </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap justify-end gap-3 pt-6 border-t border-slate-200">
-                {articleId && (
+              {/* Action Buttons Footer */}
+              <div className="p-3 border-t border-slate-200 bg-slate-50 sticky bottom-0">
+                <div className="flex items-center justify-around gap-1">
+                  {articleId && (
+                    <button
+                      onClick={() => setDeleteModalOpen(true)}
+                      className="flex flex-col items-center gap-1 py-2 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors min-w-0 flex-1"
+                    >
+                      <Trash2 className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-[10px] font-medium whitespace-nowrap">Supprimer</span>
+                    </button>
+                  )}
+
                   <button
-                    onClick={() => setDeleteModalOpen(true)}
-                    className="px-6 py-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-medium hover:bg-rose-100 transition-colors flex items-center gap-2"
+                    onClick={onClose}
+                    className="flex flex-col items-center gap-1 py-2 px-2 text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl transition-colors min-w-0 flex-1"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Supprimer
+                    <X className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-[10px] font-medium whitespace-nowrap">Annuler</span>
                   </button>
-                )}
 
-                <button
-                  onClick={onClose}
-                  className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors"
-                >
-                  Annuler
-                </button>
-
-                <button
-                  onClick={handleSave}
-                  disabled={loading}
-                  className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Sauvegarder
-                </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={loading}
+                    className="flex flex-col items-center gap-1 py-2 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors disabled:opacity-50 min-w-0 flex-1"
+                  >
+                    <Save className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-[10px] font-medium whitespace-nowrap">Sauvegarder</span>
+                  </button>
+                </div>
               </div>
             </>
           )}
