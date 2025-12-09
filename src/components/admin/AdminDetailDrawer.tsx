@@ -1,4 +1,4 @@
-import { X, Package, Eye, ClipboardEdit, Upload, Copy, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink, ChevronLeft, ChevronRight, Tag, Layers, TrendingDown, ArrowLeft } from 'lucide-react';
+import { X, Package, ClipboardEdit, Upload, Calendar, DollarSign, Trash2, FileText, CheckCircle2, Clock, Send, Flower2, Sun, Leaf, Snowflake, CloudSun, ExternalLink, ChevronLeft, ChevronRight, Tag, Layers, TrendingDown, ArrowLeft } from 'lucide-react';
 import { ArticleStatus, Season } from '../../types/article';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
@@ -595,33 +595,18 @@ export function AdminDetailDrawer({
                   </div>
                 </div>
               )}
-
-              <div>
-                <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Actions rapides</h4>
-                <div className="grid grid-cols-1 gap-2">
-                  <button
-                    onClick={onEdit}
-                    className="flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-medium text-sm"
-                  >
-                    <ClipboardEdit className="w-4 h-4" />
-                    Modifier
-                  </button>
-                  {(item.status === 'ready' || item.status === 'scheduled') && (
-                    <button
-                      onClick={onPublish}
-                      className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-colors font-medium text-sm"
-                    >
-                      <Upload className="w-4 h-4" />
-                      Envoyer à Vinted
-                    </button>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
 
           <div className="p-4 border-t border-slate-200 bg-slate-50 sticky bottom-0">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
+              <button
+                onClick={onEdit}
+                className="flex flex-col items-center gap-1 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl transition-colors"
+              >
+                <ClipboardEdit className="w-4 h-4" />
+                <span className="text-[10px] font-medium">Modifier</span>
+              </button>
               {item.status !== 'sold' && (
                 <>
                   <button
@@ -631,6 +616,15 @@ export function AdminDetailDrawer({
                     <Calendar className="w-4 h-4" />
                     <span className="text-[10px] font-medium">Planifier</span>
                   </button>
+                  {(item.status === 'ready' || item.status === 'scheduled') && (
+                    <button
+                      onClick={onPublish}
+                      className="flex flex-col items-center gap-1 py-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span className="text-[10px] font-medium">Envoyer</span>
+                    </button>
+                  )}
                   <button
                     onClick={onMarkSold}
                     className="flex flex-col items-center gap-1 py-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"
