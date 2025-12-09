@@ -346,12 +346,6 @@ export function AdminDetailDrawer({
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                {item.seller_name && (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Vendeur</p>
-                    <p className="text-sm font-medium text-slate-900">{item.seller_name}</p>
-                  </div>
-                )}
                 {item.type === 'article' && item.season && (
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
@@ -359,6 +353,12 @@ export function AdminDetailDrawer({
                       {renderSeasonIcon(item.season)}
                       <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[item.season]}</span>
                     </div>
+                  </div>
+                )}
+                {item.seller_name && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Vendeur</p>
+                    <p className="text-sm font-medium text-slate-900">{item.seller_name}</p>
                   </div>
                 )}
                 {item.suggested_period && (
