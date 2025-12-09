@@ -536,7 +536,7 @@ export function PreviewPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h2 className="text-base font-semibold text-slate-900">
-                        Statut : {article.status === 'draft' ? 'Brouillon' : article.status === 'ready' ? 'Prêt' : article.status === 'published' ? 'Publié' : article.status === 'sold' ? 'Vendu' : 'Planifié'}
+                        Statut :  {getStatusBadge()}
                       </h2>
                       {getStatusBadge()}
                     </div>
