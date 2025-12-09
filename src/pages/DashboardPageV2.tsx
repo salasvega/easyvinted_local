@@ -163,23 +163,47 @@ export function DashboardPageV2() {
     }
   };
 
-  const handleMarkAsSold = async (salePrice: number, saleDate: string, sellerName: string) => {
+  const handleMarkAsSold = async (saleData: {
+    soldPrice: number;
+    soldAt: string;
+    platform: string;
+    fees: number;
+    shippingCost: number;
+    buyerName: string;
+    notes: string;
+    sellerId?: string;
+  }) => {
     if (!soldModal.article) return;
 
     try {
+      const netProfit = saleData.soldPrice - saleData.fees - saleData.shippingCost;
+
+      const updateData: any = {
+        status: 'sold',
+        sold_price: saleData.soldPrice,
+        sold_at: saleData.soldAt,
+        platform: saleData.platform,
+        fees: saleData.fees,
+        shipping_cost: saleData.shippingCost,
+        buyer_name: saleData.buyerName,
+        sale_notes: saleData.notes,
+        net_profit: netProfit,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (saleData.sellerId) {
+        updateData.seller_id = saleData.sellerId;
+      }
+
       const { error } = await supabase
         .from('articles')
-        .update({
-          status: 'sold',
-          sale_price: salePrice,
-          sold_at: saleDate,
-          sold_by: sellerName,
-        })
+        .update(updateData)
         .eq('id', soldModal.article.id);
 
       if (error) throw error;
 
       setToast({ type: 'success', text: 'Article marqué comme vendu' });
+      setSoldModal({ isOpen: false, article: null });
       fetchArticles();
     } catch (error) {
       console.error('Error marking article as sold:', error);

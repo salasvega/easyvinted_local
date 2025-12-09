@@ -947,20 +947,26 @@ export function AdminPage() {
                 try {
                   const netProfit = saleData.soldPrice - saleData.fees - saleData.shippingCost;
 
+                  const updateData: any = {
+                    status: 'sold',
+                    sold_price: saleData.soldPrice,
+                    sold_at: saleData.soldAt,
+                    platform: saleData.platform,
+                    fees: saleData.fees,
+                    shipping_cost: saleData.shippingCost,
+                    buyer_name: saleData.buyerName,
+                    sale_notes: saleData.notes,
+                    net_profit: netProfit,
+                    updated_at: new Date().toISOString(),
+                  };
+
+                  if (saleData.sellerId) {
+                    updateData.seller_id = saleData.sellerId;
+                  }
+
                   const { error } = await supabase
                     .from('articles')
-                    .update({
-                      status: 'sold',
-                      sold_price: saleData.soldPrice,
-                      sold_at: saleData.soldAt,
-                      platform: saleData.platform,
-                      fees: saleData.fees,
-                      shipping_cost: saleData.shippingCost,
-                      buyer_name: saleData.buyerName,
-                      sale_notes: saleData.notes,
-                      net_profit: netProfit,
-                      updated_at: new Date().toISOString(),
-                    })
+                    .update(updateData)
                     .eq('id', soldModal.item!.id);
 
                   if (error) throw error;
@@ -979,6 +985,7 @@ export function AdminPage() {
                 brand: soldModal.item.brand,
                 price: soldModal.item.price,
                 photos: soldModal.item.photos,
+                seller_id: soldModal.item.seller_id,
               } as any}
             />
           )

@@ -27,6 +27,7 @@ export interface Article {
   sold_at?: string;
   sold_price?: number;
   sale_price?: number;
+  seller_id?: string;
   created_at: string;
   updated_at: string;
 }
