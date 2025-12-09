@@ -345,7 +345,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
               )}
               <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-[5]">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>IA Gemini</span>
+                <span>SSV-IA </span>
               </div>
 
               {processing && (
