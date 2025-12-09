@@ -19,6 +19,7 @@ import { AdminStatsCard } from '../components/admin/AdminStatsCard';
 import { AdminFilters } from '../components/admin/AdminFilters';
 import { AdminItemCard } from '../components/admin/AdminItemCard';
 import { AdminDetailDrawer } from '../components/admin/AdminDetailDrawer';
+import { ArticleFormDrawer } from '../components/admin/ArticleFormDrawer';
 
 const STATUS_LABELS: Record<ArticleStatus, string> = {
   draft: 'Brouillon',
@@ -153,6 +154,13 @@ export function AdminPageV2() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const desktopMenuRef = useRef<HTMLDivElement | null>(null);
   const [photoIndexes, setPhotoIndexes] = useState<Record<string, number>>({});
+  const [articleFormDrawer, setArticleFormDrawer] = useState<{
+    isOpen: boolean;
+    articleId?: string;
+  }>({
+    isOpen: false,
+    articleId: undefined,
+  });
 
   useEffect(() => {
     if (user) {
@@ -522,7 +530,8 @@ export function AdminPageV2() {
     if (item.status === 'sold') {
       setSoldModal({ isOpen: true, item });
     } else if (item.type === 'article') {
-      navigate(`/articles/${item.id}/edit-v2`);
+      setArticleFormDrawer({ isOpen: true, articleId: item.id });
+      setDrawerOpen(false);
     } else {
       navigate(`/lots?edit=${item.id}`);
     }
@@ -605,7 +614,7 @@ export function AdminPageV2() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate('/articles/new-v2')}
+                onClick={() => setArticleFormDrawer({ isOpen: true, articleId: undefined })}
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors font-medium text-sm shadow-lg shadow-slate-900/20"
               >
                 <Plus className="w-4 h-4" />
@@ -695,7 +704,7 @@ export function AdminPageV2() {
             <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucun element trouve</h3>
             <p className="text-slate-500 mb-6">Essayez de modifier vos filtres ou creez un nouvel article</p>
             <button
-              onClick={() => navigate('/articles/new-v2')}
+              onClick={() => setArticleFormDrawer({ isOpen: true, articleId: undefined })}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors font-medium text-sm"
             >
               <Plus className="w-4 h-4" />
@@ -1089,6 +1098,13 @@ export function AdminPageV2() {
           sellerName={labelModal.item.seller_name}
         />
       )}
+
+      <ArticleFormDrawer
+        isOpen={articleFormDrawer.isOpen}
+        onClose={() => setArticleFormDrawer({ isOpen: false, articleId: undefined })}
+        articleId={articleFormDrawer.articleId}
+        onSaved={fetchAllData}
+      />
     </>
   );
 }
