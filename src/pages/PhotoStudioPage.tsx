@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { analyzeProductImage, editProductImage, ProductData } from '../lib/openaiService';
 import { ImageUploader } from '../components/photostudio/ImageUploader';
 import { ProductDetails } from '../components/photostudio/ProductDetails';
 import { EditorPanel } from '../components/photostudio/EditorPanel';
-import { Image as ImageIcon, Wand2, FileText, Download, ZoomIn, ZoomOut, Maximize2, Move, AlertCircle } from 'lucide-react';
+import { Image as ImageIcon, Wand2, FileText, Download, ZoomIn, ZoomOut, Maximize2, Move, AlertCircle, Plus } from 'lucide-react';
 
 enum AppState {
   IDLE = 'IDLE',
@@ -27,6 +27,7 @@ export function PhotoStudioPage() {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentImage = editHistory[historyIndex] || null;
 
@@ -165,6 +166,23 @@ export function PhotoStudioPage() {
   const handleMouseUp = () => setIsDragging(false);
   const handleMouseLeave = () => setIsDragging(false);
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        const type = result.split(';')[0].split(':')[1];
+        handleImageSelected(base64, type);
+      };
+      reader.readAsDataURL(file);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 -m-6">
       <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -222,8 +240,9 @@ export function PhotoStudioPage() {
         {originalImage && (
           <div className="flex flex-col lg:flex-row h-[calc(100vh-150px)] overflow-hidden">
 
+            <div className="w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 lg:h-full shrink-0">
             <div
-              className="w-full lg:w-1/2 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] bg-white relative flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 lg:h-full h-[40vh] shrink-0 group overflow-hidden select-none"
+              className="flex-1 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] bg-white relative flex flex-col h-[40vh] lg:h-auto group overflow-hidden select-none"
               onWheel={handleWheel}
             >
               <div
@@ -320,6 +339,37 @@ export function PhotoStudioPage() {
                   <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600">×</button>
                 </div>
               )}
+            </div>
+
+              <div className="p-4 bg-white border-t border-gray-200 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-blue-500 ring-2 ring-blue-100 shrink-0">
+                    {currentImage && (
+                      <img
+                        src={`data:${mimeType};base64,${currentImage}`}
+                        alt="Miniature"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors shrink-0"
+                  >
+                    <ImageIcon className="w-5 h-5 text-gray-400 mb-1" />
+                    <span className="text-xs text-gray-500 font-medium">Ajouter</span>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="w-full lg:w-1/2 flex flex-col h-full bg-white relative z-10">
