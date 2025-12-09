@@ -15,7 +15,6 @@ import { SignupPage } from './pages/SignupPage';
 import { HomePage } from './pages/HomePage';
 import { FamilyMembersPage } from './pages/FamilyMembersPage';
 import { PhotoStudioPage } from './pages/PhotoStudioPage';
-import { AdminPage } from './pages/AdminPage';
 import { AdminPageV2 } from './pages/AdminPageV2';
 
 function App() {
@@ -42,7 +41,6 @@ function App() {
                     <Route path="/articles/:id/preview" element={<PreviewPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/planner" element={<PlannerPage />} />
-                    <Route path="/admin" element={<AdminPage />} />
                     <Route path="/admin-v2" element={<AdminPageV2 />} />
                     <Route path="/photo-studio" element={<PhotoStudioPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
