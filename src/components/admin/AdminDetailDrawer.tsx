@@ -598,14 +598,7 @@ export function AdminDetailDrawer({
 
               <div>
                 <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Actions rapides</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={onView}
-                    className="flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-medium text-sm"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Aperçu
-                  </button>
+                <div className="grid grid-cols-1 gap-2">
                   <button
                     onClick={onEdit}
                     className="flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-medium text-sm"
@@ -616,7 +609,7 @@ export function AdminDetailDrawer({
                   {(item.status === 'ready' || item.status === 'scheduled') && (
                     <button
                       onClick={onPublish}
-                      className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-colors font-medium text-sm col-span-2"
+                      className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-colors font-medium text-sm"
                     >
                       <Upload className="w-4 h-4" />
                       Envoyer à Vinted
@@ -628,16 +621,7 @@ export function AdminDetailDrawer({
           </div>
 
           <div className="p-4 border-t border-slate-200 bg-slate-50 sticky bottom-0">
-            <div className="grid grid-cols-4 gap-2">
-              {item.type === 'article' && (
-                <button
-                  onClick={onDuplicate}
-                  className="flex flex-col items-center gap-1 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl transition-colors"
-                >
-                  <Copy className="w-4 h-4" />
-                  <span className="text-[10px] font-medium">Dupliquer</span>
-                </button>
-              )}
+            <div className="grid grid-cols-3 gap-2">
               {item.status !== 'sold' && (
                 <>
                   <button
