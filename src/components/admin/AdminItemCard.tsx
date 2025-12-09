@@ -6,6 +6,7 @@ interface AdminItem {
   type: 'article' | 'lot';
   title: string;
   brand?: string;
+  size?: string;
   price: number;
   status: ArticleStatus;
   photos: string[];
@@ -191,7 +192,10 @@ export function AdminItemCard({
           <h3 className="font-semibold text-slate-900 truncate group-hover:text-slate-700 transition-colors">
             {item.title}
           </h3>
-          <p className="text-sm text-slate-500 truncate">{item.brand || 'Sans marque'}</p>
+          <p className="text-sm text-slate-500 truncate">
+            {item.brand || 'Sans marque'}
+            {item.size && ` • ${item.size}`}
+          </p>
           {item.reference_number && (
             <p className="text-[10px] text-slate-400 font-mono mt-0.5">#{item.reference_number}</p>
           )}
