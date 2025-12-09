@@ -762,9 +762,9 @@ export function ArticleFormPageV2() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h2 className="text-base font-semibold text-slate-900">
-                          Statut : {getStatusLabel()}
+                          Statut :   {getStatusBadge()}
                         </h2>
-                        {getStatusBadge()}
+                      
                       </div>
                     </div>
                   </div>
