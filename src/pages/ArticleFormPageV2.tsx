@@ -825,6 +825,16 @@ export function ArticleFormPageV2() {
                     ))}
                   </select>
                 </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Periode conseillee</p>
+                  <input
+                    type="text"
+                    value={formData.suggested_period}
+                    onChange={(e) => setFormData({ ...formData, suggested_period: e.target.value })}
+                    className="w-full text-sm font-medium text-slate-900 bg-transparent border-0 focus:ring-0 p-0"
+                    placeholder="Ex: Sept-Oct"
+                  />
+                </div>
               </div>
 
               {/* Category */}
@@ -878,31 +888,19 @@ export function ArticleFormPageV2() {
                 </div>
               )}
 
-              {/* Price & Suggested Period */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                  <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
-                  <div className="flex items-center">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full text-lg font-bold text-emerald-600 bg-transparent border-0 focus:ring-0 p-0"
-                      placeholder="0.00"
-                    />
-                    <span className="text-lg font-bold text-emerald-600">€</span>
-                  </div>
-                </div>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Periode conseillee</p>
+              {/* Price */}
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
+                <div className="flex items-center">
                   <input
-                    type="text"
-                    value={formData.suggested_period}
-                    onChange={(e) => setFormData({ ...formData, suggested_period: e.target.value })}
-                    className="w-full text-sm font-medium text-slate-900 bg-transparent border-0 focus:ring-0 p-0"
-                    placeholder="Ex: Sept-Oct"
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="w-full text-lg font-bold text-emerald-600 bg-transparent border-0 focus:ring-0 p-0"
+                    placeholder="0.00"
                   />
+                  <span className="text-lg font-bold text-emerald-600">€</span>
                 </div>
               </div>
 
