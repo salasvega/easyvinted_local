@@ -885,7 +885,25 @@ export function ArticleFormPageV2() {
                   <span className="text-lg font-bold text-emerald-600">€</span>
                 </div>
               </div>
-
+ <div className="space-y-5">
+              {/* Seller */}
+              {familyMembers.length > 0 && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Vendeur</p>
+                  <select
+                    value={formData.seller_id || ''}
+                    onChange={(e) => setFormData({ ...formData, seller_id: e.target.value || null })}
+                    className="w-full text-sm text-slate-900 bg-transparent border-0 focus:ring-0 p-0"
+                  >
+                    <option value="">Moi</option>
+                    {familyMembers.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {/* Status Section */}
               {id && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
