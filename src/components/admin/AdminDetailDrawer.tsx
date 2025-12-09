@@ -421,9 +421,9 @@ export function AdminDetailDrawer({
 
               <div className="grid grid-cols-2 gap-3">
                 {item.type === 'article' && (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Prix</p>
-                    <p className="text-lg font-bold text-slate-900">{item.price.toFixed(2)}€</p>
+                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
+                    <p className="text-lg font-bold text-emerald-600">{item.price.toFixed(2)}€</p>
                   </div>
                 )}
                 {item.seller_name && (
