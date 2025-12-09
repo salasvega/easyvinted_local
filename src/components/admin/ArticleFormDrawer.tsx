@@ -564,8 +564,8 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* Left Column - Photos */}
+              <div className="space-y-5">
+                {/* Photos */}
                 <div className="space-y-4">
                   <div className="bg-white rounded-3xl border-2 border-slate-200 overflow-hidden aspect-square relative">
                     {formData.photos.length > 0 ? (
@@ -725,7 +725,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   )}
                 </div>
 
-                {/* Right Column - Form */}
+                {/* Form */}
                 <div className="space-y-5">
                   {/* Title */}
                   <div>
