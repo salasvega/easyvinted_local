@@ -257,13 +257,49 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
               <p className="text-sm text-slate-500">Propulsé par Gemini 2.5 Flash</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-          >
-            <X className="w-5 h-5 text-slate-600" />
-          </button>
+          <div className="flex items-center gap-2">
+            <div ref={infoRef} className="relative">
+              <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 text-sm font-medium shadow-sm hover:shadow-md"
+              >
+                <Info size={18} />
+                <span className="hidden sm:inline">{showInfo ? 'Masquer' : 'Infos'}</span>
+              </button>
+
+              {showInfo && (
+                <div className="absolute top-full right-0 mt-2 w-96 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <Sparkles className="text-blue-600" size={22} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-blue-900 font-bold text-base mb-2">
+                        Studio Photo IA - Gemini 2.5 Flash Image
+                      </h3>
+                      <p className="text-blue-800 text-sm leading-relaxed">
+                        Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit, ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowInfo(false)}
+                      className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                      title="Fermer"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+            >
+              <X className="w-5 h-5 text-slate-600" />
+            </button>
+          </div>
         </div>
 
         <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -382,41 +418,6 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
 
           {/* Colonne de droite - AI Magic Editor */}
           <div className="space-y-6">
-
-          <div ref={infoRef} className="relative">
-            <button
-              onClick={() => setShowInfo(!showInfo)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 text-sm font-medium shadow-sm hover:shadow-md"
-            >
-              <Info size={18} />
-              {showInfo ? 'Masquer les infos' : 'Infos'}
-            </button>
-
-            {showInfo && (
-              <div className="mt-3 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <Sparkles className="text-blue-600" size={22} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-blue-900 font-bold text-base mb-2 flex items-center gap-2">
-                      Studio Photo IA - Gemini 2.5 Flash Image
-                    </h3>
-                    <p className="text-blue-800 text-sm leading-relaxed">
-                      Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit, ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowInfo(false)}
-                    className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
-                    title="Fermer"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
 
           {error && (
             <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-rose-700 text-sm">
