@@ -414,9 +414,9 @@ export function HomePage() {
               © 2024 EasyVinted. Créé par SALAS VEGA Sébastien
             </p>
             <div className="flex items-center gap-6 text-sm text-slate-600">
-              <button className="hover:text-slate-900 transition-colors">Confidentialité</button>
-              <button className="hover:text-slate-900 transition-colors">Conditions</button>
-              <button className="hover:text-slate-900 transition-colors">Contact</button>
+              <Link to="/privacy" className="hover:text-slate-900 transition-colors">Confidentialité</Link>
+              <Link to="/terms" className="hover:text-slate-900 transition-colors">Conditions</Link>
+              <Link to="/contact" className="hover:text-slate-900 transition-colors">Contact</Link>
             </div>
           </div>
         </div>

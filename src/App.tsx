@@ -16,6 +16,9 @@ import { HomePage } from './pages/HomePage';
 import { FamilyMembersPage } from './pages/FamilyMembersPage';
 import { PhotoStudioPage } from './pages/PhotoStudioPage';
 import { AdminPageV2 } from './pages/AdminPageV2';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { TermsPage } from './pages/TermsPage';
+import { ContactPage } from './pages/ContactPage';
 
 function App() {
   return (
@@ -26,6 +29,9 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
           {/* Pages protégées */}
           <Route
