@@ -702,21 +702,6 @@ export function ArticleFormPageV2() {
             </div>
 
             <div className="space-y-5">
-              {/* Status Section */}
-              {id && (
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                  <div className="mb-2">
-                    <span
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} text-sm font-semibold`}
-                    >
-                      {renderStatusIcon(articleStatus)}
-                      <span>{STATUS_LABELS[articleStatus]}</span>
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">{getStatusMessage()}</p>
-                </div>
-              )}
-
               {/* Seller */}
               {familyMembers.length > 0 && (
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -920,6 +905,21 @@ export function ArticleFormPageV2() {
                   />
                 </div>
               </div>
+
+              {/* Status Section */}
+              {id && (
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                  <div className="mb-2">
+                    <span
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} text-sm font-semibold`}
+                    >
+                      {renderStatusIcon(articleStatus)}
+                      <span>{STATUS_LABELS[articleStatus]}</span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">{getStatusMessage()}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
