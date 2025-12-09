@@ -94,6 +94,8 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
   const [showImageEditor, setShowImageEditor] = useState(false);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
   const [articleStatus, setArticleStatus] = useState<ArticleStatus>('draft');
+  const [isClosing, setIsClosing] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -116,6 +118,8 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
 
   useEffect(() => {
     if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
       loadUserProfile();
       loadFamilyMembers();
       if (articleId) {
@@ -123,8 +127,22 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
       } else {
         resetForm();
       }
+    } else if (shouldRender) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 450);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, articleId, user]);
+  }, [isOpen, articleId, user, shouldRender]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 50);
+  };
 
   const resetForm = () => {
     setFormData({
@@ -529,9 +547,9 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
     }
   };
 
-  if (!isOpen) return null;
-
   const statusColors = STATUS_COLORS[articleStatus];
+
+  if (!shouldRender) return null;
 
   return (
     <>
@@ -551,12 +569,18 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
         }
         @keyframes formDrawerSlideOut {
           0% {
-            transform: translateX(0) scale(1) rotateY(0deg);
+            transform: translateX(0) scale(1) rotateY(0deg) rotateZ(0deg);
             opacity: 1;
+            filter: blur(0px);
+          }
+          30% {
+            transform: translateX(20px) scale(0.96) rotateY(8deg) rotateZ(-3deg);
+            opacity: 0.7;
           }
           100% {
-            transform: translateX(120%) scale(0.9) rotateY(15deg);
+            transform: translateX(140%) scale(0.65) rotateY(30deg) rotateZ(10deg);
             opacity: 0;
+            filter: blur(10px);
           }
         }
         @keyframes formContentFadeIn {
@@ -567,6 +591,16 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
           100% {
             opacity: 1;
             transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes formContentFadeOut {
+          0% {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotate(0deg);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-40px) scale(0.85) rotate(3deg);
           }
         }
         @keyframes formBackdropFadeIn {
@@ -599,23 +633,27 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
           animation: formDrawerSlideIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         .form-drawer-exit {
-          animation: formDrawerSlideOut 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+          animation: formDrawerSlideOut 0.45s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
         }
         .form-drawer-content-item {
           animation: formContentFadeIn 0.7s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
           animation-delay: calc(var(--item-index) * 0.06s);
         }
+        .form-drawer-content-item-exit {
+          animation: formContentFadeOut 0.28s ease-out forwards;
+          animation-delay: calc((5 - var(--item-index)) * 0.025s);
+        }
       `}} />
 
       <div
         className={`fixed inset-0 bg-black/50 z-[70] ${
-          isOpen ? 'form-drawer-backdrop-enter' : 'form-drawer-backdrop-exit pointer-events-none'
-        }`}
-        onClick={onClose}
+          !isClosing ? 'form-drawer-backdrop-enter' : 'form-drawer-backdrop-exit'
+        } ${isClosing ? 'pointer-events-none' : ''}`}
+        onClick={handleClose}
       />
       <div
         className={`fixed inset-y-0 right-0 w-full max-w-md bg-white z-[70] shadow-2xl ${
-          isOpen ? 'form-drawer-enter' : 'form-drawer-exit'
+          !isClosing ? 'form-drawer-enter' : 'form-drawer-exit'
         }`}
         style={{ perspective: '1000px' }}
       >
@@ -630,7 +668,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
               <X className="w-5 h-5" />
@@ -646,7 +684,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
               <div className="flex-1 overflow-y-auto">
                 <div className="p-5 space-y-5">
                 {/* Photos */}
-                <div className="space-y-4 form-drawer-content-item" style={{ '--item-index': 0 } as React.CSSProperties}>
+                <div className={`space-y-4 ${!isClosing ? 'form-drawer-content-item' : 'form-drawer-content-item-exit'}`} style={{ '--item-index': 0 } as React.CSSProperties}>
                   <div className="bg-white rounded-3xl border-2 border-slate-200 overflow-hidden aspect-square relative">
                     {formData.photos.length > 0 ? (
                       <>
@@ -808,7 +846,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                 {/* Form */}
                 <div className="space-y-5">
                   {/* Title */}
-                  <div className="form-drawer-content-item" style={{ '--item-index': 1 } as React.CSSProperties}>
+                  <div className={`${!isClosing ? 'form-drawer-content-item' : 'form-drawer-content-item-exit'}`} style={{ '--item-index': 1 } as React.CSSProperties}>
                     <h3 className="text-xl font-bold text-slate-900 mb-1">
                       <input
                         type="text"
@@ -826,7 +864,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   </div>
 
                   {/* Description */}
-                  <div className="form-drawer-content-item" style={{ '--item-index': 2 } as React.CSSProperties}>
+                  <div className={`${!isClosing ? 'form-drawer-content-item' : 'form-drawer-content-item-exit'}`} style={{ '--item-index': 2 } as React.CSSProperties}>
                     <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Description</h4>
                     <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
                       <textarea
@@ -840,7 +878,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   </div>
 
                   {/* Article Details Grid */}
-                  <div className="grid grid-cols-2 gap-3 form-drawer-content-item" style={{ '--item-index': 3 } as React.CSSProperties}>
+                  <div className={`grid grid-cols-2 gap-3 ${!isClosing ? 'form-drawer-content-item' : 'form-drawer-content-item-exit'}`} style={{ '--item-index': 3 } as React.CSSProperties}>
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                       <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
                       <input
@@ -924,7 +962,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   </div>
 
                   {/* Category */}
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 form-drawer-content-item" style={{ '--item-index': 4 } as React.CSSProperties}>
+                  <div className={`p-3 bg-slate-50 rounded-xl border border-slate-200 ${!isClosing ? 'form-drawer-content-item' : 'form-drawer-content-item-exit'}`} style={{ '--item-index': 4 } as React.CSSProperties}>
                     <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Categorie</p>
                     <select
                       value={formData.main_category}
@@ -975,7 +1013,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   )}
 
                   {/* Price & Seller */}
-                  <div className="grid grid-cols-2 gap-3 form-drawer-content-item" style={{ '--item-index': 5 } as React.CSSProperties}>
+                  <div className={`grid grid-cols-2 gap-3 ${!isClosing ? 'form-drawer-content-item' : 'form-drawer-content-item-exit'}`} style={{ '--item-index': 5 } as React.CSSProperties}>
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
                       <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
                       <div className="flex items-center">
@@ -1041,7 +1079,7 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                   )}
 
                   <button
-                    onClick={onClose}
+                    onClick={handleClose}
                     className="flex flex-col items-center gap-1 py-2 px-2 text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl transition-colors min-w-0 flex-1"
                   >
                     <X className="w-4 h-4 flex-shrink-0" />

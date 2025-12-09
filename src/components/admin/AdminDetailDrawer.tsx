@@ -161,6 +161,22 @@ export function AdminDetailDrawer({
   const [selectedArticle, setSelectedArticle] = useState<FullArticleDetails | null>(null);
   const [articlePhotoIndex, setArticlePhotoIndex] = useState(0);
   const [loadingArticle, setLoadingArticle] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, shouldRender]);
 
   useEffect(() => {
     setCurrentPhotoIndex(0);
@@ -174,6 +190,13 @@ export function AdminDetailDrawer({
       setArticlePhotoIndex(0);
     }
   }, [isOpen]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 50);
+  };
 
   const fetchArticleDetails = async (articleId: string) => {
     setLoadingArticle(true);
@@ -266,12 +289,18 @@ export function AdminDetailDrawer({
         }
         @keyframes drawerSlideOut {
           0% {
-            transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1) rotateY(0deg) rotateZ(0deg);
             opacity: 1;
+            filter: blur(0px);
+          }
+          40% {
+            transform: translateX(30px) scale(0.98) rotateY(5deg) rotateZ(-2deg);
+            opacity: 0.8;
           }
           100% {
-            transform: translateX(120%) scale(0.95);
+            transform: translateX(150%) scale(0.7) rotateY(25deg) rotateZ(8deg);
             opacity: 0;
+            filter: blur(8px);
           }
         }
         @keyframes contentFadeIn {
@@ -282,6 +311,16 @@ export function AdminDetailDrawer({
           100% {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        @keyframes contentFadeOut {
+          0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.9);
           }
         }
         @keyframes backdropFadeIn {
@@ -314,27 +353,33 @@ export function AdminDetailDrawer({
           animation: drawerSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         .drawer-exit {
-          animation: drawerSlideOut 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+          animation: drawerSlideOut 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
         }
         .drawer-content-item {
           animation: contentFadeIn 0.6s ease-out forwards;
           animation-delay: calc(var(--item-index) * 0.05s);
         }
+        .drawer-content-item-exit {
+          animation: contentFadeOut 0.25s ease-out forwards;
+          animation-delay: calc((5 - var(--item-index)) * 0.02s);
+        }
       `}} />
 
-      <div
-        className={`fixed inset-0 bg-black/50 z-[70] ${
-          isOpen ? 'drawer-backdrop-enter' : 'drawer-backdrop-exit pointer-events-none'
-        }`}
-        onClick={onClose}
-      />
+      {shouldRender && (
+        <>
+          <div
+            className={`fixed inset-0 bg-black/50 z-[70] ${
+              !isClosing ? 'drawer-backdrop-enter' : 'drawer-backdrop-exit'
+            } ${isClosing ? 'pointer-events-none' : ''}`}
+            onClick={handleClose}
+          />
 
-      <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[70] ${
-          isOpen ? 'drawer-enter' : 'drawer-exit'
-        }`}
-        style={{ perspective: '1000px' }}
-      >
+          <div
+            className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[70] ${
+              !isClosing ? 'drawer-enter' : 'drawer-exit'
+            }`}
+            style={{ perspective: '1000px' }}
+          >
         <div className="h-full flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white sticky top-0 z-10">
             <div className="flex items-center gap-3">
@@ -346,7 +391,7 @@ export function AdminDetailDrawer({
               <h2 className="font-semibold text-slate-900">Details</h2>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
               <X className="w-5 h-5" />
@@ -354,7 +399,7 @@ export function AdminDetailDrawer({
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="aspect-square bg-slate-100 relative drawer-content-item" style={{ '--item-index': 0 } as React.CSSProperties}>
+            <div className={`aspect-square bg-slate-100 relative ${!isClosing ? 'drawer-content-item' : 'drawer-content-item-exit'}`} style={{ '--item-index': 0 } as React.CSSProperties}>
               {item.photos && item.photos.length > 0 ? (
                 <>
                   <img
@@ -408,7 +453,7 @@ export function AdminDetailDrawer({
             )}
 
             <div className="p-5 space-y-5">
-              <div className="drawer-content-item" style={{ '--item-index': 1 } as React.CSSProperties}>
+              <div className={`${!isClosing ? 'drawer-content-item' : 'drawer-content-item-exit'}`} style={{ '--item-index': 1 } as React.CSSProperties}>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">{item.title}</h3>
                 <p className="text-sm font-medium text-slate-600">
                   {item.brand || 'Sans marque'}
@@ -422,7 +467,7 @@ export function AdminDetailDrawer({
               </div>
 
               {item.description && (
-                <div className="drawer-content-item" style={{ '--item-index': 2 } as React.CSSProperties}>
+                <div className={`${!isClosing ? 'drawer-content-item' : 'drawer-content-item-exit'}`} style={{ '--item-index': 2 } as React.CSSProperties}>
                   <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Description</h4>
                   <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
                     <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
@@ -511,7 +556,7 @@ export function AdminDetailDrawer({
               )}
 
               {item.type === 'article' && (
-                <div className="grid grid-cols-2 gap-3 drawer-content-item" style={{ '--item-index': 3 } as React.CSSProperties}>
+                <div className={`grid grid-cols-2 gap-3 ${!isClosing ? 'drawer-content-item' : 'drawer-content-item-exit'}`} style={{ '--item-index': 3 } as React.CSSProperties}>
                   {item.brand && (
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                       <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
@@ -570,7 +615,7 @@ export function AdminDetailDrawer({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 drawer-content-item" style={{ '--item-index': 4 } as React.CSSProperties}>
+              <div className={`grid grid-cols-2 gap-3 ${!isClosing ? 'drawer-content-item' : 'drawer-content-item-exit'}`} style={{ '--item-index': 4 } as React.CSSProperties}>
                 {item.type === 'article' && (
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
                     <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
@@ -637,7 +682,7 @@ export function AdminDetailDrawer({
                 </a>
               )}
 
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 drawer-content-item" style={{ '--item-index': 5 } as React.CSSProperties}>
+              <div className={`bg-slate-50 rounded-2xl p-4 border border-slate-200 ${!isClosing ? 'drawer-content-item' : 'drawer-content-item-exit'}`} style={{ '--item-index': 5 } as React.CSSProperties}>
                 <div className="mb-2">
                   <button
                     onClick={onStatusChange}
@@ -908,6 +953,8 @@ export function AdminDetailDrawer({
           </div>
         )}
       </div>
+        </>
+      )}
     </>
   );
 }
