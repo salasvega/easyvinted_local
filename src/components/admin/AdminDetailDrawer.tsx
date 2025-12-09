@@ -397,6 +397,15 @@ export function AdminDetailDrawer({
                       <p className="text-sm font-medium text-slate-900">{CONDITION_LABELS[item.condition] || item.condition}</p>
                     </div>
                   )}
+                  {item.season && (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
+                      <div className="flex items-center gap-2">
+                        {renderSeasonIcon(item.season)}
+                        <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[item.season]}</span>
+                      </div>
+                    </div>
+                  )}
                   {item.main_category && (
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 col-span-2">
                       <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Catégorie</p>
@@ -411,13 +420,10 @@ export function AdminDetailDrawer({
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                {item.type === 'article' && item.season && (
+                {item.type === 'article' && (
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
-                    <div className="flex items-center gap-2">
-                      {renderSeasonIcon(item.season)}
-                      <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[item.season]}</span>
-                    </div>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Prix</p>
+                    <p className="text-lg font-bold text-slate-900">{item.price.toFixed(2)}€</p>
                   </div>
                 )}
                 {item.seller_name && (
