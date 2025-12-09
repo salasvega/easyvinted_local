@@ -762,8 +762,17 @@ export function AdminDetailDrawer({
         </div>
       </div>
 
+      {/* Backdrop pour le drawer de l'article */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[60] transition-transform duration-300 ease-out ${
+        className={`fixed inset-0 bg-black/40 z-[75] transition-opacity duration-300 ${
+          selectedArticle ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setSelectedArticle(null)}
+      />
+
+      {/* Drawer de détail de l'article */}
+      <div
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[80] transition-transform duration-300 ease-out ${
           selectedArticle ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
