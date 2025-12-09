@@ -757,7 +757,7 @@ export function FamilyMembersPage() {
                 Annuler
               </Button>
               <Button type="submit" className="flex-1">
-                {editingMember ? 'Modifier' : 'Ajouter'}
+                {editingMember ? 'Sauvegarder' : 'Ajouter'}
               </Button>
             </div>
           </form>
