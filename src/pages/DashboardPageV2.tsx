@@ -9,6 +9,7 @@ import { Toast } from '../components/ui/Toast';
 import { ArticleStatusModal } from '../components/ArticleStatusModal';
 import { ArticleSoldModal } from '../components/ArticleSoldModal';
 import { Button } from '../components/ui/Button';
+import { ArticleFormDrawer } from '../components/admin/ArticleFormDrawer';
 
 const STATUS_LABELS: Record<ArticleStatus, string> = {
   draft: 'Brouillon',
@@ -48,6 +49,13 @@ export function DashboardPageV2() {
     article: null,
   });
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [articleFormDrawer, setArticleFormDrawer] = useState<{
+    isOpen: boolean;
+    articleId?: string;
+  }>({
+    isOpen: false,
+    articleId: undefined,
+  });
 
   useEffect(() => {
     fetchArticles();
@@ -274,7 +282,7 @@ export function DashboardPageV2() {
         </div>
 
         <Button
-          onClick={() => navigate('/articles/new-v2')}
+          onClick={() => setArticleFormDrawer({ isOpen: true, articleId: undefined })}
           className="inline-flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
@@ -407,7 +415,7 @@ export function DashboardPageV2() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/articles/${article.id}/edit-v2`);
+                        setArticleFormDrawer({ isOpen: true, articleId: article.id });
                       }}
                       className="p-2 bg-white rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
                       title="Modifier"
@@ -477,6 +485,13 @@ export function DashboardPageV2() {
           article={soldModal.article}
         />
       )}
+
+      <ArticleFormDrawer
+        isOpen={articleFormDrawer.isOpen}
+        onClose={() => setArticleFormDrawer({ isOpen: false, articleId: undefined })}
+        articleId={articleFormDrawer.articleId}
+        onSaved={fetchArticles}
+      />
     </div>
   );
 }
