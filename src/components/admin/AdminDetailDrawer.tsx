@@ -598,48 +598,48 @@ export function AdminDetailDrawer({
             </div>
           </div>
 
-          <div className="p-4 border-t border-slate-200 bg-slate-50 sticky bottom-0">
-            <div className="grid grid-cols-4 gap-2">
+          <div className="p-3 border-t border-slate-200 bg-slate-50 sticky bottom-0">
+            <div className="flex items-center justify-around gap-1">
               <button
                 onClick={onEdit}
-                className="flex flex-col items-center gap-1 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl transition-colors"
+                className="flex flex-col items-center gap-1 py-2 px-2 text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl transition-colors min-w-0 flex-1"
               >
-                <ClipboardEdit className="w-4 h-4" />
-                <span className="text-[10px] font-medium">Modifier</span>
+                <ClipboardEdit className="w-4 h-4 flex-shrink-0" />
+                <span className="text-[10px] font-medium whitespace-nowrap">Modifier</span>
               </button>
               {item.status !== 'sold' && (
                 <>
                   <button
                     onClick={onSchedule}
-                    className="flex flex-col items-center gap-1 py-2.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-colors"
+                    className="flex flex-col items-center gap-1 py-2 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-colors min-w-0 flex-1"
                   >
-                    <Calendar className="w-4 h-4" />
-                    <span className="text-[10px] font-medium">Planifier</span>
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-[10px] font-medium whitespace-nowrap">Planifier</span>
                   </button>
                   {(item.status === 'ready' || item.status === 'scheduled') && (
                     <button
                       onClick={onPublish}
-                      className="flex flex-col items-center gap-1 py-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"
+                      className="flex flex-col items-center gap-1 py-2 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors min-w-0 flex-1"
                     >
-                      <Upload className="w-4 h-4" />
-                      <span className="text-[10px] font-medium">Envoyer</span>
+                      <Upload className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-[10px] font-medium whitespace-nowrap">Envoyer</span>
                     </button>
                   )}
                   <button
                     onClick={onMarkSold}
-                    className="flex flex-col items-center gap-1 py-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"
+                    className="flex flex-col items-center gap-1 py-2 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors min-w-0 flex-1"
                   >
-                    <DollarSign className="w-4 h-4" />
-                    <span className="text-[10px] font-medium">Vendu</span>
+                    <DollarSign className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-[10px] font-medium whitespace-nowrap">Vendu</span>
                   </button>
                 </>
               )}
               <button
                 onClick={onDelete}
-                className="flex flex-col items-center gap-1 py-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors"
+                className="flex flex-col items-center gap-1 py-2 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors min-w-0 flex-1"
               >
-                <Trash2 className="w-4 h-4" />
-                <span className="text-[10px] font-medium">Supprimer</span>
+                <Trash2 className="w-4 h-4 flex-shrink-0" />
+                <span className="text-[10px] font-medium whitespace-nowrap">Supprimer</span>
               </button>
             </div>
           </div>
