@@ -254,7 +254,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
             </div>
             <div className="min-w-0">
               <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate"> Studio Magik-AI</h2>
-              <p className="text-xs sm:text-sm text-slate-500 truncate">Votre imagination est son unique limite créative!</p>
+              <p className="text-xs sm:text-sm text-slate-500 truncate">Accrochez, Portez, Pliez... publiez vos articles avec créativité!</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
