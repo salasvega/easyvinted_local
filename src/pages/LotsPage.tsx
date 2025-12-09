@@ -165,25 +165,32 @@ export default function LotsPage() {
     shippingCost: number;
     buyerName: string;
     notes: string;
+    sellerId?: string | null;
   }) => {
     if (!soldModal.lotId) return;
 
     try {
       const netProfit = saleData.soldPrice - saleData.fees - saleData.shippingCost;
 
+      const updateData: any = {
+        status: 'sold',
+        price: saleData.soldPrice,
+        published_at: saleData.soldAt,
+        shipping_cost: saleData.shippingCost,
+        fees: saleData.fees,
+        net_profit: netProfit,
+        buyer_name: saleData.buyerName || null,
+        sale_notes: saleData.notes || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (saleData.sellerId) {
+        updateData.seller_id = saleData.sellerId;
+      }
+
       const { error } = await supabase
         .from('lots')
-        .update({
-          status: 'sold',
-          price: saleData.soldPrice,
-          published_at: saleData.soldAt,
-          shipping_cost: saleData.shippingCost,
-          fees: saleData.fees,
-          net_profit: netProfit,
-          buyer_name: saleData.buyerName || null,
-          sale_notes: saleData.notes || null,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', soldModal.lotId);
 
       if (error) throw error;

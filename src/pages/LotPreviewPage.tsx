@@ -170,19 +170,25 @@ export default function LotPreviewPage() {
   const handleMarkAsSold = async (saleData: {
     soldPrice: number;
     soldAt: string;
-    platform: string;
     fees: number;
     shippingCost: number;
     buyerName: string;
     notes: string;
+    sellerId?: string | null;
   }) => {
     try {
+      const updateData: any = {
+        status: 'sold',
+        published_at: saleData.soldAt,
+      };
+
+      if (saleData.sellerId) {
+        updateData.seller_id = saleData.sellerId;
+      }
+
       const { error } = await supabase
         .from('lots')
-        .update({
-          status: 'sold',
-          published_at: saleData.soldAt,
-        })
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;
@@ -192,18 +198,23 @@ export default function LotPreviewPage() {
       const feesPerArticle = saleData.fees / articleIds.length;
       const shippingPerArticle = saleData.shippingCost / articleIds.length;
 
+      const articleUpdateData: any = {
+        status: 'sold',
+        sold_at: saleData.soldAt,
+        sold_price: pricePerArticle,
+        fees: feesPerArticle,
+        shipping_cost: shippingPerArticle,
+        buyer_name: saleData.buyerName,
+        sale_notes: saleData.notes,
+      };
+
+      if (saleData.sellerId) {
+        articleUpdateData.seller_id = saleData.sellerId;
+      }
+
       const { error: articlesError } = await supabase
         .from('articles')
-        .update({
-          status: 'sold',
-          sold_at: saleData.soldAt,
-          sold_price: pricePerArticle,
-          platform: saleData.platform,
-          fees: feesPerArticle,
-          shipping_cost: shippingPerArticle,
-          buyer_name: saleData.buyerName,
-          sale_notes: saleData.notes,
-        })
+        .update(articleUpdateData)
         .in('id', articleIds);
 
       if (articlesError) throw articlesError;

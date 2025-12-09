@@ -10,6 +10,7 @@ interface SaleData {
   shippingCost: number;
   buyerName: string;
   notes: string;
+  sellerId?: string | null;
 }
 
 interface LotSoldModalProps {
@@ -45,6 +46,32 @@ export function LotSoldModal({ isOpen, onClose, onConfirm, lot, initialData }: L
   const [shippingCost, setShippingCost] = useState(initialData?.shippingCost?.toString() || '0');
   const [buyerName, setBuyerName] = useState(initialData?.buyerName || '');
   const [notes, setNotes] = useState(initialData?.notes || '');
+  const [sellerId, setSellerId] = useState<string | null>(null);
+  const [familyMembers, setFamilyMembers] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadFamilyMembers();
+    }
+  }, [isOpen]);
+
+  const loadFamilyMembers = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .order('name');
+
+      if (error) throw error;
+
+      setFamilyMembers(data || []);
+    } catch (error) {
+      console.error('Error loading family members:', error);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -61,6 +88,7 @@ export function LotSoldModal({ isOpen, onClose, onConfirm, lot, initialData }: L
         shippingCost: shipping,
         buyerName,
         notes,
+        sellerId,
       });
       onClose();
     }
@@ -174,6 +202,26 @@ export function LotSoldModal({ isOpen, onClose, onConfirm, lot, initialData }: L
             <div className="border-t border-gray-200 pt-4">
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Informations complémentaires</h4>
               <div className="space-y-4">
+                {familyMembers.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                      Vendu par
+                    </label>
+                    <select
+                      value={sellerId || ''}
+                      onChange={(e) => setSellerId(e.target.value || null)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    >
+                      <option value="">Sélectionnez un vendeur</option>
+                      {familyMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Nom de l'acheteur (optionnel)
