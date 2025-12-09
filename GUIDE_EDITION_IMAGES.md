@@ -11,8 +11,8 @@ L'édition d'images est maintenant intégrée directement dans le composant Phot
 Votre clé API Gemini est déjà configurée dans le fichier `.env` :
 
 ```
-GEMINI_API_KEY=AIzaSyCznUnpxHpmvEvcyeSjlLcDlaNuZMyexkA
-VITE_GEMINI_API_KEY=AIzaSyCznUnpxHpmvEvcyeSjlLcDlaNuZMyexkA
+GEMINI_API_KEY=XXXXX
+VITE_GEMINI_API_KEY=XXXXX
 ```
 
 ### 2. Modèle utilisé
