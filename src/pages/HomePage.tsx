@@ -64,10 +64,10 @@ export function HomePage() {
         </Link>
 
         <Link
-          to="/articles/new"
+          to="/admin-v2"
           className="inline-flex items-center justify-center px-8 py-3 rounded-full text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm"
         >
-          + Ajouter un article
+          Accéder à ma boutique
         </Link>
       </div>
 

@@ -20,6 +20,7 @@ import { AdminFilters } from '../components/admin/AdminFilters';
 import { AdminItemCard } from '../components/admin/AdminItemCard';
 import { AdminDetailDrawer } from '../components/admin/AdminDetailDrawer';
 import { ArticleFormDrawer } from '../components/admin/ArticleFormDrawer';
+import LotBuilder from '../components/LotBuilder';
 
 const STATUS_LABELS: Record<ArticleStatus, string> = {
   draft: 'Brouillon',
@@ -160,6 +161,14 @@ export function AdminPageV2() {
   }>({
     isOpen: false,
     articleId: undefined,
+  });
+
+  const [lotBuilderDrawer, setLotBuilderDrawer] = useState<{
+    isOpen: boolean;
+    lotId?: string;
+  }>({
+    isOpen: false,
+    lotId: undefined,
   });
 
   useEffect(() => {
@@ -533,16 +542,16 @@ export function AdminPageV2() {
       setArticleFormDrawer({ isOpen: true, articleId: item.id });
       setDrawerOpen(false);
     } else {
-      navigate(`/lots?edit=${item.id}`);
+      setLotBuilderDrawer({ isOpen: true, lotId: item.id });
+      setDrawerOpen(false);
     }
   };
 
   const handlePublish = (item: AdminItem) => {
     if (item.type === 'article') {
       navigate(`/articles/${item.id}/structure`);
-    } else {
-      navigate(`/lots/${item.id}/structure`);
     }
+    // Note: Lot publishing is not yet implemented via structure page
   };
 
   const openItemDrawer = (item: AdminItem) => {
@@ -621,7 +630,7 @@ export function AdminPageV2() {
                 Nouvel article
               </button>
               <button
-                onClick={() => navigate('/lots?create=true')}
+                onClick={() => setLotBuilderDrawer({ isOpen: true, lotId: undefined })}
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-medium text-sm"
               >
                 <Layers className="w-4 h-4" />
@@ -1104,6 +1113,16 @@ export function AdminPageV2() {
         onClose={() => setArticleFormDrawer({ isOpen: false, articleId: undefined })}
         articleId={articleFormDrawer.articleId}
         onSaved={fetchAllData}
+      />
+
+      <LotBuilder
+        isOpen={lotBuilderDrawer.isOpen}
+        onClose={() => setLotBuilderDrawer({ isOpen: false, lotId: undefined })}
+        onSuccess={() => {
+          fetchAllData();
+          setLotBuilderDrawer({ isOpen: false, lotId: undefined });
+        }}
+        existingLotId={lotBuilderDrawer.lotId}
       />
     </>
   );

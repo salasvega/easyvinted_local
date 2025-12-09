@@ -4,7 +4,6 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 import { NotificationBanner } from './components/NotificationBanner';
 import { DashboardPageV2 } from './pages/DashboardPageV2';
-import { ArticleFormPage } from './pages/ArticleFormPage';
 import { ArticleFormPageV2 } from './pages/ArticleFormPageV2';
 import { PreviewPage } from './pages/PreviewPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -14,11 +13,7 @@ import { PlannerPage } from './pages/PlannerPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { HomePage } from './pages/HomePage';
-import { StructureFormPage } from './pages/StructureFormPage';
 import { FamilyMembersPage } from './pages/FamilyMembersPage';
-import LotsPage from './pages/LotsPage';
-import LotPreviewPage from './pages/LotPreviewPage';
-import { LotStructureFormPage } from './pages/LotStructureFormPage';
 import { PhotoStudioPage } from './pages/PhotoStudioPage';
 import { AdminPage } from './pages/AdminPage';
 import { AdminPageV2 } from './pages/AdminPageV2';
@@ -42,15 +37,9 @@ function App() {
 
                     <Route path="/dashboard-v2" element={<DashboardPageV2 />} />
 
-                    <Route path="/articles/new" element={<ArticleFormPage />} />
-                    <Route path="/articles/:id/edit" element={<ArticleFormPage />} />
                     <Route path="/articles/new-v2" element={<ArticleFormPageV2 />} />
                     <Route path="/articles/:id/edit-v2" element={<ArticleFormPageV2 />} />
                     <Route path="/articles/:id/preview" element={<PreviewPage />} />
-                    <Route path="/articles/:id/structure" element={<StructureFormPage />} />
-                    <Route path="/lots" element={<LotsPage />} />
-                    <Route path="/lots/:id/preview" element={<LotPreviewPage />} />
-                    <Route path="/lots/:id/structure" element={<LotStructureFormPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/planner" element={<PlannerPage />} />
                     <Route path="/admin" element={<AdminPage />} />
