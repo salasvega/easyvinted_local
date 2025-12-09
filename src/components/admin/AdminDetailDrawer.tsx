@@ -335,7 +335,7 @@ export function AdminDetailDrawer({
 
                   {/* Articles Statistics */}
                   <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Layers className="w-4 h-4 text-slate-600" />
                         <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">
@@ -344,6 +344,11 @@ export function AdminDetailDrawer({
                       </div>
                       <span className="text-2xl font-bold text-slate-900">{item.articles.length}</span>
                     </div>
+                    {item.original_total_price !== undefined && (
+                      <p className="text-xs text-slate-500">
+                        Valeur totale : <span className="font-semibold text-slate-700">{item.original_total_price.toFixed(2)} €</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Prix et Remise */}
@@ -397,15 +402,6 @@ export function AdminDetailDrawer({
                       <p className="text-sm font-medium text-slate-900">{CONDITION_LABELS[item.condition] || item.condition}</p>
                     </div>
                   )}
-                  {item.season && (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                      <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
-                      <div className="flex items-center gap-2">
-                        {renderSeasonIcon(item.season)}
-                        <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[item.season]}</span>
-                      </div>
-                    </div>
-                  )}
                   {item.main_category && (
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 col-span-2">
                       <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Catégorie</p>
@@ -420,10 +416,13 @@ export function AdminDetailDrawer({
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                {item.type === 'article' && (
-                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                    <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
-                    <p className="text-lg font-bold text-emerald-600">{item.price.toFixed(2)}€</p>
+                {item.type === 'article' && item.season && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
+                    <div className="flex items-center gap-2">
+                      {renderSeasonIcon(item.season)}
+                      <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[item.season]}</span>
+                    </div>
                   </div>
                 )}
                 {item.seller_name && (
@@ -436,6 +435,12 @@ export function AdminDetailDrawer({
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Période conseillée</p>
                     <p className="text-sm font-medium text-slate-900">{item.suggested_period}</p>
+                  </div>
+                )}
+                {item.type === 'lot' && item.lot_article_count && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Articles</p>
+                    <p className="text-sm font-medium text-slate-900">{item.lot_article_count} articles</p>
                   </div>
                 )}
               </div>
@@ -493,7 +498,20 @@ export function AdminDetailDrawer({
               )}
 
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                <div className="mb-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900">{item.price.toFixed(2)}€</p>
+                    {item.status === 'sold' && item.sold_price && (
+                      <p className="text-sm text-slate-500 mt-0.5">
+                        Vendu à <span className="font-semibold text-emerald-600">{item.sold_price.toFixed(2)}€</span>
+                      </p>
+                    )}
+                    {item.status === 'sold' && item.net_profit !== undefined && (
+                      <p className={`text-sm font-semibold mt-0.5 ${item.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {item.net_profit >= 0 ? '+' : ''}{item.net_profit.toFixed(2)}€ bénéfice net
+                      </p>
+                    )}
+                  </div>
                   <button
                     onClick={onStatusChange}
                     className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} hover:scale-105 transition-transform text-sm font-semibold`}
