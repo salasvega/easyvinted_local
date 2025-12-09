@@ -609,18 +609,17 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
               <p className="text-sm font-medium text-emerald-800 mb-3">
                 Image editee avec succes ! Que souhaitez-vous faire ?
               </p>
-              <div className="flex gap-3">
-                {onAddAsNewPhoto && (
-                  <button
-                    type="button"
-                    onClick={handleAddAsNew}
-                    disabled={processing}
-                    className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span>Ajouter comme nouvelle photo</span>
-                  </button>
-                )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={handleAddAsNew}
+                  disabled={processing || !onAddAsNewPhoto}
+                  className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  title={!onAddAsNewPhoto ? "Non disponible" : "Ajouter l'image editee comme nouvelle photo"}
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Ajouter comme nouvelle photo</span>
+                </button>
                 <button
                   type="button"
                   onClick={handleReplace}
