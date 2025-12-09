@@ -49,12 +49,7 @@ export function HomePage() {
               >
                 Connexion
               </Link>
-              <Link
-                to="/signup"
-                className="px-5 py-2 bg-slate-900 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all hover:shadow-lg hover:shadow-slate-900/20 hover:scale-105"
-              >
-                Commencer
-              </Link>
+             
             </div>
           </div>
         </div>
