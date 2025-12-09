@@ -538,7 +538,7 @@ export function PreviewPage() {
                       <h2 className="text-base font-semibold text-slate-900">
                         Statut :  {getStatusBadge()}
                       </h2>
-                      {getStatusBadge()}
+                      
                     </div>
                   </div>
                 </div>
