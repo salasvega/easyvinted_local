@@ -98,7 +98,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   }`}
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  Administration
+                  Ma boutique
                 </Link>
                 <Link
                   to="/planner"
@@ -212,7 +212,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               style={{ transitionDelay: mobileMenuOpen ? '50ms' : '0ms' }}
             >
               <LayoutDashboard className="w-5 h-5" />
-              Administration
+              Ma boutique
             </Link>
             <Link
               to="/planner"
