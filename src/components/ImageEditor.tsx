@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, ZoomIn, ZoomOut, Maximize2, Move, Download, Info } from 'lucide-react';
+import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, Move, Download, Info, Plus, Replace, SplitSquareHorizontal } from 'lucide-react';
 import { editProductImage } from '../lib/geminiService';
 
 interface ImageEditorProps {
@@ -7,6 +7,7 @@ interface ImageEditorProps {
   allPhotos: string[];
   currentPhotoIndex: number;
   onImageEdited: (newImageDataUrl: string) => void;
+  onAddAsNewPhoto?: (newImageDataUrl: string) => void;
   onClose: () => void;
   onPhotoSelect?: (index: number) => void;
 }
@@ -39,7 +40,7 @@ const ACTION_PROMPTS = {
   TRY_ON: `Action: Real-Life Try-On. Display the garment worn or held by a realistic human model, in a natural, everyday context (street, neutral interior). Determine correct model type. Keep model realistic, neutral. Integrate garment with perfect physical accuracy (fit, drape, fabric behavior). NO distortion. Strictly preserve the product details.`
 };
 
-export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdited, onClose, onPhotoSelect }: ImageEditorProps) {
+export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdited, onAddAsNewPhoto, onClose, onPhotoSelect }: ImageEditorProps) {
   const [instruction, setInstruction] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +51,11 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showInfo, setShowInfo] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonPosition, setComparisonPosition] = useState(50);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
+  const comparisonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setEditHistory([imageUrl]);
@@ -183,11 +187,26 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
     setEditHistory([imageUrl]);
     setHistoryIndex(0);
     setError(null);
+    setShowComparison(false);
   };
 
-  const handleFinish = () => {
+  const handleAddAsNew = () => {
+    if (onAddAsNewPhoto && hasEdited) {
+      onAddAsNewPhoto(currentImage);
+      onClose();
+    }
+  };
+
+  const handleReplace = () => {
     onImageEdited(currentImage);
     onClose();
+  };
+
+  const handleComparisonDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!comparisonRef.current) return;
+    const rect = comparisonRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    setComparisonPosition(x);
   };
 
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.5, 5));
@@ -310,55 +329,108 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
               ref={imageContainerRef}
               className="flex-1 min-h-[400px] bg-slate-100 rounded-xl overflow-hidden relative select-none z-0"
             >
-              <div
-                className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
-              >
-                <img
-                  src={currentImage}
-                  alt="Image à éditer"
-                  draggable={false}
-                  style={{
-                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-                  }}
-                  className={`w-full h-full object-contain origin-center ${processing ? 'opacity-50 blur-sm' : ''}`}
-                />
-              </div>
+              {showComparison && hasEdited ? (
+                <div
+                  ref={comparisonRef}
+                  className="absolute inset-0 cursor-ew-resize"
+                  onMouseMove={handleComparisonDrag}
+                  onClick={handleComparisonDrag}
+                >
+                  <div className="absolute inset-0">
+                    <img
+                      src={currentImage}
+                      alt="Image editee"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div
+                    className="absolute inset-0 overflow-hidden"
+                    style={{ clipPath: `inset(0 ${100 - comparisonPosition}% 0 0)` }}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt="Image originale"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div
+                    className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize"
+                    style={{ left: `${comparisonPosition}%`, transform: 'translateX(-50%)' }}
+                  >
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
+                      <SplitSquareHorizontal size={18} className="text-slate-600" />
+                    </div>
+                  </div>
+                  <div className="absolute top-3 left-3 bg-slate-900/80 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                    Avant
+                  </div>
+                  <div className="absolute top-3 right-3 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                    Apres
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="absolute inset-0 flex items-center justify-center overflow-hidden"
+                  style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <img
+                    src={currentImage}
+                    alt="Image a editer"
+                    draggable={false}
+                    style={{
+                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                      transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                    }}
+                    className={`w-full h-full object-contain origin-center ${processing ? 'opacity-50 blur-sm' : ''}`}
+                  />
+                </div>
+              )}
 
-              {zoom > 1 && (
+              {!showComparison && zoom > 1 && (
                 <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-[5] px-4 py-2 rounded-full backdrop-blur-md shadow-sm border border-white/20 flex items-center gap-2 pointer-events-none transition-all duration-300 ${isDragging ? 'bg-blue-600/90 text-white shadow-blue-500/20 scale-105' : 'bg-white/80 text-slate-600 hover:bg-white'}`}>
                   <Move size={14} className={isDragging ? 'animate-pulse' : ''} />
-                  <span className="text-xs font-semibold tracking-wide">{isDragging ? 'Déplacement' : 'Glisser pour déplacer'}</span>
+                  <span className="text-xs font-semibold tracking-wide">{isDragging ? 'Deplacement' : 'Glisser pour deplacer'}</span>
                 </div>
               )}
 
-              {hasEdited && !processing && (
+              {!showComparison && hasEdited && !processing && (
                 <div className="absolute top-3 left-3 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-[5]">
                   <Check className="w-3.5 h-3.5" />
-                  <span>Éditée</span>
+                  <span>Editee ({historyIndex} modif.)</span>
                 </div>
               )}
-              <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-[5]">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Magik-AI </span>
-              </div>
+              {!showComparison && (
+                <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 z-[5]">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Magik-AI</span>
+                </div>
+              )}
 
               {processing && (
                 <div className="absolute inset-0 flex items-center justify-center z-[10]">
                   <div className="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3">
                     <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    <span className="font-semibold text-slate-900">Édition en cours...</span>
+                    <span className="font-semibold text-slate-900">Edition en cours...</span>
                   </div>
                 </div>
               )}
 
-              {/* Boutons de navigation et téléchargement - en overlay */}
+              {/* Boutons de navigation et telechargement - en overlay */}
               <div className="absolute bottom-3 right-3 flex items-center gap-2 z-[5]">
+                {hasEdited && (
+                  <button
+                    type="button"
+                    onClick={() => setShowComparison(!showComparison)}
+                    className={`p-2.5 rounded-lg transition-all shadow-lg ${showComparison ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-white/95 backdrop-blur-sm text-slate-700 hover:bg-white border border-slate-200'}`}
+                    title="Comparer avant/apres"
+                  >
+                    <SplitSquareHorizontal className="w-5 h-5" />
+                  </button>
+                )}
                 <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-lg border border-slate-200 p-1 shadow-lg">
                   <button
                     type="button"
@@ -384,7 +456,7 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
                   type="button"
                   onClick={handleDownload}
                   className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg"
-                  title="Télécharger l'image"
+                  title="Telecharger l'image"
                 >
                   <Download className="w-5 h-5" />
                 </button>
@@ -507,39 +579,72 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
                 onClick={handleReset}
                 disabled={processing}
                 className="px-4 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 hover:text-red-600 hover:border-red-300 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                title="Réinitialiser à l'image originale"
+                title="Reinitialiser a l'image originale"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
             )}
             <button
               type="button"
-              onClick={handleEdit}
+              onClick={() => handleEdit()}
               disabled={processing || !instruction.trim()}
               className="flex-1 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {processing ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Édition...</span>
+                  <span>Edition...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-5 h-5" />
-                  <span>Éditer</span>
+                  <span>Editer</span>
                 </>
               )}
             </button>
+          </div>
+
+          {hasEdited && (
+            <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <p className="text-sm font-medium text-emerald-800 mb-3">
+                Image editee avec succes ! Que souhaitez-vous faire ?
+              </p>
+              <div className="flex gap-3">
+                {onAddAsNewPhoto && (
+                  <button
+                    type="button"
+                    onClick={handleAddAsNew}
+                    disabled={processing}
+                    className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span>Ajouter comme nouvelle photo</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleReplace}
+                  disabled={processing}
+                  className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <Replace className="w-5 h-5" />
+                  <span>Remplacer l'originale</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!hasEdited && (
             <button
               type="button"
-              onClick={handleFinish}
+              onClick={onClose}
               disabled={processing}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="w-full mt-4 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <Check className="w-5 h-5" />
-              <span>Terminer</span>
+              <X className="w-5 h-5" />
+              <span>Fermer</span>
             </button>
-          </div>
+          )}
           </div>
         </div>
       </div>

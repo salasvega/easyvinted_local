@@ -294,7 +294,45 @@ export function PhotoUpload({ photos, onPhotosChange, maxPhotos = 8, onAnalyzeCl
       setModalState({
         isOpen: true,
         title: 'Erreur',
-        message: 'Erreur lors de l\'enregistrement de l\'image éditée',
+        message: 'Erreur lors de l\'enregistrement de l\'image editee',
+        type: 'error'
+      });
+    } finally {
+      setUploading(false);
+      setEditingPhotoIndex(null);
+    }
+  };
+
+  const handleAddAsNewPhoto = async (newImageDataUrl: string) => {
+    if (photos.length >= maxPhotos) {
+      setModalState({
+        isOpen: true,
+        title: 'Limite atteinte',
+        message: `Vous avez atteint la limite de ${maxPhotos} photos`,
+        type: 'warning'
+      });
+      setEditingPhotoIndex(null);
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const response = await fetch(newImageDataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'edited-image.jpg', { type: 'image/jpeg' });
+
+      const uploadedUrl = await uploadPhoto(file);
+
+      if (uploadedUrl) {
+        onPhotosChange([...photos, uploadedUrl]);
+      }
+    } catch (error) {
+      console.error('Error adding new photo:', error);
+      setModalState({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors de l\'ajout de la nouvelle photo',
         type: 'error'
       });
     } finally {
@@ -316,7 +354,11 @@ export function PhotoUpload({ photos, onPhotosChange, maxPhotos = 8, onAnalyzeCl
       {editingPhotoIndex !== null && (
         <ImageEditor
           imageUrl={photos[editingPhotoIndex]}
+          allPhotos={photos}
+          currentPhotoIndex={editingPhotoIndex}
           onImageEdited={handleImageEdited}
+          onAddAsNewPhoto={handleAddAsNewPhoto}
+          onPhotoSelect={(index) => setEditingPhotoIndex(index)}
           onClose={() => setEditingPhotoIndex(null)}
         />
       )}
