@@ -12,22 +12,22 @@ import { COLORS, MATERIALS } from '../constants/articleAttributes';
 import { analyzeProductImage } from '../lib/openaiService';
 
 const CONDITION_LABELS: Record<Condition, string> = {
-  new_with_tag: 'New with tag',
-  new_without_tag: 'New without tag',
-  new_with_tags: 'New with tags',
-  new_without_tags: 'New without tags',
-  very_good: 'Very Good',
-  good: 'Good',
-  satisfactory: 'Satisfactory',
+  new_with_tag: 'Neuf avec étiquette',
+  new_without_tag: 'Neuf sans étiquette',
+  new_with_tags: 'Neuf avec étiquettes',
+  new_without_tags: 'Neuf sans étiquettes',
+  very_good: 'Très bon état',
+  good: 'Bon état',
+  satisfactory: 'Satisfaisant',
 };
 
 const SEASON_LABELS: Record<Season, string> = {
-  spring: 'Spring',
-  summer: 'Summer',
-  autumn: 'Autumn',
-  winter: 'Winter',
-  'all-seasons': 'All seasons',
-  undefined: 'Undefined',
+  spring: 'Printemps',
+  summer: 'Été',
+  autumn: 'Automne',
+  winter: 'Hiver',
+  'all-seasons': 'Toutes saisons',
+  undefined: 'Non défini',
 };
 
 export function ArticleFormPageV2() {
@@ -151,7 +151,7 @@ export function ArticleFormPageV2() {
       }
     } catch (error) {
       console.error('Error fetching article:', error);
-      setToast({ type: 'error', text: 'Error loading article' });
+      setToast({ type: 'error', text: 'Erreur lors du chargement de l\'article' });
     } finally {
       setLoading(false);
     }
@@ -189,7 +189,7 @@ export function ArticleFormPageV2() {
       }));
     } catch (error) {
       console.error('Error uploading photos:', error);
-      setToast({ type: 'error', text: 'Error uploading photos' });
+      setToast({ type: 'error', text: 'Erreur lors du téléchargement des photos' });
     } finally {
       setLoading(false);
     }
@@ -244,11 +244,11 @@ export function ArticleFormPageV2() {
           price: estimatedPrice || prev.price,
         }));
 
-        setToast({ type: 'success', text: 'AI analysis completed!' });
+        setToast({ type: 'success', text: 'Analyse IA terminée avec succès !' });
       }
     } catch (error) {
       console.error('Error analyzing with AI:', error);
-      setToast({ type: 'error', text: 'AI analysis failed' });
+      setToast({ type: 'error', text: 'Échec de l\'analyse IA' });
     } finally {
       setAnalyzingWithAI(false);
     }
@@ -258,7 +258,7 @@ export function ArticleFormPageV2() {
     if (!user) return;
 
     if (!formData.title || !formData.price) {
-      setToast({ type: 'error', text: 'Title and price are required' });
+      setToast({ type: 'error', text: 'Le titre et le prix sont requis' });
       return;
     }
 
@@ -286,20 +286,20 @@ export function ArticleFormPageV2() {
           .eq('user_id', user.id);
 
         if (error) throw error;
-        setToast({ type: 'success', text: 'Article updated successfully' });
+        setToast({ type: 'success', text: 'Article modifié avec succès' });
       } else {
         const { error } = await supabase
           .from('articles')
           .insert([{ ...articleData, created_at: new Date().toISOString() }]);
 
         if (error) throw error;
-        setToast({ type: 'success', text: 'Article created successfully' });
+        setToast({ type: 'success', text: 'Article créé avec succès' });
       }
 
       setTimeout(() => navigate('/dashboard-v2'), 1500);
     } catch (error) {
       console.error('Error saving article:', error);
-      setToast({ type: 'error', text: 'Error saving article' });
+      setToast({ type: 'error', text: 'Erreur lors de la sauvegarde de l\'article' });
     } finally {
       setLoading(false);
     }
@@ -360,7 +360,7 @@ export function ArticleFormPageV2() {
 
       setToast({
         type: 'success',
-        text: 'Article deleted successfully',
+        text: 'Article supprimé avec succès',
       });
 
       setDeleteModalOpen(false);
@@ -371,7 +371,7 @@ export function ArticleFormPageV2() {
       console.error('Error deleting article:', error);
       setToast({
         type: 'error',
-        text: 'Error deleting article',
+        text: 'Erreur lors de la suppression de l\'article',
       });
     }
   };
@@ -583,7 +583,7 @@ export function ArticleFormPageV2() {
                 <>
                   <img
                     src={formData.photos[selectedPhotoIndex]}
-                    alt="Product"
+                    alt="Produit"
                     className="w-full h-full object-cover"
                   />
                   <button
@@ -620,7 +620,7 @@ export function ArticleFormPageV2() {
               ) : (
                 <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
                   <Plus className="w-16 h-16 text-slate-300 mb-4" />
-                  <span className="text-slate-400 font-medium">Add Photos</span>
+                  <span className="text-slate-400 font-medium">Ajouter des photos</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -742,7 +742,7 @@ export function ArticleFormPageV2() {
           <div className="bg-white rounded-3xl border border-slate-200 p-8">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold text-slate-900">Item Details</h1>
+                <h1 className="text-2xl font-bold text-slate-900">Détails de l'article</h1>
                 <button
                   onClick={() => navigate('/dashboard-v2')}
                   className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
@@ -750,7 +750,7 @@ export function ArticleFormPageV2() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-sm text-slate-500">Review the AI-generated information</p>
+              <p className="text-sm text-slate-500">Vérifiez les informations générées par l'IA</p>
             </div>
 
             <div className="space-y-6">
@@ -778,7 +778,7 @@ export function ArticleFormPageV2() {
               {familyMembers.length > 0 && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Seller
+                    Vendeur
                   </label>
                   <select
                     value={formData.seller_id || ''}
@@ -787,7 +787,7 @@ export function ArticleFormPageV2() {
                     }
                     className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
                   >
-                    <option value="">Me</option>
+                    <option value="">Moi</option>
                     {familyMembers.map((member) => (
                       <option key={member.id} value={member.id}>
                         {member.name}
@@ -800,14 +800,14 @@ export function ArticleFormPageV2() {
               {/* Title */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Title
+                  Titre
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full text-xl font-semibold text-slate-900 border-0 border-b-2 border-slate-100 focus:border-emerald-500 focus:ring-0 px-0 py-2 transition-colors"
-                  placeholder="Item title"
+                  placeholder="Titre de l'article"
                 />
               </div>
 
@@ -821,7 +821,7 @@ export function ArticleFormPageV2() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={6}
                   className="w-full text-sm text-slate-700 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-3 transition-colors resize-none"
-                  placeholder="Describe your item..."
+                  placeholder="Décrivez votre article..."
                 />
               </div>
 
@@ -829,19 +829,19 @@ export function ArticleFormPageV2() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Brand
+                    Marque
                   </label>
                   <input
                     type="text"
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                     className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
-                    placeholder="Unknown"
+                    placeholder="Inconnue"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Size
+                    Taille
                   </label>
                   <input
                     type="text"
@@ -857,14 +857,14 @@ export function ArticleFormPageV2() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Color
+                    Couleur
                   </label>
                   <select
                     value={formData.color}
                     onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                     className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
                   >
-                    <option value="">Select color</option>
+                    <option value="">Sélectionner une couleur</option>
                     {COLORS.map((color) => (
                       <option key={color} value={color}>
                         {color}
@@ -874,14 +874,14 @@ export function ArticleFormPageV2() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Material
+                    Matière
                   </label>
                   <select
                     value={formData.material}
                     onChange={(e) => setFormData({ ...formData, material: e.target.value })}
                     className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
                   >
-                    <option value="">Select material</option>
+                    <option value="">Sélectionner une matière</option>
                     {MATERIALS.map((material) => (
                       <option key={material} value={material}>
                         {material}
@@ -895,7 +895,7 @@ export function ArticleFormPageV2() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Condition
+                    État
                   </label>
                   <select
                     value={formData.condition}
@@ -911,7 +911,7 @@ export function ArticleFormPageV2() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Price (€)
+                    Prix (€)
                   </label>
                   <input
                     type="number"
@@ -927,7 +927,7 @@ export function ArticleFormPageV2() {
               {/* Category */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Category
+                  Catégorie
                 </label>
                 <select
                   value={formData.main_category}
@@ -941,7 +941,7 @@ export function ArticleFormPageV2() {
                   }
                   className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
                 >
-                  <option value="">Select category</option>
+                  <option value="">Sélectionner une catégorie</option>
                   {VINTED_CATEGORIES.map((cat) => (
                     <option key={cat.name} value={cat.name}>
                       {cat.name}
@@ -954,7 +954,7 @@ export function ArticleFormPageV2() {
               {selectedCategory && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Subcategory
+                    Sous-catégorie
                   </label>
                   <select
                     value={formData.subcategory}
@@ -967,7 +967,7 @@ export function ArticleFormPageV2() {
                     }
                     className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
                   >
-                    <option value="">Select subcategory</option>
+                    <option value="">Sélectionner une sous-catégorie</option>
                     {selectedCategory.subcategories.map((sub) => (
                       <option key={sub.name} value={sub.name}>
                         {sub.name}
@@ -981,14 +981,14 @@ export function ArticleFormPageV2() {
               {selectedSubcategory && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Item Type
+                    Type d'article
                   </label>
                   <select
                     value={formData.item_category}
                     onChange={(e) => setFormData({ ...formData, item_category: e.target.value })}
                     className="w-full text-sm text-slate-900 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 px-4 py-2.5 transition-colors"
                   >
-                    <option value="">Select item type</option>
+                    <option value="">Sélectionner le type d'article</option>
                     {selectedSubcategory.items.map((item) => (
                       <option key={item} value={item}>
                         {item}
@@ -1002,7 +1002,7 @@ export function ArticleFormPageV2() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Season
+                    Saison
                   </label>
                   <select
                     value={formData.season}
