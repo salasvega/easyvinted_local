@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Package, Settings, BarChart3, Calendar, Menu, X, LogOut, Users, LayoutDashboard } from 'lucide-react';
+import { Package, Settings, BarChart3, Calendar, Menu, X, LogOut, Users, LayoutDashboard, Plus } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ArticleFormDrawer } from '../admin/ArticleFormDrawer';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [dressingName, setDressingName] = useState<string>('Mon Dressing');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [articleDrawerOpen, setArticleDrawerOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,6 +102,13 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <LayoutDashboard className="w-4 h-4" />
                   Ma boutique
                 </Link>
+                <button
+                  onClick={() => setArticleDrawerOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  <Plus className="w-4 h-4" />
+                  Article Drawer
+                </button>
                 <Link
                   to="/planner"
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -214,6 +223,19 @@ export function AppLayout({ children }: AppLayoutProps) {
               <LayoutDashboard className="w-5 h-5" />
               Ma boutique
             </Link>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setArticleDrawerOpen(true);
+              }}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 transform ${
+                mobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+              } text-gray-700 hover:bg-gray-50 w-full`}
+              style={{ transitionDelay: mobileMenuOpen ? '55ms' : '0ms' }}
+            >
+              <Plus className="w-5 h-5" />
+              Article Drawer
+            </button>
             <Link
               to="/planner"
               onClick={() => setMobileMenuOpen(false)}
@@ -304,6 +326,14 @@ export function AppLayout({ children }: AppLayoutProps) {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {children}
       </main>
+
+      <ArticleFormDrawer
+        isOpen={articleDrawerOpen}
+        onClose={() => setArticleDrawerOpen(false)}
+        onSaved={() => {
+          setArticleDrawerOpen(false);
+        }}
+      />
     </div>
   );
 }
