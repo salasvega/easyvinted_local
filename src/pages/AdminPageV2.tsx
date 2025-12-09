@@ -12,6 +12,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { ScheduleModal } from '../components/ScheduleModal';
 import { ArticleSoldModal } from '../components/ArticleSoldModal';
 import { LotSoldModal } from '../components/LotSoldModal';
+import { LabelModal } from '../components/LabelModal';
 import { Toast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { AdminStatsCard } from '../components/admin/AdminStatsCard';
@@ -122,6 +123,14 @@ export function AdminPageV2() {
   });
 
   const [soldModal, setSoldModal] = useState<{
+    isOpen: boolean;
+    item: AdminItem | null;
+  }>({
+    isOpen: false,
+    item: null,
+  });
+
+  const [labelModal, setLabelModal] = useState<{
     isOpen: boolean;
     item: AdminItem | null;
   }>({
@@ -816,6 +825,12 @@ export function AdminPageV2() {
             setStatusModal({ isOpen: true, item: selectedItem });
           }
         }}
+        onLabelOpen={() => {
+          if (selectedItem) {
+            setLabelModal({ isOpen: true, item: selectedItem });
+            setDrawerOpen(false);
+          }
+        }}
         formatDate={formatDate}
       />
 
@@ -1001,6 +1016,22 @@ export function AdminPageV2() {
             setScheduleModal({ isOpen: false, item: null });
             fetchAllData();
           }}
+        />
+      )}
+
+      {labelModal.item && labelModal.item.reference_number && (
+        <LabelModal
+          isOpen={labelModal.isOpen}
+          onClose={() => setLabelModal({ isOpen: false, item: null })}
+          article={{
+            reference_number: labelModal.item.reference_number,
+            title: labelModal.item.title,
+            brand: labelModal.item.brand,
+            size: labelModal.item.size,
+            color: labelModal.item.color,
+            price: labelModal.item.price,
+          }}
+          sellerName={labelModal.item.seller_name}
         />
       )}
     </>

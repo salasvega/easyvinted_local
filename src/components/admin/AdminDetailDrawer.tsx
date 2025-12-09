@@ -49,6 +49,7 @@ interface AdminDetailDrawerProps {
   onMarkSold: () => void;
   onDelete: () => void;
   onStatusChange: () => void;
+  onLabelOpen: () => void;
   formatDate: (date?: string) => string;
 }
 
@@ -123,6 +124,7 @@ export function AdminDetailDrawer({
   onMarkSold,
   onDelete,
   onStatusChange,
+  onLabelOpen,
   formatDate,
 }: AdminDetailDrawerProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -426,6 +428,23 @@ export function AdminDetailDrawer({
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">{getStatusMessage()}</p>
               </div>
+
+              {item.reference_number && (
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                      Étiquette de colis
+                    </h3>
+                    <button
+                      onClick={onLabelOpen}
+                      className="px-3 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2"
+                    >
+                      <Tag className="w-3.5 h-3.5" />
+                      Générer l&apos;étiquette
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Actions rapides</h4>
