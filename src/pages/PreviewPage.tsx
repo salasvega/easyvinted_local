@@ -12,9 +12,18 @@ import {
   Trash2,
   X,
   Tag,
+  FileText,
+  CheckCircle2,
+  Clock,
+  Flower2,
+  Sun,
+  Leaf,
+  Snowflake,
+  CloudSun,
+  ExternalLink,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { Article } from '../types/article';
+import { Article, ArticleStatus, Season } from '../types/article';
 import { Modal } from '../components/ui/Modal';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { PublishInstructionsModal } from '../components/PublishInstructionsModal';
@@ -24,6 +33,65 @@ import { SaleDetailModal } from '../components/SaleDetailModal';
 import { LabelModal } from '../components/LabelModal';
 import { Toast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
+
+const STATUS_LABELS: Record<ArticleStatus, string> = {
+  draft: 'Brouillon',
+  ready: 'Pret',
+  scheduled: 'Planifie',
+  published: 'Publie',
+  sold: 'Vendu',
+};
+
+const STATUS_COLORS: Record<ArticleStatus, { bg: string; text: string; border: string }> = {
+  draft: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200' },
+  ready: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
+  scheduled: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
+  published: { bg: 'bg-violet-100', text: 'text-violet-700', border: 'border-violet-200' },
+  sold: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' },
+};
+
+const SEASON_LABELS: Record<Season, string> = {
+  spring: 'Printemps',
+  summer: 'Ete',
+  autumn: 'Automne',
+  winter: 'Hiver',
+  'all-seasons': 'Toutes saisons',
+  undefined: 'Non defini',
+};
+
+const CONDITION_LABELS: Record<string, string> = {
+  new_with_tag: 'Neuf avec etiquette',
+  new_without_tag: 'Neuf sans etiquette',
+  new_with_tags: 'Neuf avec etiquette',
+  new_without_tags: 'Neuf sans etiquette',
+  very_good: 'Tres bon etat',
+  good: 'Bon etat',
+  satisfactory: 'Satisfaisant',
+};
+
+const renderStatusIcon = (status: ArticleStatus) => {
+  const iconClass = 'w-4 h-4';
+  switch (status) {
+    case 'draft': return <FileText className={iconClass} />;
+    case 'ready': return <CheckCircle2 className={iconClass} />;
+    case 'scheduled': return <Clock className={iconClass} />;
+    case 'published': return <Send className={iconClass} />;
+    case 'sold': return <DollarSign className={iconClass} />;
+    default: return null;
+  }
+};
+
+const renderSeasonIcon = (season?: Season) => {
+  const iconClass = 'w-4 h-4';
+  switch (season) {
+    case 'spring': return <Flower2 className={`${iconClass} text-pink-500`} />;
+    case 'summer': return <Sun className={`${iconClass} text-orange-500`} />;
+    case 'autumn': return <Leaf className={`${iconClass} text-amber-600`} />;
+    case 'winter': return <Snowflake className={`${iconClass} text-blue-500`} />;
+    case 'all-seasons': return <CloudSun className={`${iconClass} text-slate-500`} />;
+    default: return <CloudSun className={`${iconClass} text-slate-300`} />;
+  }
+};
 
 export function PreviewPage() {
   const navigate = useNavigate();
@@ -126,7 +194,7 @@ export function PreviewPage() {
         text:
           error instanceof Error
             ? error.message
-            : "Erreur lors de la préparation de l'article",
+            : "Erreur lors de la preparation de l'article",
       });
     } finally {
       setPublishing(false);
@@ -148,7 +216,7 @@ export function PreviewPage() {
 
       setToast({
         type: 'success',
-        text: 'Article marqué comme prêt pour Vinted',
+        text: 'Article marque comme pret pour Vinted',
       });
 
       await fetchArticle();
@@ -156,7 +224,7 @@ export function PreviewPage() {
       console.error('Error marking article as ready:', error);
       setToast({
         type: 'error',
-        text: 'Erreur lors de la mise à jour du statut',
+        text: 'Erreur lors de la mise a jour du statut',
       });
     } finally {
       setMarkingReady(false);
@@ -212,7 +280,7 @@ export function PreviewPage() {
 
       setToast({
         type: 'success',
-        text: 'Article supprimé avec succès',
+        text: 'Article supprime avec succes',
       });
 
       setDeleteModalOpen(false);
@@ -269,7 +337,7 @@ export function PreviewPage() {
 
       setToast({
         type: 'success',
-        text: 'Article marqué comme vendu',
+        text: 'Article marque comme vendu',
       });
 
       setSoldModalOpen(false);
@@ -278,18 +346,10 @@ export function PreviewPage() {
       console.error('Error marking article as sold:', error);
       setToast({
         type: 'error',
-        text: 'Erreur lors de la mise à jour du statut',
+        text: 'Erreur lors de la mise a jour du statut',
       });
     }
   }
-
-  const CONDITION_LABELS: Record<string, string> = {
-    new_with_tags: 'Neuf avec étiquette',
-    new_without_tags: 'Neuf sans étiquette',
-    very_good: 'Très bon état',
-    good: 'Bon état',
-    satisfactory: 'Satisfaisant',
-  };
 
   const handlePreviousPhoto = () => {
     if (!article?.photos) return;
@@ -305,8 +365,22 @@ export function PreviewPage() {
     );
   };
 
-  const handlePhotoClick = (index: number) => {
-    setCurrentPhotoIndex(index);
+  const getStatusMessage = () => {
+    if (!article) return '';
+    switch (article.status) {
+      case 'draft':
+        return "Cette annonce est en cours de preparation. Completez les champs obligatoires avant de l'envoyer.";
+      case 'ready':
+        return 'Tous les champs requis sont remplis. Vous pouvez maintenant envoyer cette annonce sur Vinted.';
+      case 'published':
+        return 'Cette annonce est actuellement en ligne sur Vinted.';
+      case 'sold':
+        return 'Cet article a ete vendu avec succes.';
+      case 'scheduled':
+        return 'Cette annonce est planifiee pour une publication ulterieure sur Vinted.';
+      default:
+        return '';
+    }
   };
 
   if (loading) {
@@ -322,50 +396,16 @@ export function PreviewPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">Article non trouvé</h2>
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">Article non trouve</h2>
           <p className="text-sm text-slate-500">
-            Impossible de charger cette annonce. Elle a peut-être été supprimée.
+            Impossible de charger cette annonce. Elle a peut-etre ete supprimee.
           </p>
         </div>
       </div>
     );
   }
 
-  const getStatusBadge = () => {
-    switch (article.status) {
-      case 'ready':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Prêt pour Vinted
-          </span>
-        );
-      case 'scheduled':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-            Planifié
-          </span>
-        );
-      case 'published':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-            Publié
-          </span>
-        );
-      case 'sold':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Vendu
-          </span>
-        );
-      case 'draft':
-      default:
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200">
-            En cours
-          </span>
-        );
-    }
-  };
+  const statusColors = STATUS_COLORS[article.status];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -392,7 +432,7 @@ export function PreviewPage() {
         onScheduled={() => {
           setToast({
             type: 'success',
-            text: 'Article programmé avec succès',
+            text: 'Article programme avec succes',
           });
           fetchArticle();
         }}
@@ -448,7 +488,7 @@ export function PreviewPage() {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleDelete}
         title="Supprimer l'article"
-        message="Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible."
+        message="Etes-vous sur de vouloir supprimer cet article ? Cette action est irreversible."
         confirmLabel="Supprimer"
         variant="danger"
       />
@@ -457,7 +497,7 @@ export function PreviewPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Photos */}
           <div className="space-y-4">
-            <div className="bg-white rounded-3xl border-2 border-slate-200 overflow-hidden aspect-[3/4] relative">
+            <div className="bg-white rounded-3xl border-2 border-slate-200 overflow-hidden aspect-square relative">
               {article.photos && article.photos.length > 0 ? (
                 <>
                   <img
@@ -495,13 +535,13 @@ export function PreviewPage() {
 
             {/* Thumbnails */}
             {article.photos && article.photos.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
+              <div className="flex gap-2 overflow-x-auto p-3 bg-white rounded-2xl border border-slate-200">
                 {article.photos.map((photo, index) => (
                   <div
                     key={index}
-                    className={`relative flex-shrink-0 w-20 h-20 rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
+                    className={`relative flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden cursor-pointer transition-all ${
                       currentPhotoIndex === index
-                        ? 'border-emerald-600 ring-2 ring-emerald-100'
+                        ? 'border-blue-500 ring-2 ring-blue-100'
                         : 'border-slate-200 hover:border-slate-300'
                     }`}
                     onClick={() => setCurrentPhotoIndex(index)}
@@ -517,148 +557,206 @@ export function PreviewPage() {
           <div className="bg-white rounded-3xl border border-slate-200 p-8">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold text-slate-900">Prévisualisation</h1>
+                <div className="flex items-center gap-3">
+                  <span className="px-2 py-1 text-[10px] font-bold uppercase rounded-lg bg-blue-100 text-blue-700">
+                    Article
+                  </span>
+                  <h2 className="font-semibold text-slate-900">Details</h2>
+                </div>
                 <button
                   onClick={() => navigate('/dashboard-v2')}
-                  className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-sm text-slate-500">Visualisez votre annonce avant publication</p>
             </div>
 
-            <div className="space-y-6">
-              {/* 1. Status Section */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <Package className="w-10 h-10 text-slate-900 bg-white rounded-full p-2 border border-slate-200" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-base font-semibold text-slate-900">
-                        Statut :  {getStatusBadge()}
-                      </h2>
-                      
-                    </div>
+            <div className="space-y-5">
+              {/* 1. Title + Brand + Reference */}
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">{article.title}</h3>
+                <p className="text-sm font-medium text-slate-600">{article.brand || 'Sans marque'}</p>
+                {article.reference_number && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-slate-400 font-mono">Ref. #{article.reference_number}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Description */}
+              {article.description && (
+                <div>
+                  <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Description</h4>
+                  <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                      {article.description}
+                    </p>
                   </div>
                 </div>
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  {article.status === 'draft' &&
-                    "Cette annonce est en cours de préparation. Complétez les champs obligatoires avant de l'envoyer sur Vinted."}
-                  {article.status === 'ready' &&
-                    'Tous les champs requis sont remplis. Vous pouvez maintenant envoyer cette annonce sur Vinted.'}
-                  {article.status === 'published' &&
-                    'Cette annonce est actuellement en ligne sur Vinted.'}
-                  {article.status === 'sold' && 'Cet article a été vendu avec succès.'}
-                  {article.status === 'scheduled' &&
-                    'Cette annonce est planifiée pour une publication ultérieure sur Vinted.'}
-                </p>
+              )}
+
+              {/* 3. Article Details Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {article.brand && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Marque</p>
+                    <p className="text-sm font-medium text-slate-900">{article.brand}</p>
+                  </div>
+                )}
+                {article.size && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Taille</p>
+                    <p className="text-sm font-medium text-slate-900">{article.size}</p>
+                  </div>
+                )}
+                {article.color && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Couleur</p>
+                    <p className="text-sm font-medium text-slate-900">{article.color}</p>
+                  </div>
+                )}
+                {article.material && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Matiere</p>
+                    <p className="text-sm font-medium text-slate-900">{article.material}</p>
+                  </div>
+                )}
+                {article.condition && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Etat</p>
+                    <p className="text-sm font-medium text-slate-900">{CONDITION_LABELS[article.condition] || article.condition}</p>
+                  </div>
+                )}
+                {article.season && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Saison</p>
+                    <div className="flex items-center gap-2">
+                      {renderSeasonIcon(article.season)}
+                      <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[article.season]}</span>
+                    </div>
+                  </div>
+                )}
+                {article.main_category && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 col-span-2">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Categorie</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {article.main_category}
+                      {article.subcategory && ` > ${article.subcategory}`}
+                      {article.item_category && ` > ${article.item_category}`}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {/* 2. Seller */}
-              {sellerName && (
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Vendeur
-                  </label>
-                  <div className="text-sm font-medium text-slate-900">{sellerName}</div>
+              {/* 4. Price, Seller, Suggested Period Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <p className="text-[10px] uppercase tracking-wide text-emerald-700 font-semibold mb-1">Prix</p>
+                  <p className="text-lg font-bold text-emerald-600">{article.price.toFixed(2)} €</p>
+                </div>
+                {sellerName && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Vendeur</p>
+                    <p className="text-sm font-medium text-slate-900">{sellerName}</p>
+                  </div>
+                )}
+                {article.suggested_period && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Periode conseillee</p>
+                    <p className="text-sm font-medium text-slate-900">{article.suggested_period}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 5. Sale Details (if sold) */}
+              {article.status === 'sold' && (article.fees !== undefined || article.shipping_cost !== undefined || article.buyer_name) && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                  <h4 className="text-xs uppercase tracking-wide text-emerald-700 font-semibold mb-3">Details de la vente</h4>
+                  <div className="space-y-2">
+                    {article.buyer_name && (
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-sm text-emerald-700">Acheteur</span>
+                        <span className="text-sm font-medium text-emerald-900">{article.buyer_name}</span>
+                      </div>
+                    )}
+                    {article.fees !== undefined && (
+                      <div className="flex items-center justify-between py-1.5 border-t border-emerald-200">
+                        <span className="text-sm text-emerald-700">Frais</span>
+                        <span className="text-sm font-medium text-emerald-900">{article.fees.toFixed(2)} €</span>
+                      </div>
+                    )}
+                    {article.shipping_cost !== undefined && (
+                      <div className="flex items-center justify-between py-1.5 border-t border-emerald-200">
+                        <span className="text-sm text-emerald-700">Frais de port</span>
+                        <span className="text-sm font-medium text-emerald-900">{article.shipping_cost.toFixed(2)} €</span>
+                      </div>
+                    )}
+                    {article.net_profit !== undefined && (
+                      <div className="flex items-center justify-between py-1.5 border-t border-emerald-200">
+                        <span className="text-sm text-emerald-700 font-semibold">Profit net</span>
+                        <span className={`text-sm font-bold ${article.net_profit >= 0 ? 'text-emerald-900' : 'text-rose-600'}`}>
+                          {article.net_profit >= 0 ? '+' : ''}{article.net_profit.toFixed(2)} €
+                        </span>
+                      </div>
+                    )}
+                    {article.sale_notes && (
+                      <div className="pt-2 border-t border-emerald-200">
+                        <p className="text-xs text-emerald-700 mb-1 font-semibold">Notes</p>
+                        <p className="text-sm text-emerald-900">{article.sale_notes}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* 3. Title */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Titre
-                </label>
-                <div className="text-xl font-semibold text-slate-900 py-2">
-                  {article.title}
-                </div>
-              </div>
-
-              {/* 4. Description */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Description
-                </label>
-                <div className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    {article.description || 'Aucune description fournie.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* 5. Marque */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Marque
-                </label>
-                <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="text-sm font-medium text-slate-900">
-                    {article.brand || 'Non spécifiée'}
-                  </span>
-                </div>
-              </div>
-
-              {/* 6. Prix */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                  Prix (€)
-                </label>
-                <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                  <span className="text-sm font-bold text-emerald-600">
-                    {article.price.toFixed(2)} €
-                  </span>
-                </div>
-              </div>
-
-              {/* 7. Season & Suggested Period */}
-              {(article.season || article.suggested_period) && (
-                <div className="grid grid-cols-2 gap-4">
-                  {article.season && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                        Season
-                      </label>
-                      <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                        <span className="text-sm font-medium text-slate-900">
-                          {article.season === 'all_seasons' ? 'All seasons' : article.season}
-                        </span>
-                      </div>
+              {/* 6. Vinted URL */}
+              {article.vinted_url && (
+                <a
+                  href={article.vinted_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl hover:from-teal-100 hover:to-cyan-100 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center">
+                      <ExternalLink className="w-5 h-5 text-white" />
                     </div>
-                  )}
-                  {article.suggested_period && (
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                        Période conseillée
-                      </label>
-                      <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                        <span className="text-sm font-medium text-slate-900">
-                          {article.suggested_period}
-                        </span>
-                      </div>
+                      <p className="text-sm font-semibold text-teal-900">Voir sur Vinted</p>
+                      <p className="text-xs text-teal-600">Ouvrir l&apos;annonce</p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-teal-500 group-hover:translate-x-1 transition-transform" />
+                </a>
               )}
+
+              {/* 7. Status Section */}
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                <div className="mb-2">
+                  <span
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${statusColors.bg} ${statusColors.text} ${statusColors.border} text-sm font-semibold`}
+                  >
+                    {renderStatusIcon(article.status)}
+                    <span>{STATUS_LABELS[article.status]}</span>
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">{getStatusMessage()}</p>
+              </div>
 
               {/* 8. Package Label */}
               {article.reference_number && (
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">
-                        Étiquette de colis
-                      </h3>
-                      <p className="text-xs text-slate-500">
-                        Référence : <span className="font-mono font-semibold">{article.reference_number}</span>
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                      Etiquette de colis
+                    </h3>
                     <button
                       onClick={() => setLabelModalOpen(true)}
                       className="px-3 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2"
                     >
                       <Tag className="w-3.5 h-3.5" />
-                      Générer l&apos;étiquette
+                      Generer l&apos;etiquette
                     </button>
                   </div>
                 </div>
@@ -693,7 +791,7 @@ export function PreviewPage() {
                 className="px-6 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
-                {markingReady ? 'Enregistrement…' : 'Prêt pour Vinted'}
+                {markingReady ? 'Enregistrement...' : 'Pret pour Vinted'}
               </button>
             )}
 
@@ -703,7 +801,7 @@ export function PreviewPage() {
                 className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
               >
                 <Send className="w-4 h-4" />
-                Envoyer à Vinted
+                Envoyer a Vinted
               </button>
             )}
 
