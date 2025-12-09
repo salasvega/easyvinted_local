@@ -636,6 +636,14 @@ export function PreviewPage() {
                       <span className="text-sm font-medium text-slate-900">{SEASON_LABELS[article.season]}</span>
                     </div>
                   </div>
+ {article.suggested_period && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">Periode conseillee</p>
+                    <p className="text-sm font-medium text-slate-900">{article.suggested_period}</p>
+                  </div>
+                )}
+
+      
                 )}
                 {article.main_category && (
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 col-span-2">
