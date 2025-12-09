@@ -773,178 +773,182 @@ export default function LotBuilder({
           {currentStep === 3 && (
             <div className="space-y-4 sm:space-y-5">
               <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
-                <Card>
-                  <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-                    Prix & remise
-                  </h3>
-                  <div className="space-y-2.5">
-                    <InfoRow
-                      icon={Tag}
-                      title="Prix total des articles"
-                      description="Somme des prix individuels"
-                      value={`${totalPrice.toFixed(2)} €`}
-                      valueClassName="text-slate-900"
-                    />
+                <div className="space-y-4">
+                  <Card>
+                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+                      Prix & remise
+                    </h3>
+                    <div className="space-y-2.5">
+                      <InfoRow
+                        icon={Tag}
+                        title="Prix total des articles"
+                        description="Somme des prix individuels"
+                        value={`${totalPrice.toFixed(2)} €`}
+                        valueClassName="text-slate-900"
+                      />
 
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-2">
-                        <Percent className="w-4 h-4 text-slate-500" />
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">
-                            Remise suggérée (20%)
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            Appliquer automatiquement un prix de lot attractif
-                          </p>
+                      <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center gap-2">
+                          <Percent className="w-4 h-4 text-slate-500" />
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">
+                              Remise suggérée (20%)
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              Appliquer automatiquement un prix de lot attractif
+                            </p>
+                          </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLotData({
+                              ...lotData,
+                              price: Math.round(totalPrice * 0.8),
+                            })
+                          }
+                          className="text-xs sm:text-sm font-medium text-emerald-700 hover:text-emerald-800 underline-offset-2 hover:underline"
+                        >
+                          Appliquer
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setLotData({
-                            ...lotData,
-                            price: Math.round(totalPrice * 0.8),
-                          })
-                        }
-                        className="text-xs sm:text-sm font-medium text-emerald-700 hover:text-emerald-800 underline-offset-2 hover:underline"
-                      >
-                        Appliquer
-                      </button>
-                    </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-                        Prix du lot <span className="text-rose-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={lotData.price || ''}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                          Prix du lot <span className="text-rose-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={lotData.price || ''}
+                            onChange={(e) =>
+                              setLotData({
+                                ...lotData,
+                                price: parseFloat(e.target.value) || 0,
+                              })
+                            }
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                            €
+                          </span>
+                        </div>
+                        {discount !== 0 && (
+                          <p className="mt-1.5 text-xs text-slate-600">
+                            Remise :{' '}
+                            <span
+                              className={
+                                discount > 0
+                                  ? 'text-emerald-600 font-semibold'
+                                  : 'text-rose-600 font-semibold'
+                              }
+                            >
+                              {discount}%
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card>
+                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+                      Résumé
+                    </h3>
+                    <GradientStatCard
+                      label="Prix du lot"
+                      value={`${lotData.price.toFixed(2)} €`}
+                      sublabel={
+                        discount !== 0
+                          ? `Remise de ${discount}% par rapport aux articles à l'unité`
+                          : 'Ajustez le prix pour le rendre attractif'
+                      }
+                    />
+                  </Card>
+                </div>
+
+                <div className="space-y-4">
+                  <Card>
+                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+                      Photos du lot
+                    </h3>
+                    <div className="grid grid-cols-4 gap-3">
+                      {getSelectedArticles()
+                        .flatMap((a) => a.photos)
+                        .slice(0, 8)
+                        .map((photo, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() =>
+                              setLotData({ ...lotData, cover_photo: photo })
+                            }
+                            className={[
+                              'aspect-square rounded-2xl overflow-hidden border-2 transition-all relative group',
+                              lotData.cover_photo === photo
+                                ? 'border-emerald-500 ring-2 ring-emerald-200'
+                                : 'border-slate-200 hover:border-emerald-300',
+                            ].join(' ')}
+                          >
+                            {photo ? (
+                              <img
+                                src={photo}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                                <ImageIcon className="w-6 h-6 text-slate-300" />
+                              </div>
+                            )}
+                            {lotData.cover_photo === photo && (
+                              <div className="absolute bottom-2 left-2 right-2 rounded-xl bg-slate-900/80 text-[10px] text-white px-2 py-1 text-center">
+                                Photo de couverture
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Cliquez sur une photo pour la définir comme couverture du lot.
+                    </p>
+                  </Card>
+
+                  <Card>
+                    <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+                      Statut & visibilité
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                          Statut du lot
+                        </label>
+                        <select
+                          value={lotData.status}
                           onChange={(e) =>
                             setLotData({
                               ...lotData,
-                              price: parseFloat(e.target.value) || 0,
+                              status: e.target.value as LotStatus,
                             })
                           }
                           className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                          €
-                        </span>
-                      </div>
-                      {discount !== 0 && (
-                        <p className="mt-1.5 text-xs text-slate-600">
-                          Remise :{' '}
-                          <span
-                            className={
-                              discount > 0
-                                ? 'text-emerald-600 font-semibold'
-                                : 'text-rose-600 font-semibold'
-                            }
-                          >
-                            {discount}%
-                          </span>
+                        >
+                          <option value="draft">Brouillon</option>
+                          <option value="ready">Prêt</option>
+                          <option value="scheduled">Planifié</option>
+                          <option value="published">Publié</option>
+                          <option value="sold">Vendu</option>
+                        </select>
+                        <p className="mt-2 text-xs text-slate-500">
+                          Le lot est créé en mode brouillon. Vous pourrez le
+                          modifier et publier plus tard.
                         </p>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </Card>
-
-                <Card>
-                  <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-                    Statut & visibilité
-                  </h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-                        Statut du lot
-                      </label>
-                      <select
-                        value={lotData.status}
-                        onChange={(e) =>
-                          setLotData({
-                            ...lotData,
-                            status: e.target.value as LotStatus,
-                          })
-                        }
-                        className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      >
-                        <option value="draft">Brouillon</option>
-                        <option value="ready">Prêt</option>
-                        <option value="scheduled">Planifié</option>
-                        <option value="published">Publié</option>
-                        <option value="sold">Vendu</option>
-                      </select>
-                      <p className="mt-2 text-xs text-slate-500">
-                        Le lot est créé en mode brouillon. Vous pourrez le
-                        modifier et publier plus tard.
-                      </p>
-                    </div>
-
-                    <div className="mt-2">
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
-                        Résumé
-                      </p>
-                      <GradientStatCard
-                        label="Prix du lot"
-                        value={`${lotData.price.toFixed(2)} €`}
-                        sublabel={
-                          discount !== 0
-                            ? `Remise de ${discount}% par rapport aux articles à l’unité`
-                            : 'Ajustez le prix pour le rendre attractif'
-                        }
-                      />
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              <Card>
-                <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-                  Photos du lot
-                </h3>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
-                  {getSelectedArticles()
-                    .flatMap((a) => a.photos)
-                    .slice(0, 8)
-                    .map((photo, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() =>
-                          setLotData({ ...lotData, cover_photo: photo })
-                        }
-                        className={[
-                          'aspect-square rounded-2xl overflow-hidden border-2 transition-all relative group',
-                          lotData.cover_photo === photo
-                            ? 'border-emerald-500 ring-2 ring-emerald-200'
-                            : 'border-slate-200 hover:border-emerald-300',
-                        ].join(' ')}
-                      >
-                        {photo ? (
-                          <img
-                            src={photo}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                            <ImageIcon className="w-6 h-6 text-slate-300" />
-                          </div>
-                        )}
-                        {lotData.cover_photo === photo && (
-                          <div className="absolute bottom-2 left-2 right-2 rounded-xl bg-slate-900/80 text-[10px] text-white px-2 py-1 text-center">
-                            Photo de couverture
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                  </Card>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">
-                  Cliquez sur une photo pour la définir comme couverture du lot.
-                </p>
-              </Card>
+              </div>
             </div>
           )}
 
