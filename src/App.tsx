@@ -21,6 +21,7 @@ import LotPreviewPage from './pages/LotPreviewPage';
 import { LotStructureFormPage } from './pages/LotStructureFormPage';
 import { PhotoStudioPage } from './pages/PhotoStudioPage';
 import { AdminPage } from './pages/AdminPage';
+import { AdminPageV2 } from './pages/AdminPageV2';
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/planner" element={<PlannerPage />} />
                     <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/admin-v2" element={<AdminPageV2 />} />
                     <Route path="/photo-studio" element={<PhotoStudioPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/family" element={<FamilyMembersPage />} />
