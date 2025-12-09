@@ -45,7 +45,7 @@ export function SaleDetailModal({ sale, onClose }: SaleDetailModalProps) {
     sale.sold_price > 0 ? Math.round((sale.net_profit / sale.sold_price) * 100) : null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-0 md:p-4">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 backdrop-blur-sm p-0 md:p-4">
       <div className="bg-white md:rounded-3xl shadow-2xl max-w-5xl w-full h-full md:h-auto md:max-h-[90vh] overflow-hidden flex flex-col border border-slate-200/70">
         {/* HEADER */}
         <div className="sticky top-0 z-10 bg-white/85 backdrop-blur-xl border-b border-slate-200 px-4 md:px-6 py-4 md:py-5">
