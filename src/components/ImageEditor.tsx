@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, ZoomIn, ZoomOut, Maximize2, Move, Download } from 'lucide-react';
+import { Sparkles, Wand2, X, Palette, Store, User, Shirt, Undo2, Redo2, RotateCcw, Check, ZoomIn, ZoomOut, Maximize2, Move, Download, Info } from 'lucide-react';
 import { editProductImage } from '../lib/geminiService';
 
 interface ImageEditorProps {
@@ -49,12 +49,30 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showInfo, setShowInfo] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setEditHistory([imageUrl]);
     setHistoryIndex(0);
   }, [imageUrl]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (infoRef.current && !infoRef.current.contains(event.target as Node)) {
+        setShowInfo(false);
+      }
+    };
+
+    if (showInfo) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showInfo]);
 
   const currentImage = editHistory[historyIndex] || imageUrl;
   const canUndo = historyIndex > 0;
@@ -365,6 +383,41 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
           {/* Colonne de droite - AI Magic Editor */}
           <div className="space-y-6">
 
+          <div ref={infoRef} className="relative">
+            <button
+              onClick={() => setShowInfo(!showInfo)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all border border-blue-200 text-sm font-medium shadow-sm hover:shadow-md"
+            >
+              <Info size={18} />
+              {showInfo ? 'Masquer les infos' : 'Infos'}
+            </button>
+
+            {showInfo && (
+              <div className="mt-3 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <Sparkles className="text-blue-600" size={22} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-blue-900 font-bold text-base mb-2 flex items-center gap-2">
+                      Studio Photo IA - Gemini 2.5 Flash Image
+                    </h3>
+                    <p className="text-blue-800 text-sm leading-relaxed">
+                      Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit, ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowInfo(false)}
+                    className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                    title="Fermer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {error && (
             <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-rose-700 text-sm">
               {error}
@@ -486,20 +539,6 @@ export function ImageEditor({ imageUrl, allPhotos, currentPhotoIndex, onImageEdi
               <span>Terminer</span>
             </button>
           </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-blue-900">
-                  <p className="font-semibold mb-1">Studio Photo IA - Gemini 2.5 Flash Image</p>
-                  <p className="text-blue-800 leading-relaxed">
-                    Décrivez les modifications que vous souhaitez. Gemini peut remplacer l'arrière-plan
-                    (fond blanc studio, béton gris, bois clair), améliorer la luminosité, centrer le produit,
-                    ou placer le vêtement à plat. L'IA préserve l'aspect original du produit.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
