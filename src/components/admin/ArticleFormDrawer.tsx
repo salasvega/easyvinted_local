@@ -1097,15 +1097,14 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
               {/* Action Buttons Footer */}
               <div className="p-3 border-t border-slate-200 bg-slate-50 sticky bottom-0">
                 <div className="flex items-center justify-around gap-1">
-                  {articleId && (
-                    <button
-                      onClick={() => setDeleteModalOpen(true)}
-                      className="flex flex-col items-center gap-1 py-2 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors min-w-0 flex-1"
-                    >
-                      <Trash2 className="w-4 h-4 flex-shrink-0" />
-                      <span className="text-[10px] font-medium whitespace-nowrap">Supprimer</span>
-                    </button>
-                  )}
+                  <button
+                    onClick={handleSave}
+                    disabled={loading}
+                    className="flex flex-col items-center gap-1 py-2 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors disabled:opacity-50 min-w-0 flex-1"
+                  >
+                    <Save className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-[10px] font-medium whitespace-nowrap">Sauvegarder</span>
+                  </button>
 
                   <button
                     onClick={handleClose}
@@ -1115,14 +1114,15 @@ export function ArticleFormDrawer({ isOpen, onClose, articleId, onSaved }: Artic
                     <span className="text-[10px] font-medium whitespace-nowrap">Annuler</span>
                   </button>
 
-                  <button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="flex flex-col items-center gap-1 py-2 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors disabled:opacity-50 min-w-0 flex-1"
-                  >
-                    <Save className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-[10px] font-medium whitespace-nowrap">Sauvegarder</span>
-                  </button>
+                  {articleId && (
+                    <button
+                      onClick={() => setDeleteModalOpen(true)}
+                      className="flex flex-col items-center gap-1 py-2 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors min-w-0 flex-1"
+                    >
+                      <Trash2 className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-[10px] font-medium whitespace-nowrap">Supprimer</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </>
